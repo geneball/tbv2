@@ -1,0 +1,209 @@
+// TBookV2   TBook.h 
+// Gene Ball   Apr-2018  -- Nov-2019
+
+/* Define to prevent recursive inclusion -------------------------------------*/
+#ifndef TBook_H
+#define TBook_H
+
+#include "main.h"			// define hardware configuration & optional software switches
+
+#include <ctype.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <string.h>
+#include <stdlib.h>			// e.g. atoi
+#include <stdio.h>
+#include <stdarg.h>
+#include "assert.h"
+
+#include "Driver_Common.h"
+#include "rtx_os.h"
+#include "RTE_Components.h"
+#include  CMSIS_device_header
+#include "cmsis_os2.h"
+#include "rtx_os.h"
+#include "rl_fs.h"
+
+#if  defined( RTE_Compiler_EventRecorder )
+	#include "eventrecorder.h"   
+#endif
+
+#include "tknTable.h"			// GrpID, Event, Action
+#include "log.h"				// logEvt...
+#include "ledMgr.h"				// ledFg, ledBg
+#include "powerMgr.h"			// registerPowerEventHandler
+#include "inputMgr.h"			// sendEvent
+
+
+// global utilities
+// tbutil.c
+
+#define count(x) sizeof(x)/sizeof(x[0])
+
+extern void 			GPIO_DefineSignals( GPIO_Signal def[] );
+extern void 			gSet( GPIO_ID gpio, uint8_t on );								// set the state of a GPIO output pin
+extern bool			 	gOutVal( GPIO_ID gpio );												// => LOGICAL state of a GPIO OUTput, e.g. True if 'PA0_'.ODR==0 or 'PB3'.ODR==1
+extern bool	 			gGet( GPIO_ID gpio );														// => LOGICAL state of a GPIO input pin (TRUE if PA3_==0 or PC2==1)
+extern void				flashInit( void );															// init keypad GPIOs for debugging
+extern void 			flashLED( const char *s );											// 'GGRR__' in .1sec
+extern void 			flashCode( int v );															// e.g. 9 => "RR__GG__GG__RR______"
+extern void				gUnconfig( GPIO_ID id );												// revert GPIO to default configuration
+extern void				gConfigOut( GPIO_ID led );											// configure GPIO for low speed pushpull output (LEDs, audio_PDN, pwr control)
+extern void				gConfigI2S( GPIO_ID id );												// configure GPIO for high speed pushpull in/out (I2S)
+extern void				gConfigADC( GPIO_ID led );											// configure GPIO as ANALOG input ( battery voltage levels )
+extern void				gConfigIn( GPIO_ID key, bool pulldown );				// configure GPIO as low speed input, either pulldown or pullup (pwr fail, battery indicators)
+extern void				gConfigKey( GPIO_ID key );											// configure GPIO as low speed pulldown input ( keys )
+extern void 			printCpuID( void );
+extern void 			printTBookID( void );
+extern void 			JumpToBootloader( void );												// perform jump to system memory boot from user application
+
+extern void 			LED_Init( GPIO_ID led );												// ledManager-- for debugging
+extern bool 			ledMgrActive;
+
+extern void 			talking_book ( void *argument );
+extern uint32_t 	tbTimeStamp( void );
+extern void 			tbDelay_ms( int ms ); 					//  Delay execution for a specified number of milliseconds
+extern void *			tbAlloc( int nbytes, const char *msg );
+extern void 			usrLog( const char * fmt, ... );
+extern void 			dbgLog( const char * fmt, ... );
+extern void 			errLog( const char * fmt, ... );
+extern void 			tbErr( const char *msg );	
+extern void				tbShw( const char *s, char **p1, char **p2 );
+extern void 			_Error_Handler( char *, int );
+extern void 			stdout_putchar( char );
+extern int				divTst(int lho, int rho); 	// for fault handler testing
+extern void 			enableLCD( void );
+extern void 			disableLCD( void );
+extern void 			printAudSt( void ); // print audio state
+
+extern bool				enableMassStorage( char *drv0, char *drv1, char *drv2, char *drv3 );
+extern bool				disableMassStorage( void );						// disable USB MSC & return FSys to TBook
+extern bool				isMassStorageEnabled( void );					// => true if usb is providing FileSys as MSC
+
+typedef struct	{	// GPIO_Def_t -- define GPIO port/pins/interrupt # for a GPIO_ID
+	GPIO_ID					id;		  // GPIO_ID for this line -- from enumeration in main.h
+	GPIO_TypeDef *	port;  	// address of GPIO port -- from STM32Fxxxx.h
+	uint16_t 				pin; 		// GPIO pin within port
+	AFIO_REMAP			altFn;	// alternate function value
+	IRQn_Type 			intq; 	// specifies INTQ num  -- from STM32Fxxxx.h
+	char *					signal;	// string name of signal, e.g. PA0
+	int							active; // gpio value when active: 'PA3_' => 0, 'PC12' => 1
+} GPIO_Def_t;
+
+#define MAX_GPIO 100
+extern GPIO_Def_t  	gpio_def[ MAX_GPIO ];	
+
+extern    void 		initPrintf( const char *hdr );
+
+//extern    char 		Screen[ ][ dbgScreenChars ];				
+	
+#define Error_Handler() _Error_Handler( __FILE__, __LINE__ )
+#define min(a,b) (((a)<(b))?(a):(b))
+
+#define MAX_DBG_LEN 	300
+
+typedef enum  {	Ready,  Playing,  Recording	} MediaState;
+
+// TBook version string
+extern const char * 	TBV2_Version;
+extern bool						FileSysOK;
+extern bool						TBDataOK;
+
+// Thread stack sizes
+extern const int 	TBOOK_STACK_SIZE;
+extern const int 	POWER_STACK_SIZE;
+extern const int 	INPUT_STACK_SIZE;
+extern const int 	MEDIA_STACK_SIZE;		// opens in/out files
+extern const int 	CONTROL_STACK_SIZE;		// opens in/out files
+extern const int 	LED_STACK_SIZE;
+
+// SD card path definitions  
+extern char * TBP[];			// indexed by pSTATUS.. pPACKAGE_DIR
+extern const int 	pSTATUS;
+extern const int	pBOOTCNT; 
+extern const int	pCSM_DEF;
+extern const int	pLOG_TXT;
+extern const int	pSTATS_PATH;
+extern const int	pMSGS_PATH;
+extern const int	pLIST_OF_SUBJS;
+extern const int	pPACKAGE_DIR;
+
+//extern const char *	TBOOK_STATUS; 
+//extern const char *	TBOOK_BOOTCNT; 
+//extern const char *	TBOOK_CSM_DEF;
+//extern const char *	TBOOK_LOG_TXT;
+//extern const char *	TBOOK_STATS_PATH;
+//extern const char *	TBOOK_MSGS_PATH;
+//extern const char *	TBOOK_LIST_OF_SUBJS;
+//extern const char *	TBOOK_PACKAGE_DIR;
+
+//TBOOK error codes
+extern const int 	TB_SUCCESS;
+extern const int 	GPIO_ERR_ALREADYREG;
+extern const int 	GPIO_ERR_INVALIDPIN;
+extern const int 	MEDIA_ALREADY_IN_USE;
+
+//  -----------  TBook configuration variables
+#define	MAX_PATH  80
+
+typedef struct TBConfig {			// TBConfig
+	short 	default_volume;
+	short 	default_speed;
+	int 	powerCheckMS;				// used by powermanager.c
+	int		shortIdleMS;
+	int		longIdleMS;
+	char *	systemAudio;				// path to system audio files
+	int		minShortPressMS;			// used by inputmanager.c
+	int		minLongPressMS;				// used by inputmanager.c
+	int		initState;	
+	
+}	TBConfig_t;
+extern TBConfig_t 	TB_Config;		// global TBook configuration
+
+// for tbUtil.c
+#define	dbgLns  				30
+#define	dbgChs  				20
+typedef  char DbgScr[dbgLns][dbgChs];
+#define	NUM_KEYPADS 		10
+
+typedef  struct {
+	int 					eventTS;					// TStamp of most recent input interrupt
+	int						lastTS;						// TStamp of previous input interrupt 
+	int						msecSince;				// msec between prev & this
+	KEY						detectedUpKey;		// shared variable between ISR and thread
+	bool					DFUkeysDown;			// TRUE if special DFU keypair down: TABLE + POT
+	bool					keytestKeysDown;	// TRUE if special keytest pair down: HOME + POT
+	bool					starDown;					// flags to prevent STAR keypress on key-up after STAR-key alt sequence
+	bool					starAltUsed;
+	char 					keyState[11];
+} KeyPadState_t;
+typedef KeyPadKey_t 	 KeyPadKey_arr[ NUM_KEYPADS ];		// so Dbg knows array size
+
+typedef struct {
+	bool 				Active;
+	int			  	Count;
+	char		  	Status[ NUM_KEYPADS+1 ];
+} KeyTestState_t;
+
+//const int				MAX_TB_HIST 	=	50;  can't define const here-- gets multiply defined
+#define 				MAX_TB_HIST 50
+typedef char *	TBH_arr[ MAX_TB_HIST*2 ];
+
+typedef struct {			// Dbg -- pointers for easy access to debug info
+	bool							loopOpeningM0;
+
+	KeyTestState_t *	KeyTest;			// control block for KeyPad Test
+	KeyPadState_t * 	KeyPadStatus;	// current keypad status 
+	KeyPadKey_arr * 	KeyPadDef;		// definitions & per/key state of keypad
+	char							keypad[11];		// keypad keys as string
+	
+	TBConfig_t	* 		TBookConfig;	// TalkingBook configuration block
+	TBH_arr	*					TBookLog;			// TalkingBook event log
+	
+	DbgScr 						Scr;					// dbgLog output 
+	
+} DbgInfo;
+extern  DbgInfo			Dbg;	// in main.c -- visible at start
+
+#endif /* __TBOOK_H__ */
+
