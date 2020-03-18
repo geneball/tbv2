@@ -16,6 +16,9 @@
 ######################
 *.log
 
+# Editor backups
+*.bak
+
 # compiler outputs #
 ######################
 *.o
