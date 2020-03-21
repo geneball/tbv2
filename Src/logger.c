@@ -53,6 +53,9 @@ void						logPowerUp( void ){																// re-init logger after USB or slee
 	} else {
 		logEvt( "\n\n------------" );
 		logEvtNS( "TB_V2", "firmware", TBV2_Version );
+		logEvtS( "CPU",  CPU_ID );
+		logEvtS( "TB_ID",  TB_ID );
+		
 		fsFileInfo fAttr;
 		fAttr.fileID = 0;
 		fsStatus fStat = ffind( TBP[ pSTATUS ], &fAttr );

@@ -153,7 +153,7 @@ static const I2S_RESOURCES I2S0_Resources = {		// capabilities & hardware links
 //static	int I2S_clk;		// set by I2S_Initialize to freq of I2S_clock
 const int DMA_CIRC_BUFF_SIZE = 8;
 uint32_t  CircBuff[ DMA_CIRC_BUFF_SIZE ] = { 0 };
-int BrkWds = 600;
+int BrkCnt = 200;
 
 // forward decls for self calls
 static int32_t 								I2S_Send( const void *data, uint32_t nSamples, I2S_RESOURCES *i2s );
@@ -513,8 +513,8 @@ static void 									I2S_SendWord( I2S_RESOURCES *i2s ){																								
 			info->dataPtr++;		// get next sample-- always if stereo, every other if monoMode
 			info->tx_cnt += 2;	// 2 more bytes (1 sample) transmitted
 		}
-		if ( info->tx_cnt > BrkWds ) 
-				__breakpoint(0);
+		if ( info->tx_cnt >= BrkCnt && !gGet( gMINUS ))
+				tbErr( "I2S cnt >= %d \n", BrkCnt );
 	}
 }
 static void 									I2S_GetWord(I2S_RESOURCES *i2s ){																										// receive next stereo sample-- store left channel only

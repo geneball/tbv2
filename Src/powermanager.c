@@ -38,7 +38,9 @@ void											initPowerMgr( void ){						// initialize PowerMgr & start thread
 		tbErr( "pwrCheckTimer not alloc'd" );
 	
 	initPwrSignals();		// setup power pins & NO_PWR interrupt
-	
+
+  if (true) return;
+		
 	pm_thread_attr.name = "PM Thread";	
 	pm_thread_attr.stack_size = POWER_STACK_SIZE; 
 	osThreadId_t pm_thread =  osThreadNew( powerThreadProc, 0, &pm_thread_attr ); //&pm_thread_attr );

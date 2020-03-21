@@ -5,7 +5,7 @@
 #include "controlMgr.h"			// runs on initialization thread
 #include "mediaPlyr.h"			// thread to watch audio status
 
-const char * 	TBV2_Version 				= "V2.03 of 6-Mar-2020";
+const char * 	TBV2_Version 				= "V2.04 of 20-Mar-2020";
 
 //
 // Thread stack sizes
@@ -84,22 +84,33 @@ void debugLoop( ){
 	if ( fsNDevs==0 ) dbgLog( "no storage avail \n" );
 	else dbgLog( "no TBook on %s \n", fsDevs[0]  );
 	MediaState st = Ready;
+	int ledCntr = 0;
 	
 	while ( true ){
-		if ( fsNDevs > 0 && gGet( gTREE ) && !isMassStorageEnabled()){  // TREE => if have a filesystem but no data -- try USB MSC
+		ledCntr++;
+		gSet( gRED, ((ledCntr >> 14) & 0x3)== 0 );		// flash RED ON for 1 of 4  
+		
+		if ( fsNDevs > 0 && gGet( gHOME ) && !isMassStorageEnabled()){  // HOME => if have a filesystem but no data -- try USB MSC
 			gSet( gRED, 1 );
 			for ( int i=fsNDevs; fsDevs[i]!=NULL; i++ ) fsDevs[i] = NULL;
 			enableMassStorage( fsDevs[0], fsDevs[1], fsDevs[2], fsDevs[3] );		// just put 1st device on USB
 		}
 		
-		if ( isMassStorageEnabled() && gGet( gSTAR ) && gGet( gTREE )){	 // STAR TREE => close MSC, continue boot
+		if ( isMassStorageEnabled() && gGet( gSTAR ) && gGet( gHOME )){	 // STAR HOME => close MSC, continue boot
 			disableMassStorage();
 			gSet( gRED, 0 );
 			return;	
 		}
+		
+		if ( gGet( gRHAND )){			//  RHAND =>  Reboot to Device Firmware Update
+			gSet( gGREEN, 1 );
+			gSet( gRED, 1 );
+			RebootToDFU();
+		}
 
-		if ( gGet( gPOT ) && st==Ready ){		// audio test
-			mMediaEventId = osEventFlagsNew(NULL);					// osEvent channel for communication with mediaThread
+		if ( gGet( gCIRCLE ) && st==Ready ){		// CIRCLE => audio test
+			gSet( gRED, 0 );
+			mMediaEventId = osEventFlagsNew(NULL);		// osEvent channel for communication with mediaThread
 			audInitialize( mMediaEventId );			// alloc buffers, initialize SAI
 			audSquareWav();											// subst file data with preloaded square wave
 			gSet( gGREEN, 1 );
@@ -115,8 +126,11 @@ void talking_book( void *argument ) {
 	
 	initPowerMgr();			// set up GPIO signals for controlling & monitoring power -- enables MemCard
 	
-  flashInit();		// init Keypad for debugging
-	printTBookID();
+	if ( osKernelGetState() != osKernelRunning )
+		debugLoop();	// no OS, so straight to debugLoop, no fileSys check
+	
+	usrLog( "%s\n", CPU_ID );
+	usrLog( "%s\n", TB_ID );
 	
 	for (int i=0; fsDevs[i]!=NULL; i++ ){
 		fsStatus stat = fsMount( fsDevs[i] );

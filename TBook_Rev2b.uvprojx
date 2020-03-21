@@ -472,6 +472,11 @@
               <FileType>1</FileType>
               <FilePath>.\Src\Rev2b\I2S_stm32F4xx.c</FilePath>
             </File>
+            <File>
+              <FileName>hardfault.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\Src\Rev2b\hardfault.s</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -634,6 +639,11 @@
               <FileName>os_systick.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Keil\CMSIS\os_systick.c</FilePath>
+            </File>
+            <File>
+              <FileName>irq_cm4f.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\Keil\CMSIS\irq_cm4f.s</FilePath>
             </File>
           </Files>
         </Group>

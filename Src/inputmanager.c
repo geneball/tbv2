@@ -213,7 +213,7 @@ void 					initializeInterrupts(){			// configure each keypad GPIO pin to input, 
 	KSt.detectedUpKey = kINVALID;
 	if ( keydef[kSTAR].down ){		// STAR held down on restart?
 		if (keydef[kHOME].down ){   // STAR-HOME => USB
-			JumpToBootloader();			// perform jump to system memory boot from user application
+			RebootToDFU();				// perform reboot into system memory to invoke Device Firmware Update bootloader
 		}
 		if (keydef[kPLUS].down ){   // STAR-PLUS => jump to system bootloader for DFU
 		}

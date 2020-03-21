@@ -40,6 +40,10 @@
 
 #define count(x) sizeof(x)/sizeof(x[0])
 
+extern char 			CPU_ID[20], TB_ID[20];
+extern bool 			NO_OS_DEBUG;					// set in main.c, used in tbook.c
+
+extern void 			initIDs( void );
 extern void 			GPIO_DefineSignals( GPIO_Signal def[] );
 extern void 			gSet( GPIO_ID gpio, uint8_t on );								// set the state of a GPIO output pin
 extern bool			 	gOutVal( GPIO_ID gpio );												// => LOGICAL state of a GPIO OUTput, e.g. True if 'PA0_'.ODR==0 or 'PB3'.ODR==1
@@ -53,9 +57,7 @@ extern void				gConfigI2S( GPIO_ID id );												// configure GPIO for high s
 extern void				gConfigADC( GPIO_ID led );											// configure GPIO as ANALOG input ( battery voltage levels )
 extern void				gConfigIn( GPIO_ID key, bool pulldown );				// configure GPIO as low speed input, either pulldown or pullup (pwr fail, battery indicators)
 extern void				gConfigKey( GPIO_ID key );											// configure GPIO as low speed pulldown input ( keys )
-extern void 			printCpuID( void );
-extern void 			printTBookID( void );
-extern void 			JumpToBootloader( void );												// perform jump to system memory boot from user application
+extern void 			RebootToDFU( void );														// reboot into SystemMemory -- Device Firmware Update bootloader
 
 extern void 			LED_Init( GPIO_ID led );												// ledManager-- for debugging
 extern bool 			ledMgrActive;
@@ -67,7 +69,7 @@ extern void *			tbAlloc( int nbytes, const char *msg );
 extern void 			usrLog( const char * fmt, ... );
 extern void 			dbgLog( const char * fmt, ... );
 extern void 			errLog( const char * fmt, ... );
-extern void 			tbErr( const char *msg );	
+extern void 			tbErr( const char * fmt, ... );							// report fatal error
 extern void				tbShw( const char *s, char **p1, char **p2 );
 extern void 			_Error_Handler( char *, int );
 extern void 			stdout_putchar( char );
@@ -101,6 +103,7 @@ extern    void 		initPrintf( const char *hdr );
 #define min(a,b) (((a)<(b))?(a):(b))
 
 #define MAX_DBG_LEN 	300
+
 
 typedef enum  {	Ready,  Playing,  Recording	} MediaState;
 

@@ -11,6 +11,7 @@
 //
 //********  main
 DbgInfo Dbg;			// things to make visible in debugger
+//bool NO_OS_DEBUG = true;
 
 static osThreadAttr_t 	tb_attr;																				// has to be static!
 int  										main( void ){
@@ -25,13 +26,17 @@ int  										main( void ){
 	GPIO_DefineSignals( gpioSignals );   // create GPIO_Def_t entries { id, port, pin, intq, signm, pressed } for each GPIO signal in use
 	// main.h defines gpioSignals[] for this platform configuration,  e.g.  { gRED, "PF8" } for STM3210E eval board RED LED
 	//  used by various initializers to cal GPIOconfigure()
+
 	
   initPrintf(  TBV2_Version );
-
-	printCpuID();
-
-  usrLog( "%s \n", TBV2_Version );
+  flashInit();		// init Keypad for debugging
+	if ( gGet( gPLUS )){  //  PLUS => tbook with no OS -> debugLoop
+		flashCode( 10 );
+		talking_book( NULL );   
+	}
 	
+	initIDs();
+
 	osKernelInitialize();                 // Initialize CMSIS-RTOS
 	
 	tb_attr.name = (const char*) "talking_book"; 

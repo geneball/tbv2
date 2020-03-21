@@ -191,25 +191,27 @@ void										flashInit( ){																		// init keypad GPIOs for debugging
 }
 
 // MPU Identifiers
-void 										printCpuID(){																		// dbgLog: ARM  device type ID
+char CPU_ID[20], TB_ID[20];
+
+void 										initIDs(){																		// initialize CPU_ID & TB_ID strings
 	typedef struct {	// MCU device & revision
 		// Ref Man: 30.6.1 or 31.6.1: MCU device ID code
-		// stm32F412: 0xE0042000	rev: 0x1001, 0x2000, or 0x3000  dev: 0x441
+		// stm32F412: 0xE0042000	== 0x30006441 => CPU441_c 
 		// stm32F10x: 0xE0042000  rev: 0x1000  dev: 0xY430  (XL density) Y reserved == 6
 		// stm32F411xC/E: 0xE0042000  rev: 0x1000  dev: 0x431
-		uint16_t dev_id;
-		uint16_t rev_id; 
-	}  IdCode_t;
-	IdCode_t * id = (IdCode_t *) DBGMCU;
-	
-	dbgLog( "CPU_ID: 0x%x \n", SCB->CPUID );
-	dbgLog( "Rev: 0x%x \n Dev: 0x%x \n", id->rev_id, id->dev_id );
-}
-char asHex( int v ){
-	if ( v<10 ) return '0' + v;
-	return 'A' + v-10;
-}
-void 										printTBookID(){																	// dbgLog: STM chip ID as eg: "QQ651550W6X47Y37"
+		uint16_t dev_id 	: 12;
+		uint16_t z13_15 	:  4;
+		uint16_t rev_id  	: 16;
+	}  MCU_ID;
+	MCU_ID *id = (MCU_ID *) DBGMCU;
+  char rev = '?';
+	switch (id->rev_id){
+		case 0x1001: rev = 'z';
+		case 0x2000: rev = 'b';
+		case 0x3000: rev = 'c';
+	}
+	sprintf( CPU_ID, "CPU%x_%c", id->dev_id, rev );
+
 	struct {						// STM32 unique device ID 
 		// Ref Man: 30.2 Unique device ID register  
 		// stm32F411xC/E: 0x1FFF7A10  32bit id, 8bit waf_num ascii, 56bit lot_num ascii
@@ -218,28 +220,15 @@ void 										printTBookID(){																	// dbgLog: STM chip ID as eg: "QQ
 		uint16_t x;
 		uint16_t y;
 		uint8_t wafer;
-		char lot[11];		// lot in 0..7
+		char lot[11];		// lot in 0..6
 	}  stmID;
 	
-	uint32_t * uniqID = (uint32_t *) UID_BASE;	// as 32 bit int array
-	dbgLog( "UID: 0x%08x \n   0x%08x \n   0x%08x \n", uniqID[0], uniqID[1], uniqID[2] );
+//	uint32_t * uniqID = (uint32_t *) UID_BASE;	// as 32 bit int array
+//	dbgLog( "UID: %08x \n %08x %08x \n", uniqID[0], uniqID[1], uniqID[2] );
 	
 	memcpy( &stmID, (const void *)UID_BASE, 12 );
-	stmID.lot[8] = 0;
-	dbgLog( "UID: %04x.%04x.%x.%s \n", stmID.x, stmID.y, stmID.wafer, stmID.lot );
-	
-
-//HAL_GetUID( (uint32_t *)&devID );	
-	// rev1 proto is:  0x0025002F 0x35365106 0x30353531 "^FQ651550"
-	// X=47 Y=37 WAF=6 LOT="Q651550"
-	// format as:   Q651550W6X47Y37 
-	// rev2-proto1: Q741453W18X82Y78
-	// rev2-proto2: Q741453W18X82Y69
-//	stmID_t * devID = (stmID_t *) UID_BASE;		// main.h depending on processor
-//	uint8_t *lt = &devID->lot[0];
-//	dbgLog( "STM ID: %c%c%c%c%c%c%c W%d X%d Y%d \n", 
-//		lt[0],lt[1],lt[2],lt[3],lt[4],lt[5],lt[6],	
-//		devID->wafer, devID->x, devID->y );
+	stmID.lot[7] = 0;  // null terminate the lot string
+	sprintf( TB_ID, "%04x.%04x.%x.%s", stmID.x, stmID.y, stmID.wafer, stmID.lot );
 }
 
 
@@ -255,17 +244,17 @@ uint32_t 								HAL_GetTick(void){															// OVERRIDE for CMSIS drivers 
 }
 void 										tbDelay_ms( int ms ) {  												// Delay execution for a specified number of milliseconds
 	int stTS = tbTimeStamp();
-	if ( osKernelRunning )
+	if ( ms==0 ) ms = 1;
+	delayReq = ms;
+	actualDelay = 0;
+	if ( osKernelGetState()==osKernelRunning ){
 		osDelay( ms );
-	else {
+		actualDelay = tbTimeStamp() - stTS;
+	}
+	if ( actualDelay==0 ){ // didn't work-- OS is running, or clock isn't
 		ms *= ( SystemCoreClock/10000 );
 		while (ms--) { __nop(); __nop(); __nop(); __nop(); __nop(); __nop(); }
 	}
-	delayReq = ms;
-	actualDelay = tbTimeStamp() - stTS;
-//	int err = abs( actualDelay - delayReq );
-//	if ( err>2 ) 
-//		dbgLog( "Dly: R%d, A%d \n", ms, actualDelay ); 
 }
 static int 							tbAllocTotal = 0;																// track total heap allocations
 void *									tbAlloc( int nbytes, const char *msg ){					// malloc() & check for error
@@ -283,7 +272,7 @@ void 										usrLog( const char * fmt, ... ){
 	va_start( arg_ptr, fmt );
 	enableLCD();
 	setTxtColor( LCD_COLOR_BLACK );
-	printf(" ");
+//	printf(" ");
 	vprintf( fmt, arg_ptr );
 	va_end( arg_ptr );
 	disableLCD();
@@ -310,23 +299,22 @@ void 										errLog( const char * fmt, ... ){
 	disableLCD();
 }
 
-void 										tbErr( const char *msg ){												// report fatal error
-	errLog( "TBErr: %s", msg );
+void 										tbErr( const char * fmt, ... ){											// report fatal error
+	va_list arg_ptr;
+	va_start( arg_ptr, fmt );
+	vprintf( fmt, arg_ptr );
+	va_end( arg_ptr );
+//	errLog( "TBErr: %s \n", msg );
 	//logEvtS( "*** tbError: ", msg );
-	for (int i=0; i<20; i++){
-	  gSet( gRED, 1 );
-		tbDelay_ms(100);
-	  gSet( gRED, 0 );
-		tbDelay_ms(50);
-	  gSet( gGREEN, 1 );
-		tbDelay_ms(100);
-	  gSet( gGREEN, 0 );
-		tbDelay_ms(50);
+	while ( true ){ 
+//	for (int i=0; i<20; i++){
+		flashLED( "RRR__GGG__" );
 	}
-	gSet( gRED, 1 );
-	gSet( gGREEN, 1 );
-	__breakpoint(0);
-	ledFg( "R8_2 R8_2 R8_20!" );
+	
+//	gSet( gRED, 1 );
+//	gSet( gGREEN, 1 );
+//	__breakpoint(0);
+//	ledFg( "R8_2 R8_2 R8_20!" );
 }
 void										tbShw( const char *s, char **p1, char **p2 ){  	// assign p1, p2 to point into s for debugging
 	short len = strlen(s);
@@ -393,7 +381,7 @@ void 										initPrintf( const char *hdr ){
 	cY = 0;
 	InitLCD( hdr );					// eval_LCD if STM3210E
 	
-	printf( "%s \n", hdr );
+	printf( "%s\n", hdr );
 }
 void 										stdout_putchar( char ch ){
 	if ( ch=='\n' || cX >= xMAX ){ // end of line
@@ -409,7 +397,7 @@ void 										stdout_putchar( char ch ){
 }	
 
 
-void HardFault_Handler_C( svFault_t *svFault, uint32_t linkReg ){
+void 										HardFault_Handler_C( svFault_t *svFault, uint32_t linkReg ){
 // fault handler --- added to startup_stm32f10x_xl.s
 // for 2:NMIHandler, 3:HardFaultHandler, 4:MemManage_Handler, 5:BusFault_Handler, 6:UsageFault_Handler 
 // It extracts the location of stack frame and passes it to the handler written
@@ -456,7 +444,38 @@ void HardFault_Handler_C( svFault_t *svFault, uint32_t linkReg ){
   printf( "PC: 0x%08x \n", svFault->PC );
 	tbErr(" Fault" );
 }
-void JumpToBootloader(){
+void 										RebootToDFU( void ){													// reboot into SystemMemory -- Device Firmware Update bootloader
+	// STM32F412vet
+  //  location 0 holds 0x20019EE8  -- stack top on reboot
+	// Addresses  0x00000000 .. 0x00003FFFF can be remapped to one of:
+	//   Flash  	0x08000000 .. 0x080FFFFF
+	//   SRAM			0x20000000 .. 0x2003FFFF
+	//   SysMem   0x1FFF0000 .. 0x1FFFFFFF  
+	// Loc 0 (stack pointer) in different remaps
+	//   Flash  	0x08000000:  20019EE8
+	//   SRAM			0x20000000:  00004E20  (not stack ptr)
+	//   SysMem   0x1FFF0000:  20002F48
+	//  
+	
+	const uint32_t *SYSMEM = (uint32_t *) 0x1FFF0000;
+	void (*Reboot)(void) = (void (*)(void)) 0x1FFF0004;		// function pointer to SysMem start address (for DFU)
+	
+	// AN2606 STM32 microcontroller system memory boot mode  pg. 24 says:
+	//  before jumping to SysMem boot code, you must:
+	RCC->AHB1ENR = 0;																			// 1) disable all peripheral clocks
+	RCC->APB2ENR = RCC_APB2ENR_SYSCFGEN;									//  except ENABLE the SYSCFG register clock
+	RCC->CR &= ~( RCC_CR_PLLI2SON | RCC_CR_PLLON );				// 2) disable used PLL(s)
+	EXTI->IMR = 0;    																		// 3) disable all interrupts
+	EXTI->PR = 0;    																			// 4) clear pending interrupts
+	
+	int SysMemInitialSP = *SYSMEM; 												// get initial SP value from SysMem[ 0 ]
+	__set_MSP( SysMemInitialSP );	 												// set the main SP
+	__DSB();  // wait for all memory accesses to complete
+	__ISB();	// flush any prefetched instructions
+	SYSCFG->MEMRMP = 1;  																	// remaps 0..FFFF to SysMem at 0x1FFF0000
+	__ISB();	// flush any prefetched instructions
+  Reboot();						 																	// jump to offset 0x4 (in SysMem)
+  while (1);
 }
 uint32_t 								osRtxErrorNotify (uint32_t code, void *object_id) {	// osRtx error callback
   (void)object_id;
