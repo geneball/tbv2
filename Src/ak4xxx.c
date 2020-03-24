@@ -193,8 +193,29 @@ void 						Codec_WrReg( uint8_t Reg, uint8_t Value){										// write codec reg
   status = I2Cdrv->MasterTransmit( AUDIO_I2C_ADDR, buf, 2, false );
 	cntErr( I2C_Xmt, ARM_DRIVER_OK, status, Reg, 6 );
 	
-  while (( I2C_Event & ARM_I2C_EVENT_TRANSFER_DONE ) == 0U)
+  while (( I2C_Event & ARM_I2C_EVENT_TRANSFER_DONE ) == 0U){
 		waitCnt++;  // busy wait until transfer completed
+		if ( waitCnt > 1000 ){
+			errLog("I2C Tx hang");
+			uint32_t cr1 = I2C1->CR1;
+			
+		//	I2C1->CR1 = I2C_CR1_SWRST;			// set Software Reset bit
+		//	tbDelay_ms(1);
+		//	I2C1->CR1 = cr1;
+			I2Cdrv->Uninitialize();										// re-init device & try again
+			RCC->APB1RSTR |= RCC_APB1RSTR_I2C1RST;		// set device reset bit for I2C1
+			tbDelay_ms( 1 );
+			RCC->APB1RSTR = 0;		// TURN OFF device reset bit for I2C1
+			
+			// do a full I2Cinit, except AK hasn't been reset, so no dummy write
+			I2Cdrv->Initialize( i2c_Sig_Event );			// sets up SCL & SDA pins, evt handler
+			I2Cdrv->PowerControl( ARM_POWER_FULL );		// clocks I2C device & sets up interrupts
+			I2Cdrv->Control( ARM_I2C_BUS_SPEED, ARM_I2C_BUS_SPEED_STANDARD );		// set I2C bus speed
+			I2Cdrv->Control( ARM_I2C_OWN_ADDRESS, 0 );		// set I2C own address-- REQ to initialize properly
+			Codec_WrReg( Reg, Value );		// recursive call to retry on reset device
+			return;
+		}
+	}
 	if ( waitCnt > MaxBusyWaitCnt ) MaxBusyWaitCnt = waitCnt;
 	cntErr( I2C_Xmt, ARM_I2C_EVENT_TRANSFER_DONE, I2C_Event, 0, 7 );  // err if any other bits set
 	
