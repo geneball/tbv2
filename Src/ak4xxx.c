@@ -52,8 +52,9 @@ static ARM_DRIVER_I2C *		I2Cdrv = 				&Driver_I2C1;
 #define VERIFY_WRITTENDATA 
 #endif /* VERIFY_WRITTENDATA */
 
-static uint8_t 	akFmtVolume = 0;
-static bool			akSpeakerOn = false;
+static uint8_t 	akFmtVolume 	= 0;
+static bool			akSpeakerOn 	= false;
+static bool			akMuted			 	= false;
 
 const int I2C_Xmt = 0;
 const int I2C_Rcv = 1;
@@ -247,9 +248,11 @@ int32_t 				I2C_Init() {																								// Initialize I2C connection to 
   return val;
 }
 void 						ak_SpeakerEnable( bool enable ){														// enable/disable speaker -- using mute to minimize pop
+	if ( akSpeakerOn==enable )   // no change?
+		return;
+	
+	akSpeakerOn = enable;
 	if ( enable ){ 	
-		if ( akSpeakerOn ) return;  // already on
-		akSpeakerOn = true;
 		#if defined( AK4343 )
 			// power up speaker amp & codec by setting power bits with mute enabled, then disabling mute
 			Codec_SetRegBits( AK_Signal_Select_1, AK_SS1_SPPSN, 0 );						// set power-save (mute) ON (==0)
@@ -260,32 +263,42 @@ void 						ak_SpeakerEnable( bool enable ){														// enable/disable speak
 			Codec_SetRegBits( AK_Signal_Select_1, AK_SS1_SPPSN, AK_SS1_SPPSN );		// set power-save (mute) OFF (==1)
 		#endif
 		#if defined( AK4637 )
-			// startup sequence re: AK4637 pg 89
+			// startup sequence re: AK4637 Lineout Uutput pg 91
 			akR.R.SigSel1.SLPSN = 0;  						// set power-save (mute) ON (==0)
 			akUpd();															// and UPDATE
+		if ( !gGet( gLHAND ))
 			gSet( gPA_EN, 1 );										// enable power to speaker & headphones
 																						// 1) done by ak_SetMasterFreq()
-			akR.R.SigSel1.DACS = 1;								// 2) DACS=1  set DAC->Spkr 
-		  akR.R.SigSel2.SPKG1_0 = 1;   					// 3) Spk-Amp Gain SPKG0_1=1
-//			akR.R.TimSel.FRN = x;									// 4) Timer_Select default
+			akR.R.PwrMgmt1.LOSEL = 1; 						// 2) LOSEL=1     MARC 7)
+/*			akR.R.SigSel1.DACS = 1;								// 2) DACS=1  set DAC->Spkr 
+//		  akR.R.SigSel2.SPKG1_0 = 1;   					// 3) Spk-Amp Gain SPKG0_1=1
+*/
+			akR.R.SigSel3.DACL = 1;  								// 3) DACL=1			  MARC 8)
+			akR.R.SigSel3.LVCM1_0 = 0;  						// 3) LVCM=01 			MARC 8)
+/*			akR.R.TimSel.FRN = x;									// 4) Timer_Select default
 //			akR.R.TimSel.FRATT = x;								// 4) Timer_Select default
 //			akR.R.TimSel.ADRST1_0 = x;						// 4) Timer_Select default: 
 //			akR.R.AlcTimSel.x = x;								// 5) ALC_Timer_Select defaults
 //			akR.R.AlcMdCtr1.x = x;								// 5) ALC_Mode_Control_1 defaults
 //			akR.R.AlcMdCtr2.REF7_0 = x;						// 6) ALC_Mode_Control_2 default reference value
 //			akR.R.InVolCtr.IVOL7_0 = x;						// 7) Input_Volume_Control at default
-		  akR.R.DigVolCtr.DVOL7_0 = akFmtVolume;// 8) Output_Digital_Volume 
+*/
+		  akR.R.DigVolCtr.DVOL7_0 = akFmtVolume;	// 4) Output_Digital_Volume 
 //			akR.R.DigFilMd.x = x;									// 9) Digital_Filter_Mode at default
-			akR.R.PwrMgmt1.PMDAC = 1;							// 10) Power up DAC
-			akR.R.PwrMgmt1.PMPFIL = 1;						// 10) Power up Filter
-		  akR.R.PwrMgmt2.PMSL = 1;							// 11) set spkr power ON
+			akR.R.DigFilMd.PFDAC1_0 = 0;  				// 5) PFDAC=0			 default MARC 9)
+			akR.R.DigFilMd.ADCPF = 1;  						// 5) ADCPF=1			 default MARC 9)
+			akR.R.DigFilMd.PFSDO = 1;  						// 5) PFSDO=1			 default MARC 9)
+		if ( !gGet( gSTAR ))
+			akR.R.PwrMgmt1.PMDAC = 1;							// 6) Power up DAC
+		if ( !gGet( gTABLE ))
+		  akR.R.PwrMgmt2.PMSL = 1;							// 7) set spkr power ON
+//			akR.R.PwrMgmt1.PMPFIL = 1;						// 10) Power up Filter
 			akUpd();															// UPDATE all settings
-			akR.R.SigSel1.SLPSN = 1;							// exit power-save (mute) mode (==1)
+			tbDelay_ms( 30 );											// 7) wait up to 300ms   // MARC 11)
+			akR.R.SigSel1.SLPSN = 1;							// 8) exit power-save (mute) mode (==1)
 			akUpd();		
 		#endif
 	} else {			
-		if ( !akSpeakerOn ) return;  // already off
-		akSpeakerOn = false;
 		//  power down by enabling mute, then shutting off power
 		#if defined( AK4343 )
 			Codec_SetRegBits( AK_Signal_Select_1, AK_SS1_SPPSN, 0 );						// set power-save (mute) ON (==0)
@@ -396,7 +409,7 @@ void						ak_PowerUp( void ){
 	gSet( gBOOT1_PDN, 1 );  // OUT: set power_down ACTIVE to so codec doesn't try to PowerUP
 	gSet( gEN_5V, 1 );			// OUT: 1 to supply 5V to codec		AP6714 EN		
 	gSet( gNLEN01V8, 1 );		// OUT: 1 to supply 1.8 to codec  TLV74118 EN		
-	tbDelay_ms( 2 ); 		 		// wait for voltage regulators
+	tbDelay_ms( 20 ); 		 	// wait for voltage regulators
 	
 	gSet( gBOOT1_PDN, 0 );  //  set power_down INACTIVE to Power on the codec 
 	tbDelay_ms(5); 		 			//  wait for it to start up
@@ -414,6 +427,9 @@ void		 				ak_SetVolume( uint8_t Volume ){				// sets volume 0..100%
 }
 
 void		 				ak_SetMute( bool muted ){						// true => enable mute on codec
+	if ( akMuted==muted ) return;
+	akMuted = muted;
+	
 	akR.R.MdCtr3.SMUTE = (muted? 1 : 0);
 	akUpd();
 }
@@ -446,7 +462,7 @@ void						ak_SetMasterFreq( int freq ){					// set AK4637 to MasterMode, 12MHz r
 		tbDelay_ms( 2 );											// 2ms for power regulator to stabilize
 		akR.R.PwrMgmt2.PMPLL 		= 1;					// enable PLL 
 		akUpd();															// start PLL 
-		tbDelay_ms( 2 );											// 2ms? for clocks stabilize
+		tbDelay_ms( 5 );											// 5ms for clocks to stabilize
 	#endif
 }
 
