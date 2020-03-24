@@ -78,7 +78,6 @@ fsStatus fsMount( char *drv ){		// try to finit() & mount()  drv:   finit() code
 }
 static char * fsDevs[] = { "M0:", "M1:", "N0:", "F0:", "F1:", NULL };
 static int    fsNDevs = 0;
-static 	osEventFlagsId_t			mMediaEventId;
 
 void debugLoop( ){
 	if ( fsNDevs==0 ) dbgLog( "no storage avail \n" );
@@ -88,7 +87,9 @@ void debugLoop( ){
 	
 	while ( true ){
 		ledCntr++;
-		gSet( gRED, ((ledCntr >> 14) & 0x3)== 0 );		// flash RED ON for 1 of 4  
+		st = audGetState();
+		if ( st==Ready )
+			gSet( gRED, ((ledCntr >> 14) & 0x3)== 0 );		// flash RED ON for 1 of 4  
 		
 		if ( fsNDevs > 0 && gGet( gHOME ) && !isMassStorageEnabled()){  // HOME => if have a filesystem but no data -- try USB MSC
 			gSet( gRED, 1 );
@@ -110,12 +111,9 @@ void debugLoop( ){
 
 		if ( gGet( gCIRCLE ) && st==Ready ){		// CIRCLE => audio test
 			gSet( gRED, 0 );
-			mMediaEventId = osEventFlagsNew(NULL);		// osEvent channel for communication with mediaThread
-			audInitialize( mMediaEventId );			// alloc buffers, initialize SAI
-			audSquareWav();											// subst file data with preloaded square wave
+			audSquareWav( 10 );									// subst file data with preloaded square wave for 10sec
 			gSet( gGREEN, 1 );
-			PlayWave( "SQR.wav" );							// play 1000 seconds of 1KHz square wave
-			st = Playing;
+			PlayWave( "SQR.wav" );							// play 10 seconds of 1KHz square wave
 		}
 	}
 }
@@ -127,10 +125,12 @@ void talking_book( void *argument ) {
 	initPowerMgr();			// set up GPIO signals for controlling & monitoring power -- enables MemCard
 	
 	if ( osKernelGetState() != osKernelRunning )
-		debugLoop();	// no OS, so straight to debugLoop, no fileSys check
+		debugLoop();	// no OS, so straight to debugLoop, no fileSys check & no mediaManager
 	
 	usrLog( "%s\n", CPU_ID );
 	usrLog( "%s\n", TB_ID );
+
+	initMediaPlayer( );
 	
 	for (int i=0; fsDevs[i]!=NULL; i++ ){
 		fsStatus stat = fsMount( fsDevs[i] );
@@ -172,7 +172,6 @@ void talking_book( void *argument ) {
 //	const char* startUp = "R3G3_4 R3G3_4 R3G3_4";
 //	ledFg( startUp );
 	
-	initMediaPlayer( );
 //	initUSBManager( );
 
 	initControlManager();		// instantiate ControlManager & run on this thread-- doesn't return

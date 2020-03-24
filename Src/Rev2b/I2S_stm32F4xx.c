@@ -184,19 +184,14 @@ void 													reset_I2S_Info( I2S_RESOURCES *i2s ) {																// initi
 	i2s->info->rx_req = 0;
 }
 void													abortTXMT( I2S_RESOURCES *i2s ){  																		// abort I2S Transmit operation
-//			i2s->instance->CR2 &= ~(I2S_CR2_TXDMAEN | I2S_CR2_TXEIE);  // disable both TXE & DMA interrupts
-//			DMA_ChannelDisable( i2s->dma_tx->ptr_channel );    // Disable TX DMA transfer
-			i2s->info->tx_cnt = 0;
-			i2s->info->tx_req = 0;
-			i2s->info->status.tx_busy = 0U;
+	i2s->instance->I2SCFGR 	&= ~I2S_MODE_ENAB;										// disable I2S device
+	i2s->instance->CR2 			&= ~(I2S_CR2_TXEIE | I2S_CR2_ERRIE);	// disable interrupts on transmit empty & error
+	reset_I2S_Info( i2s );
 }
 void													abortRCV( I2S_RESOURCES *i2s ){  																			// abort I2S receive operation
-	
-//			i2s->instance->CR2 &= ~(I2S_CR2_RXDMAEN | I2S_CR2_RXNEIE);  // disable RXNE & RXDMA interrupts
-//			DMA_ChannelDisable( i2s->dma_rx->ptr_channel );    // Disable RX DMA transfer
-			i2s->info->rx_cnt = 0;
-			i2s->info->rx_req = 0;
-			i2s->info->status.rx_busy = 0U;
+	i2s->instance->I2SCFGR 	&= ~I2S_MODE_ENAB;										// disable I2S device
+	i2s->instance->CR2 			&= ~(I2S_CR2_RXNEIE | I2S_CR2_ERRIE);	// disable interrupts on receive non-empty & error
+	reset_I2S_Info( i2s );
 }
 
 
@@ -499,23 +494,22 @@ static int32_t 								I2S_PowerControl( ARM_POWER_STATE state, I2S_RESOURCES *i
 }
 static void 									I2S_SendWord( I2S_RESOURCES *i2s ){																									// send next stereo sample-- duplicate if mono
 	I2S_INFO *info = i2s->info;	
-	if ( info->tx_cnt == info->tx_req ){	// buffer complete
-		i2s->info->status.tx_busy = 0U;
-		i2s->instance->I2SCFGR &= ~I2S_MODE_ENAB;		// disable I2S device
-		i2s->instance->CR2 &= ~(I2S_CR2_TXEIE | I2S_CR2_ERRIE);	// disable interrupt on transmit data empty or error
-		if (i2s->info->cb_event != NULL)
-			i2s->info->cb_event( ARM_SAI_EVENT_SEND_COMPLETE );		// call buffer complete callback
-	}	else {
-		i2s->instance->DR = *info->dataPtr;		// clears TXE
-		info->firstChannel = !info->firstChannel;
+	i2s->instance->DR = *info->dataPtr;		// clears TXE
+	info->firstChannel = !info->firstChannel;
 
-		if ( !info->monoMode || info->firstChannel ){
-			info->dataPtr++;		// get next sample-- always if stereo, every other if monoMode
-			info->tx_cnt += 2;	// 2 more bytes (1 sample) transmitted
-		}
-		if ( info->tx_cnt >= BrkCnt && !gGet( gMINUS ))
-				tbErr( "I2S cnt >= %d \n", BrkCnt );
+	if ( info->monoMode && info->firstChannel ) return;  // send same sample next time
+	
+	info->dataPtr++;							// move ptr to next sample-- always if stereo, every other if monoMode
+	info->tx_cnt += 2;						// 2 more bytes (1 sample) consumed from buffer
+	
+ 	if ( info->tx_cnt == info->tx_req ){		// buffer complete-- last word is in device
+		i2s->instance->CR2 &= ~I2S_CR2_TXEIE;									// disable TXE interrupt
+		i2s->info->status.tx_busy = 0;
+		i2s->info->cb_event( ARM_SAI_EVENT_SEND_COMPLETE );		// call buffer complete callback
 	}
+	
+	if ( info->tx_cnt >= BrkCnt && gGet( gMINUS ))		// DEBUG: if MINUS key -- halt when tx_cnt reaches BrkCnt
+			tbErr( "I2S cnt >= %d \n", BrkCnt );
 }
 static void 									I2S_GetWord(I2S_RESOURCES *i2s ){																										// receive next stereo sample-- store left channel only
 	I2S_INFO *info = i2s->info;	
@@ -602,34 +596,30 @@ static int32_t 								I2S_Control( uint32_t control, uint32_t arg1, uint32_t ar
 //   			i2s      Pointer to I2S resources
 //				return      common \ref execution_status and driver specific \ref sai_execution_status
   if ((i2s->info->flags & I2S_FLAG_POWERED) == 0U) { return ARM_DRIVER_ERROR; }
-  if (i2s->info->status.tx_busy || i2s->info->status.rx_busy) { return ARM_DRIVER_ERROR_BUSY; }
-
-	// only configuration supported
-	const uint32_t supported = ARM_SAI_CONFIGURE_TX | ARM_SAI_MODE_SLAVE  | ARM_SAI_ASYNCHRONOUS |
-		ARM_SAI_PROTOCOL_I2S | ARM_SAI_DATA_SIZE(16);
-	bool monoMode;
 	
-	switch (control & ARM_SAI_CONTROL_Msk) {	// SAI_CONTROL: CONFIGURE, CONTROL, MASK, ABORT (TX or RX)
-		case ARM_SAI_ABORT_SEND:
+	uint32_t req = control & ARM_SAI_CONTROL_Msk;
+	if ( req == ARM_SAI_ABORT_SEND ){
 			abortTXMT( i2s ); 
 			return ARM_DRIVER_OK;
-
-		case ARM_SAI_ABORT_RECEIVE:
+  }
+	if ( req == ARM_SAI_ABORT_RECEIVE ){
 			abortRCV( i2s ); 
 			return ARM_DRIVER_OK;
-			
-		case ARM_SAI_CONFIGURE_TX:			// arg2 = audio frequency 
-			monoMode = (control & ARM_SAI_MONO_MODE) != 0;
-			if ( (control & ~ARM_SAI_MONO_MODE) != supported )
+	}
+  if (i2s->info->status.tx_busy || i2s->info->status.rx_busy) { return ARM_DRIVER_ERROR_BUSY; }
+
+  if ( req == ARM_SAI_CONFIGURE_TX ){
+		// only configuration supported
+		const uint32_t supported = ARM_SAI_CONFIGURE_TX | ARM_SAI_MODE_SLAVE  | ARM_SAI_ASYNCHRONOUS |
+			ARM_SAI_PROTOCOL_I2S | ARM_SAI_DATA_SIZE(16);
+		bool monoMode = (control & ARM_SAI_MONO_MODE) != 0;
+		if ( (control & ~ARM_SAI_MONO_MODE) != supported )
 				return ARM_DRIVER_ERROR_UNSUPPORTED;
-			I2S_Configure( i2s, arg2, monoMode );		// configure audio freq
-			return ARM_DRIVER_OK;
+		I2S_Configure( i2s, arg2, monoMode );		// configure audio freq
+		return ARM_DRIVER_OK;
 
-
-    // no other options supported -- ARM_SAI_MODE_MASTER sets to defaults 
-		default:
-      return ARM_DRIVER_ERROR_UNSUPPORTED;
-  }
+  } else
+		return ARM_DRIVER_ERROR_UNSUPPORTED;    // no other options supported 
 }
 
 static ARM_SAI_STATUS 				I2S_GetStatus (I2S_RESOURCES *i2s) {																								// return current status

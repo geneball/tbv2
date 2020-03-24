@@ -45,19 +45,21 @@ void 								audInitialize( osEventFlagsId_t eventId ){ 		// allocs buffers, set
 	//    calls I2S_TX_DMA_Complete, which calls saiEvent with DMA events
 	Driver_SAI0.Initialize( &saiEvent );   
 }
-void 								audSquareWav( void ){												// preload wavHdr & buffers with 1KHz square wave
+void 								audSquareWav( int nsecs ){												// preload wavHdr & buffers with 1KHz square wave
 	pSt.SqrWAVE = true;			// pre-init wav.Hdr & buffers with 1KHz square wave
-
 	WAVE_FormatTypeDef *wav = pSt.wavHdr;
 	wav->SampleRate = 8000;
+	pSt.SqrBytes = wav->SampleRate * 2 * nsecs;
 	wav->NbrChannels = 1;
 	wav->BitPerSample = 16;
-	wav->SubChunk2Size =  16000000; // bytes of data = 1000sec
+	wav->SubChunk2Size =  pSt.SqrBytes; // bytes of data 
 
 	for ( int i=0; i<nBuffs; i++ ){	// preload audio_buffers with !KHz square wave @ 8KHz == (1,1,1,1,0,0,0,0)...
 		Buffer_t *pB = &audio_buffers[i];
 		uint16_t *data = (uint16_t *) &pB->data[0];
 		for ( int j=0; j<BuffLen/2; j++ ){  // # of 16bit words
+			data[ j ] = 0;
+		if ( !gGet( gPLUS ))
 			data[ j ] = (j & 4)? 0x1010 : 0x9090;
 		}
 	}
@@ -121,6 +123,7 @@ void 								audPauseResumeAudio( void ){		// signal playback to request Pause o
 		pSt.tsResume = tbTimeStamp();
 		pSt.stats->Resume++;
 		ak_SetMute( false );		// unmute
+		gSet( gGREEN, 1 );	// Turn ON green LED: audio file playing 
 		PlayNext();		// continue with next buffer
 		
 	} else {
@@ -147,9 +150,10 @@ void 								printAudSt(){										// DBG: display audio state
 Buffer_t * 					loadBuff( ){										// read next block of audio into a buffer
 	Buffer_t *pB = allocBuff();
 	pB->firstSample = pSt.nPlayed;
-	if ( pSt.SqrWAVE )	// data is pre-loaded in all buffers
-		pB->cntBytes = BuffLen;
-	else
+	if ( pSt.SqrWAVE ){	// data is pre-loaded in all buffers
+		pSt.SqrBytes -= BuffLen;
+		pB->cntBytes = pSt.SqrBytes>0? BuffLen : 0;
+	} else
 		pB->cntBytes = fread( pB->data, 1, BuffLen, pSt.wavF );		// read up to BuffLen bytes
 	pB->state = bFull;
 	return pB;
@@ -209,18 +213,21 @@ void 								PlayWave( const char *fname ){ 		// play the WAV file
 	dbgLog( "Wv: %d msec\n", pSt.msecLength );
 	PlayNext();		// start 1st buffer playing
 }
-void 								audPlaybackDn( ){								// process buffer complete events during playback
+//void 								audPlaybackDn( ){								// process buffer complete events during playback
+void 								audBufferDn( ){								// process buffer complete events during playback
 	pnRes_t pn = PlayNext();
 	if ( pn==pnPlaying ){
 			gSet( gGREEN, 1 );	// Turn ON green LED: audio file playing 
-			
 	} else if ( pn==pnPaused ){		// paused
 			gSet( gGREEN, 0 );	// Turn OFF LED green: while paused  
-			ak_SetMute( true );	// mute
-			
-	} else {											// playing complete
+			ak_SetMute( true );	// (redundant) mute
+			// subsequent call to audPauseResumeAudio() will call PlayNext() & un-mute
+	} else if ( pn==pnDone ){											// playing complete
 			gSet( gGREEN, 0 );	// Turn OFF LED green: no longer playing  
+			Driver_SAI0.Control( ARM_SAI_ABORT_SEND, 0, 0 );	// shut down I2S device
+
 			ak_SpeakerEnable( false ); 		// power down codec & amplifier
+			sendEvent( AudioDone, audPlayPct() );				// end of file playback-- generate CSM event 
 			dbgLog("Wv dn \n");
 			if ( pSt.ErrCnt > 0 ) dbgLog( "%s audio Errs, Lst=0x%x \n", pSt.ErrCnt, pSt.LastError );
 			pSt.stats->Finish++;
@@ -240,7 +247,6 @@ pnRes_t 						PlayNext(){ 										// start next transter or return false if ou
 		
 	if ( pB->cntBytes == 0 ){ 	// at EOF?
 		freeBuff( pB );		// free empty buffer	
-		sendEvent( AudioDone, audPlayPct() );				// end of file playback-- generate CSM event 
 		pSt.state = pbDone;
 		return pnDone;
 	}
@@ -280,7 +286,8 @@ pnRes_t 						PlayNext(){ 										// start next transter or return false if ou
 }
 void 								saiEvent( uint32_t event ){			// called on transfer complete or error -- send message to mediaPlayer thread
 	if ( (event & ARM_SAI_EVENT_SEND_COMPLETE) != 0 )
-		osEventFlagsSet( audioEventChan, CODEC_DATA_TX_DN );
+		audBufferDn();
+		//osEventFlagsSet( audioEventChan, CODEC_DATA_TX_DN );
 	else {
 		pSt.LastError = event;
 		pSt.ErrCnt++;

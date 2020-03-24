@@ -92,6 +92,7 @@ typedef struct { 			// PlaybackFile_t			-- audio state block
 	Buffer_t *nBuff;			// currently playing samples start
   FILE * wavF;					// stream for data
 	bool SqrWAVE;					// T => wavHdr & buffers pre-filled with 1KHz square wave
+	int SqrBytes;
 	MsgStats *stats;
 	
 } PlaybackFile_t;
@@ -111,7 +112,7 @@ extern void 				audStartRecording( FILE *outFP, MsgStats *stats );	// start reco
 extern void 				audStopRecording( void );										// signal record loop to stop
 extern void 				audPauseResumeAudio( void );								// signal playback loop to request Pause or Resume
 extern void 				audPlaybackDn( void );											// handle end of buffer event
-extern void 				audSquareWav( void );												// preload wavHdr & buffers with 1KHz square wave
+extern void 				audSquareWav( int nsecs );									// preload wavHdr & buffers with 1KHz square wave
 // forward decls for internal functions
 extern void 				PlayWave( const char *fname ); 			// play a WAV file
 extern pnRes_t 			PlayNext( void );									// start next I2S buffer transferring
