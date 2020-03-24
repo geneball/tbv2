@@ -150,10 +150,9 @@ static const I2S_RESOURCES I2S0_Resources = {		// capabilities & hardware links
 */
   &I2S0_Info	// I2S_INFO
 };
-//static	int I2S_clk;		// set by I2S_Initialize to freq of I2S_clock
-const int DMA_CIRC_BUFF_SIZE = 8;
-uint32_t  CircBuff[ DMA_CIRC_BUFF_SIZE ] = { 0 };
-int BrkCnt = 200;
+
+int BrkCnt = 200;							// DEBUG:  break during audio send
+int initialUnderRunCnt = 0;		// DEBUG: count any underruns at the start of a buffer
 
 // forward decls for self calls
 static int32_t 								I2S_Send( const void *data, uint32_t nSamples, I2S_RESOURCES *i2s );
@@ -494,19 +493,22 @@ static int32_t 								I2S_PowerControl( ARM_POWER_STATE state, I2S_RESOURCES *i
 }
 static void 									I2S_SendWord( I2S_RESOURCES *i2s ){																									// send next stereo sample-- duplicate if mono
 	I2S_INFO *info = i2s->info;	
+	if ( info->tx_cnt == 0 ){
+		int sr = i2s->instance->SR;    // get status register-- left from end of previous buffer
+		if (sr & SPI_SR_UDR) initialUnderRunCnt++;
+	}
 	i2s->instance->DR = *info->dataPtr;		// clears TXE
 	info->firstChannel = !info->firstChannel;
-
 	if ( info->monoMode && info->firstChannel ) return;  // send same sample next time
+
+ 	if ( info->tx_cnt == info->tx_req ){		// buffer complete-- just stored 2nd copy of last word 
+		i2s->instance->CR2 &= ~I2S_CR2_TXEIE;									// disable TXE interrupt
+		i2s->info->status.tx_busy = 0;
+		i2s->info->cb_event( ARM_SAI_EVENT_SEND_COMPLETE );		// call buffer complete callback ( audio.c saiEvent )
+	}
 	
 	info->dataPtr++;							// move ptr to next sample-- always if stereo, every other if monoMode
 	info->tx_cnt += 2;						// 2 more bytes (1 sample) consumed from buffer
-	
- 	if ( info->tx_cnt == info->tx_req ){		// buffer complete-- last word is in device
-		i2s->instance->CR2 &= ~I2S_CR2_TXEIE;									// disable TXE interrupt
-		i2s->info->status.tx_busy = 0;
-		i2s->info->cb_event( ARM_SAI_EVENT_SEND_COMPLETE );		// call buffer complete callback
-	}
 	
 	if ( info->tx_cnt >= BrkCnt && gGet( gMINUS ))		// DEBUG: if MINUS key -- halt when tx_cnt reaches BrkCnt
 			tbErr( "I2S cnt >= %d \n", BrkCnt );
