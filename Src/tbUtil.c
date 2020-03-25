@@ -233,6 +233,7 @@ void 										initIDs(){																		// initialize CPU_ID & TB_ID strings
 
 
 static uint32_t lastTmStmp = 0;
+static uint32_t lastHalTick = 0, HalSameCnt = 0;
  
 uint32_t 								tbTimeStamp(){																	// return msecs since boot
 	lastTmStmp =  osKernelGetTickCount();
@@ -240,7 +241,13 @@ uint32_t 								tbTimeStamp(){																	// return msecs since boot
 }
 int 										delayReq, actualDelay;
 uint32_t 								HAL_GetTick(void){															// OVERRIDE for CMSIS drivers that use HAL
-	return tbTimeStamp();
+	int tic = tbTimeStamp();
+	HalSameCnt = tic==lastHalTick? HalSameCnt+1 : 0;
+	if ( HalSameCnt > 50 )
+		tbErr( "HalTick stopped" );
+	
+	lastHalTick = tic;
+	return lastHalTick;
 }
 void 										tbDelay_ms( int ms ) {  												// Delay execution for a specified number of milliseconds
 	int stTS = tbTimeStamp();
