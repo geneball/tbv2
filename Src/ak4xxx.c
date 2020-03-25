@@ -75,8 +75,12 @@ struct ErrInfo {
 	int32_t reg;
 	int16_t caller;
 };
-static struct ErrInfo 		errs[200];
-static int								eCnt = 0;
+static struct ErrInfo 					errs[200];
+static int											eCnt = 0;
+
+static int 											reinitCnt = 0;	
+
+void 						Codec_WrReg( uint8_t Reg, uint8_t Value);		// FORWARD
 
 #ifdef VERIFY_WRITTENDATA	
 	const uint8_t AK_LAST_REG_MKR = 0xff;
@@ -102,7 +106,7 @@ static int								eCnt = 0;
 		{ AK_Digital_Filter_Select, 		AK_Digital_Filter_Select_RST },
 	#endif
 	#if defined( AK4637 )
-		{ AK_Power_Management_1, 				AK_PM1_VCM }, // instead of AK_Power_Management_1_RST }, because VCM set before checkRegs
+		{ AK_Power_Management_1, 				AK_Power_Management_1_RST }, 
 		{ AK_Power_Management_2, 				AK_Power_Management_2_RST },
 		{ AK_Signal_Select_1, 					AK_Signal_Select_1_RST },
 		{ AK_Signal_Select_2, 					AK_Signal_Select_2_RST },
@@ -129,7 +133,6 @@ static int								eCnt = 0;
 	#endif  
 	{ AK_LAST_REG_MKR,							AK_LAST_REG_MKR }
 };
-//static uint8_t RegVal[ 64 ];
 #endif
 
 void 		 				cntErr( int8_t grp, int8_t exp, int8_t got, int32_t reg, int16_t caller ){
@@ -151,6 +154,34 @@ void 						i2c_Sig_Event( uint32_t event ){		// called for I2C errors or complet
 }
 
 
+void		 				I2C_initialize() {																					// Initialize I2C device
+//	I2Cdrv->Control( ARM_I2C_BUS_CLEAR, 0 );  // resets GPIO, etc. -- if needed, should be before initialization
+  I2Cdrv->Initialize( i2c_Sig_Event );					// sets up SCL & SDA pins, evt handler
+  I2Cdrv->PowerControl( ARM_POWER_FULL );		// clocks I2C device & sets up interrupts
+  I2Cdrv->Control( ARM_I2C_BUS_SPEED, ARM_I2C_BUS_SPEED_STANDARD );		// set I2C bus speed
+  I2Cdrv->Control( ARM_I2C_OWN_ADDRESS, 0 );		// set I2C own address-- REQ to initialize properly
+}
+void 						I2C_Init() {																								// Initialize I2C connection to reset AK4637 & write a reg
+  I2C_initialize();				// init device
+	Codec_WrReg( 0, 0 );		// DUMMY COMMAND: won't be acknowledged-- will generate an error  -- AK4637 datasheet pg 34: SystemReset
+}
+void						I2C_Reinit(int lev ){			// lev&1 SWRST, &2 => RCC reset, &4 => device re-init
+	if ( lev & 4 ){
+		I2Cdrv->Uninitialize( );					// deconfigures SCL & SDA pins, evt handler
+		I2C_initialize();
+	}
+	if ( lev & 2 ){
+		RCC->APB1RSTR |= RCC_APB1RSTR_I2C1RST;		// set device reset bit for I2C1
+		tbDelay_ms( 1 );
+		RCC->APB1RSTR = 0;		// TURN OFF device reset bit for I2C1
+	}
+	if ( lev & 1 ){
+		uint32_t cr1 = I2C1->CR1;
+		I2C1->CR1 = I2C_CR1_SWRST;			// set Software Reset bit
+		tbDelay_ms(1);
+		I2C1->CR1 = cr1;			// reset to previous
+	}
+}
 #ifdef VERIFY_WRITTENDATA
 uint8_t 				Codec_RdReg( uint8_t Reg ){																	// return value of codec register Reg 
 	uint8_t value;
@@ -197,21 +228,8 @@ void 						Codec_WrReg( uint8_t Reg, uint8_t Value){										// write codec reg
 		waitCnt++;  // busy wait until transfer completed
 		if ( waitCnt > 1000 ){
 			errLog("I2C Tx hang");
-			uint32_t cr1 = I2C1->CR1;
-			
-		//	I2C1->CR1 = I2C_CR1_SWRST;			// set Software Reset bit
-		//	tbDelay_ms(1);
-		//	I2C1->CR1 = cr1;
-			I2Cdrv->Uninitialize();										// re-init device & try again
-			RCC->APB1RSTR |= RCC_APB1RSTR_I2C1RST;		// set device reset bit for I2C1
-			tbDelay_ms( 1 );
-			RCC->APB1RSTR = 0;		// TURN OFF device reset bit for I2C1
-			
-			// do a full I2Cinit, except AK hasn't been reset, so no dummy write
-			I2Cdrv->Initialize( i2c_Sig_Event );			// sets up SCL & SDA pins, evt handler
-			I2Cdrv->PowerControl( ARM_POWER_FULL );		// clocks I2C device & sets up interrupts
-			I2Cdrv->Control( ARM_I2C_BUS_SPEED, ARM_I2C_BUS_SPEED_STANDARD );		// set I2C bus speed
-			I2Cdrv->Control( ARM_I2C_OWN_ADDRESS, 0 );		// set I2C own address-- REQ to initialize properly
+			reinitCnt++;
+			I2C_Reinit( reinitCnt );			// SW, RST, SW+RST, INIT, INIT+SW, ...
 			Codec_WrReg( Reg, Value );		// recursive call to retry on reset device
 			return;
 		}
@@ -225,6 +243,7 @@ void 						Codec_WrReg( uint8_t Reg, uint8_t Value){										// write codec reg
 		int chkVal = Codec_RdReg( Reg );
 		cntErr( AK_WrReg, Value, chkVal, Reg, 8 );
 	#endif /* VERIFY_WRITTENDATA */
+	reinitCnt = 0;			// success-- reset recursive counter
 }
 void						akUpd(){														// write values of any modified codec registers
 	for ( int i=0; i < AK_NREGS; i++ ){
@@ -255,18 +274,6 @@ void 						ak_CheckRegs(){																							// Debug -- read main AK4343 re
 		}
 		ak_ReportErrors();
 	#endif
-}
-int32_t 				I2C_Init() {																								// Initialize I2C connection to AUDIO_I2C 
-  uint8_t val;
-
-	//  I2Cdrv->Control( ARM_I2C_BUS_CLEAR, 0 );  // resets GPIO, etc. -- if needed, should be before initialization
-  I2Cdrv->Initialize( i2c_Sig_Event );					// sets up SCL & SDA pins, evt handler
-  I2Cdrv->PowerControl( ARM_POWER_FULL );		// clocks I2C device & sets up interrupts
-  I2Cdrv->Control( ARM_I2C_BUS_SPEED, ARM_I2C_BUS_SPEED_STANDARD );		// set I2C bus speed
-  I2Cdrv->Control( ARM_I2C_OWN_ADDRESS, 0 );		// set I2C own address-- REQ to initialize properly
-
-	Codec_WrReg( 0, 0 );		// DUMMY COMMAND: won't be acknowledged-- will generate an error  -- AK4637 datasheet pg 34: SystemReset
-  return val;
 }
 void 						ak_SpeakerEnable( bool enable ){														// enable/disable speaker -- using mute to minimize pop
 	if ( akSpeakerOn==enable )   // no change?
@@ -422,6 +429,10 @@ void 						ak_Init( ){ 				// Init codec & I2C
 
 
 void 						ak_PowerDown( void ){																							// power down entire codec
+	I2Cdrv->PowerControl( ARM_POWER_OFF );	// power down I2C
+	I2Cdrv->Uninitialize( );								// deconfigures SCL & SDA pins, evt handler
+	
+	gSet( gPA_EN, 0 );				// amplifier off
 	gSet( gBOOT1_PDN, 1 );    // OUT: set power_down ACTIVE to Power Down the codec 
 	gSet( gEN_5V, 0 );				// OUT: 1 to supply 5V to codec		AP6714 EN		
 	gSet( gNLEN01V8, 0 );			// OUT: 1 to supply 1.8 to codec  TLV74118 EN		
