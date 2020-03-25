@@ -627,122 +627,33 @@ typedef  union {
 	#define   AK_E5_Coefficient_5				0x3F
 	#define		AK_LAST_RST_REG		0x18
 	
-	// values for AK_Power_Management_1   (ak4637: R00) 
+ // reset values for AK registers
 	#define AK_Power_Management_1_RST  0x0
-	#define AK_PM1_ADC		0x01		/* 1 to power up ADC -- default 0 */
-	#define AK_PM1_D1			0x02		/* 0 -- default 0 */
-	#define AK_PM1_DAC		0x04		/* 1 to power up DAC -- default 0 */
-	#define AK_PM1_LOSEL	0x08		/* 1 to select monaural line output -- default 0 (speaker output) */
-	#define AK_PM1_D4 		0x80		/* 0 -- default 0 */
-	#define AK_PM1_BP	  	0x20		/* 1 to power up BEEP Input -- default 0 */
-	#define AK_PM1_VCM		0x40		/* must be 1 if any are -- default 0  */
-	#define AK_PM1_FIL 		0x80		/* 1 to power up Filter Block -- default 0 */
-	
-	// values for AK_Power_Management_2  (ak4637: R01)
 	#define AK_Power_Management_2_RST  0x0
-	#define AK_PM2_D0			0x01		/* 0 -- default 0 */
-	#define AK_PM2_MSL		0x02		/* 1 to power up Speaker or Line Out Amp -- default 0 */
-	#define AK_PM2_PLL		0x04		/* 1 for PLL Mode -- default 0 */
-	#define AK_PM2_M_S		0x08		/* 0: Slave mode, 1:Master mode  -- default 0 */
-	#define AK_PM2_D4 		0x10		/* 0 -- default 0 */
-	#define AK_PM2_D5 		0x20		/* 0 -- default 0 */
-	#define AK_PM2_D6 		0x40		/* 0 -- default 0 */
-	#define AK_PM2_D7 		0x80		/* 0 -- default 0 */
-
-	// values for AK_Signal_Select_1  (ak4637: R02)  
 	#define AK_Signal_Select_1_RST  0x06
-	#define AK_SS1_MGAIN0	0x01	  /* Input Gain Control 0 -- default 0 */
-	#define AK_SS1_MGAIN1	0x02	  /* Input Gain Control 1 -- default 1 */
-	#define AK_SS1_MGAIN2	0x04	  /* Input Gain Control 2 -- default 1 */
-	#define AK_SS1_PMMP		0x08		/* 1 to power up MPWR pin -- default 0 */
-	#define AK_SS1_D4	 		0x10		/* 0 -- default 0 */
-	#define AK_SS1_DACS 	0x20		/* 1: DAC out => Speaker Amp -- default 0 */
-	#define AK_SS1_MGAIN3	0x40	  /* Input Gain Control 3 -- default 0 */
-	#define AK_SS1_SLPSN	0x80		/* 0: speaker or line out amp power save mode -- default 0 */
-
-	// values for AK_Signal_Select_2  (ak4637: R03)
 	#define AK_Signal_Select_2_RST  0x0
-	#define AK_SS2_MDIF		0x01		/* 1 for differential input source -- default 0 */
-	#define AK_SS2_D1			0x02		/* 0 -- default 0 */
-	#define AK_SS2_D2			0x04		/* 0 -- default 0 */
-	#define AK_SS2_D3			0x08		/* 0 -- default 0 */
-	#define AK_SS2_MICL		0x10		/* 1 for 2.0V MPWR output level -- default 0 (2.4V) */
-	#define AK_SS2_D5			0x20		/* 0 -- default 0 */
-	#define AK_SS2_SPKG0	0x40		/* Speaker Amp Out Gain- bit 0 -- default 0 */
-	#define AK_SS2_SPKG1 	0x80		/* Speaker Amp Out Gain- bit 1 -- default 0 */
-
-	// values for AK_Signal_Select_3  (ak4637: R04)
 	#define   AK_Signal_Select_3_RST	0x40
-
-	// values for AK_Mode_Control_1  (ak4637: R05)
 	#define   AK_Mode_Control_1_RST		0x50
-
-	// values for AK_Mode_Control_2  (ak4637: R06)
 	#define   AK_Mode_Control_2_RST		0x0B
-	#define AK_MC2_MCKI 	0x00		/* MCKI == 0, input frequency = 256.Fs (default) */
-	#define AK_MC2_FS   	0x0B		/* FS3-0 == 1011, fs = 48kHz (default) */
-
-	// values for AK_Mode_Control_3  (ak4637: R07)
 	#define   AK_Mode_Control_3_RST		0x02
 	#define AK_MC3_PHILIPS 0x03		/* DIF0..1 == 3 I2S compatible */
-	#define AK_MC3_SMUTE   0x20
-
-	// values for AK_Digital_MIC  (ak4637: R08)
 	#define   AK_Digital_MIC_RST			0x00
-	
-	// values for AK_Timer_Select  (ak4637: R09)
 	#define AK_Timer_Select_RST  0x0
-	#define AK_TS_RFST0		0x01		/* ALC First Recovery Speed 0 -- default 0 */
-	#define AK_TS_RFST1		0x02		/* ALC First Recovery Speed 1 -- default 0 */
-	#define AK_TS_WTM0		0x04		/* ALC Recovery Waiting Period 0 -- default 0 */
-	#define AK_TS_WTM1		0x08		/* ALC Recovery Waiting Period 1 -- default 0 */
-	#define AK_TS_ZTM0 		0x10		/* ALC Limiter/Recover Op Zero Crossing Timeout Period 0 -- default 0 */
-	#define AK_TS_ZTM1 		0x20		/* ALC Limiter/Recover Op Zero Crossing Timeout Period 1 -- default 0 */
-	#define AK_TS_WTM2 		0x40		/* ALC Recovery Waiting Period 2 -- default 0 */
-	#define AK_TS_DVTM 		0x80		/* Digital Volume Transition Time Setting -- default 0 */
-
-	// values for AK_ALC_Timer_Select	 (ak4637: R0A)
 	#define AK_ALC_Timer_Select_RST			0x60
-	#define AK_TS_WTM3		0x6C		// change WTM1-0 to 3
-
-  // values for AK_ALC_Mode_Control_1	 (ak4637: R0B)
 	#define AK_ALC_Mode_Control_1_RST		0x00
-	#define AK_AMC1_RST			0x00
-	#define AK_AMC1_ALC			0x20
-
-  // values for AK_ALC_Mode_Control_2	 (ak4637: R0C)
 	#define AK_ALC_Mode_Control_2_RST		0xE1
-	#define   AK_AMC2_RST		0xE1
-
-  // values for AK_Input_Volume_Control	 (ak4637: R0D)
 	#define AK_Input_Volume_Control_RST		0xE1
-
-	// values for AK_ALC_Volume	 (ak4637: R0E)	// read-only: _RST??
 	#define   AK_ALC_Volume_RST					0x00
-	
-  // values for AK_BEEP_Control	 (ak4637: R0F)
 	#define   AK_BEEP_Control_RST				0x00
-
-  // values for AK_Digital_Volume_Control	 (ak4637: R10)
 	#define   AK_Digital_Volume_Control_RST		0x18
-	
-  // values for AK_EQ_Common_Gain_Select	 (ak4637: R11)
 	#define   AK_EQ_Common_Gain_Select_RST	 0x00
-	
-  // values for AK_EQx_Gain_Setting	 x2..5	(ak4637: R12,13,14,15)
 	#define   AK_EQ1_Gain_Setting_RST	 0x00
 	#define   AK_EQ2_Gain_Setting_RST	 0x00
 	#define   AK_EQ3_Gain_Setting_RST	 0x00
 	#define   AK_EQ4_Gain_Setting_RST	 0x00
 	#define   AK_EQ5_Gain_Setting_RST	 0x00
-	
-  // values for AK_Digital_Filter_Select_1	 (ak4637: R16)
 	#define   AK_Digital_Filter_Select_1_RST		0x01
-	
-  // values for AK_Digital_Filter_Select_2	 (ak4637: R17)
 	#define   AK_Digital_Filter_Select_2_RST		0x00
-
-	// values for AK_Digital_Filter_Mode	 (ak4637: R18)
 	#define   AK_Digital_Filter_Mode_RST		0x03
 #endif
 
@@ -755,6 +666,7 @@ typedef  union {
 
 // audio codec functions --  ak4343 or ak4637
 void 						ak_Init( void );											// init I2C & codec
+void						I2C_Reinit(int lev );									// lev&1 SWRST, &2 => RCC reset, &4 => device re-init
 void						ak_PowerUp( void );										// supply power to codec, & disable PDN, before re-init
 void 						ak_PowerDown( void );									// power down entire codec, requires re-init
 void		 				ak_SetVolume( uint8_t Volume );				// 0..100%
