@@ -215,6 +215,11 @@ static void		 								I2S3_ClockEnable( bool enab ){ 	// enable/disable I2S3 clo
 	spi->I2SCFGR 	&= ~I2S_MODE_ENAB;			// disable I2S3 device (0x200)
 	
 	if ( enab ){
+		// make sure the RCC->PLLI2S is running & ready
+		RCC->CR |= RCC_CR_PLLI2SON;					// enable the I2S_clk generator PLLI2S 
+		while ( (RCC->CR & RCC_CR_PLLI2SRDY)== 0 )
+			tbDelay_ms( 1 );
+		
 		// RM0402  STM32F412xx Reference Manual
 		//  I2SCLK from PLLI2S = 96MHz by default
 		//  	fs = PLLI2S/ (256*( 2*I2SDIV + ODD )
@@ -435,7 +440,10 @@ static int32_t 								I2S_Uninitialize( I2S_RESOURCES *i2s ) {																	
   GPIO_PinConfigure( i2s->rxtx_pins.sd->port, i2s->rxtx_pins.sd->pin, GPIO_MODE_ANALOG,  GPIO_OTYP_PUSHPULL,  GPIO_SPD_LOW,  GPIO_PUPD_NONE );
   // Unconfigure MCK Pin 
 */
-              
+
+	RCC->CR &= ~RCC_CR_PLLI2SON;			// disable the I2S_clk generator PLLI2S 
+	RCC->PLLI2SCFGR = 0x24003010;			// reset to default
+	
 	gUnconfig( gI2S2_CK );  	// Unconfigure SCK Pin 
 	gUnconfig( gI2S2_WS );  	// Unconfigure WS Pin 
 	gUnconfig( gI2S2_SD );  	// Unconfigure SD Pin 
@@ -460,8 +468,9 @@ static int32_t 								I2S_PowerControl( ARM_POWER_STATE state, I2S_RESOURCES *i
 			ak_PowerDown();
 
       RCC->APB1ENR &= ~RCC_APB1ENR_SPI2EN; 	// disable SPI2 device
-      RCC->APB1ENR &= ~RCC_APB1ENR_SPI3EN; 	// disable SPI3 device
-		
+      RCC->APB1ENR &= ~RCC_APB1ENR_SPI3EN; 	// disable SPI3 device (for codec clock)
+      RCC->APB1ENR &= ~RCC_APB1ENR_I2C1EN; 	// disable I2C1 device
+			
 			reset_I2S_Info( i2s );      // Clear driver variables
       i2s->info->flags &= ~I2S_FLAG_POWERED;
       break;
