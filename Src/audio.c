@@ -226,6 +226,13 @@ void 								audBufferDn( ){								// process buffer complete events during pla
 			gSet( gGREEN, 0 );	// Turn OFF LED green: no longer playing  
 			Driver_SAI0.Control( ARM_SAI_ABORT_SEND, 0, 0 );	// shut down I2S device
 
+	//		Driver_SAI0.PowerControl( ARM_POWER_OFF );				// shut off I2S device entirely -- I2C problem
+			Driver_SAI0.Uninitialize( );   
+
+			Driver_SAI0.Initialize( &saiEvent );   
+			Driver_SAI0.PowerControl( ARM_POWER_FULL );		// power up audio
+	//		I2C_Reinit( 1 );							// try an I2C SWRST before reconnecting
+		
 			ak_SpeakerEnable( false ); 		// power down codec & amplifier
 			sendEvent( AudioDone, audPlayPct() );				// end of file playback-- generate CSM event 
 			dbgLog("Wv dn \n");

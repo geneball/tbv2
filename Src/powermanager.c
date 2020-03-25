@@ -68,7 +68,7 @@ void 											initPwrSignals( void ){					// configure power GPIO pins, & EXTI
 	// power supply signals
 	gConfigOut( gADC_ENABLE );	// 1 to enable battery voltage levels
 	gSet( gADC_ENABLE, 0 );
-	gConfigOut( gSC_ENABLE );		// 1 to enable Solar Charging
+	gConfigOut( gSC_ENABLE );		// 1 to enable SuperCap
 	gSet( gSC_ENABLE, 0 );
 	
 	gConfigADC( gADC_LI_ION );	// rechargable battery voltage level
