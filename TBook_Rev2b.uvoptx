@@ -159,7 +159,7 @@
           <Type>0</Type>
           <LineNumber>236</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134285210</Address>
+          <Address>134285246</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -431,7 +431,7 @@
           <Type>0</Type>
           <LineNumber>122</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134323230</Address>
+          <Address>134323274</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -447,7 +447,7 @@
           <Type>0</Type>
           <LineNumber>354</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134282942</Address>
+          <Address>134282978</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -1201,7 +1201,7 @@
 
   <Group>
     <GroupName>config</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -1641,7 +1641,7 @@
 
   <Group>
     <GroupName>STM32F4xx</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
