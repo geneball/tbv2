@@ -26,10 +26,16 @@
 *.crf 
 *.lst 
 Listings/*
-Objects/*
+Objects/*.o
+Objects/*.crf
+Objects/*.d
+Objects/*.iex
+Objects/*.lnp
+Objects/*.axf
+
+# uVision duplicates files in RTE/* (even though I'm using copies in Keil/
+RTE/*
 
 # OS generated files #
 ######################
 Thumbs.db
-
-xRTE/*
