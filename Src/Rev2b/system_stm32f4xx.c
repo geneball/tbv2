@@ -136,49 +136,62 @@ void SystemInit(void)			// Setup MPU:  FPU setting, vector table loc & External 
 	//  USB/SDIO clk 	= VCO_clk / PLLQ	(must be 48MHz)
 	// 	I2S_clk 			= VCO_clk / PLLR
 	
-  /* Reset PLLCFGR register */
-//RCC->PLLCFGR = 0x24003010;		// R=2 Q=4 SRC=0 P=0 N=192 M=16  //default
+  /* Reset PLLCFGR register
+  // RCC->PLLCFGR = 0x24003010;		// R=2 Q=4 SRC=0 P=0 N=192 M=16  //default
 	// VCO_clk 	= ~16MHz * 192/16 = ~192MHz
 	// Sys_clk 	= ~96MHz
 	// USB/SDIO = ~48MHz
 	// I2S_clk  = ~96MHz
+	*/
 
-	// configure PLL to  SRC = 1 (8MHz HSE) N=96 M=4 P=2 Q=4 R=2 
+	/* configure PLL to  SRC = 1 (8MHz HSE) N=96 M=4 P=2 Q=4 R=2 
 	//  HSE 			= 8000000
 	//  VCO_in    = HSE / M = 2MHz  (per RM0402 6.3.2 pg124)
 	//  VCO_out   = VCO_in * N = 2MHz * 96 = 192MHz		(HSE based)
 	//  Sys_clk 	= VCO_out / P = 96MHz
 	//  USB/SDIO  = VCO_out / Q = 48MHz
 	// 	I2S_clk 	= VCO_out / R = 96MHz
-	//               R             Q             SRC           P              N            M
-	uint32_t cfg = ( 2 << 28 ) | ( 4 << 24 ) | ( 1 << 22 ) | ( 0 << 16 ) | ( 0x60 << 6 ) | 4;
+	*/
+	uint32_t cfg = 0;
+//	( 2 << 28 ) | ( 4 << 24 ) | ( 1 << 22 ) | ( 0 << 16 ) | ( 0x60 << 6 ) | 4;
+	cfg |=  	RCC_PLLCFGR_PLLSRC_HSE;							// input to PLL is HSE
+	cfg |=  ( 96 << RCC_PLLCFGR_PLLN_Pos );				// N = 96
+	cfg |=  (  4 << RCC_PLLCFGR_PLLM_Pos );				// M = 4
+	cfg |=  (  0 << RCC_PLLCFGR_PLLP_Pos );				// PLLP=0 => P = 2
+	cfg |=  (  4 << RCC_PLLCFGR_PLLQ_Pos );				// Q = 4
+	cfg |=  (  2 << RCC_PLLCFGR_PLLR_Pos );				// R = 2
 	RCC->PLLCFGR = cfg; 		// R=2 Q=4 SRC=1 P=0 N=96 M=4
 	// PLLCFGR:		 _RRR QQQQ _S__ __PP _NNN NNNN NNMM MMMM
 	// 0x24401804  0010 0100 0100 0000 0001 1000 0000 0100 R=2 Q=4 S=1 P=0 N=0x60 M=4
 
-  /* Reset HSEBYP bit */
-  RCC->CR &= (uint32_t)0xFFFBFFFF;
-	
-	// JEB Mar2020:  turn on PLL  (based on HSE)
-	RCC->CR |= RCC_CR_PLLON;
 
-	// RCC->CFGR 
-	//   RCC->CFGR.MCO2 = 0x0 << 30			// SystemClock(/4) => PC9
-	//   RCC->CFGR.MCO2PRE = 0x6 << 29  //   div by 4
+  RCC->CR &= (uint32_t)0xFFFBFFFF; 		// /* Reset HSEBYP bit */
+
+	RCC->CR |= RCC_CR_PLLON;						// JEB Mar2020:  turn on PLL  (based on HSE)
+
+	/* Configure RCC->CFGR to set SYSCLK, AHB, APB2, & APB1 clock speeds
+	//  SYSCLK = PLL 								(CFGR.SW  System clock switch)
+	//  AHB  = SYSCLK / HPRE  			(CFGR.HPRE  AHB prescaler)
+	//  APB2 = AHB / PPRE2					(CFGR.PPRE2 APB2 prescaler)
+	//  APB1 = AHB / PPRE1					(CFGR.PPRE1 APB1 prescaler)
+  */	
+  cfg =  0;
+  cfg |=	RCC_CFGR_SW_PLL;        // PLL selected as SYSCLK									(System clock Switch)  
+//  cfg |=  RCC_CFGR_HPRE_DIV1;     // SYSCLK not divided 	=> AHB = PLL			(AHB prescaler)		AHB  = 96MHz
+  cfg |=  RCC_CFGR_HPRE_DIV4;     // SYSCLK divided by 4 	=> AHB = PLL / 4	(AHB prescaler)  	AHB  = 24MHz
+  cfg |=  RCC_CFGR_PPRE2_DIV1;		// HCLK not divided    	=> APB2 = AHB			(APB2 prescaler)	APB2 = 24MHz
+  cfg |=  RCC_CFGR_PPRE1_DIV2;    // HCLK divided by 2 		=> APB1 = AHB	/2	(APB1 prescaler)	APB1 = 12MHz
+	SystemCoreClock = 96000000;			// = 96MHz
+
+	/* DEBUG -- send SYSCLK/4 to PC9
 	//     PC9 shoud be configured as ModeAF, AF=0
-	cfg = (0x0 << 30) | (0x6 << 27);		// SysClock/4 => MCO2 PC9
-
- 	//   RCC->CFGR.SW 		= 0x2 << 0;				// configure system clock from PLL 96MHz 
-	//   RCC->CFGR.HPRE 	= 0x0 << 7;			// AHB = SysClk   (96MHz)  < 100
-	//   RCC->CFGR.PPRE2 	= 0x0 << 15;		// APB1 = AHB			(96MHz)  < 100
-	//   RCC->CFGR.PPRE1 	= 0x2 << 12;		// APB2 = AHB / 2 (48MHz)  < 50 
+	*/
+	cfg |=  0;																				// MCO = SYSCLK  	(MCO2 configuration)	
+	cfg |= (RCC_CFGR_MCO2PRE_1 | RCC_CFGR_MCO2PRE_2); // PC9 = MCO / 4	(MCO2 prescaler)			
+	// DEBUG  */
 	
-	int useFastClock = 0;  // FALSE for now
-	if ( useFastClock ){
-		cfg |=  (0x2 << 0) | (0x0 << 7) | (0x0 << 15) |  (0x2 << 12 ); 
-		SystemCoreClock = 96000000;
-	}
-	RCC->CFGR = cfg;			// maps SysClock/4 to PC9
+	RCC->CFGR = cfg;			// Src=PLL HPRE=4 PPRE2=0 PPRE1=2  => SYSCLK=96MHz, AHB=24MHz, APB2=24MHz, APB1=12MHz,  PC9=24MHz
+//	RCC->CFGR = cfg;			// Src=PLL HPRE=0 PPRE2=0 PPRE1=2  => SYSCLK=96MHz, AHB=96MHz, APB2=96MHz, APB1=24MHz,  PC9=24MHz
 
 	/* Disable all interrupts */
   RCC->CIR = 0x00000000;
