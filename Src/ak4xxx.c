@@ -435,12 +435,12 @@ void 						ak_PowerDown( void ){																							// power down entire code
 	gSet( gPA_EN, 0 );				// amplifier off
 	gSet( gBOOT1_PDN, 1 );    // OUT: set power_down ACTIVE to Power Down the codec 
 	gSet( gEN_5V, 0 );				// OUT: 1 to supply 5V to codec		AP6714 EN		
-	gSet( gNLEN01V8, 0 );			// OUT: 1 to supply 1.8 to codec  TLV74118 EN		
+	gSet( gEN1V8, 0 );			  // OUT: 1 to supply 1.8 to codec  TLV74118 EN		
 }
 void						ak_PowerUp( void ){
 	gSet( gBOOT1_PDN, 1 );  // OUT: set power_down ACTIVE to so codec doesn't try to PowerUP
 	gSet( gEN_5V, 1 );			// OUT: 1 to supply 5V to codec		AP6714 EN		
-	gSet( gNLEN01V8, 1 );		// OUT: 1 to supply 1.8 to codec  TLV74118 EN		
+	gSet( gEN1V8, 1 );		  // OUT: 1 to supply 1.8 to codec  TLV74118 EN		
 	tbDelay_ms( 20 ); 		 	// wait for voltage regulators
 	
 	gSet( gBOOT1_PDN, 0 );  //  set power_down INACTIVE to Power on the codec 

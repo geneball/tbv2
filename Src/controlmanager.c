@@ -336,7 +336,7 @@ static void 	runCSM(  ){								// CSM thread -- called by tbook after everythin
 
 // debug power signals
 const int numPwrSig = 7;
-GPIO_ID pwrID[] = { gADC_ENABLE, gSC_ENABLE, g3V3_SW_EN, gEN_5V, gNLEN01V8, gBOOT1_PDN, gPA_EN };
+GPIO_ID pwrID[] = { gADC_ENABLE, gSC_ENABLE, g3V3_SW_EN, gEN_5V, gEN1V8, gBOOT1_PDN, gPA_EN };
 								//				PA2		PD1		PD6			PD4		PD5		PB2			PD3
 const char * pwrNm[] = { "ADC", "SC", "3V3", "5V", "1V8", "PDN", "PA" };
 char pwrVal[] = { '-', '-', '-', '-', '-', '-', '-', 0 };	// => '+' if signal is active

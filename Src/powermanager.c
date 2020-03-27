@@ -91,11 +91,11 @@ void 											initPwrSignals( void ){					// configure power GPIO pins, & EXTI
 	
   // Configure audio power control 
 	gConfigOut( gEN_5V );				// 1 to supply 5V to codec-- enable AP6714 regulator
-	gConfigOut( gNLEN01V8 );		// 1 to supply 1.8 to codec-- enable TLV74118 regulator	
+	gConfigOut( gEN1V8 );				// 1 to supply 1.8 to codec-- enable TLV74118 regulator	
 	gConfigOut( gBOOT1_PDN );		// _: 0 to power down codec-- boot1_pdn on AK4637
 	gConfigOut( gPA_EN );				// 1 to power headphone jack
 	gSet( gEN_5V, 0 );					// initially codec OFF
-	gSet( gNLEN01V8, 0 );				// initially codec OFF
+	gSet( gEN1V8, 0 );					// initially codec OFF
 	gSet( gBOOT1_PDN, 1 );			// initially codec OFF
 	gSet( gPA_EN, 0 );					// initially headphones OFF
 	

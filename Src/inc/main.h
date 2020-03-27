@@ -27,7 +27,7 @@ typedef enum {			// GPIO_ID -- gpio signal IDs
 	gSC_ENABLE,			// TBV2B: 	PD1
 	gPA_EN,					// TBV2B: 	PD3
 	gEN_5V,					// TBV2B: 	PD4
-	gNLEN01V8,			// TBV2B: 	PD5
+	gEN1V8,					// TBV2B: 	PD5
 	g3V3_SW_EN,			// TBV2B: 	PD6
 	gEMMC_RSTN,			// TBV2B: 	PE10
 	gSPI4_NSS,			// TBV2B: 	PE11
@@ -49,6 +49,7 @@ typedef enum {			// GPIO_ID -- gpio signal IDs
 	gI2C1_SCL,			// TBV2B: 	PB8		STM3210E_EVAL: PB7
 	gQSPI_CLK,			// TBV2B: 	PB1
 	gQSPI_BK1_IO0,	// TBV2B: 	PC9
+	gMCO2,					// TBV2B:   also PC9
 	gQSPI_BK1_IO1,	// TBV2B: 	PC10
 	gQSPI_BK1_IO2,	// TBV2B: 	PC8
 	gQSPI_BK1_IO3,	// TBV2B: 	PA1
@@ -139,7 +140,7 @@ static GPIO_Signal gpioSignals[] = {  	// GPIO signal definitions
 	{ gSC_ENABLE, 	"PD1"				},	// OUT: 1 to enable SuperCap			 								(powermanager.c)
 	{ gPA_EN, 			"PD3"				},	// OUT: 1 to power speaker & hphone								(powermanager.c)
 	{ gEN_5V, 			"PD4"				},	// OUT: 1 to supply 5V to codec		AP6714 EN				(powermanager.c)
-	{ gNLEN01V8, 		"PD5"				},	// OUT: 1 to supply 1.8 to codec  TLV74118 EN			(powermanager.c)	
+	{ gEN1V8, 			"PD5"				},	// OUT: 1 to supply 1.8 to codec  TLV74118 EN			(powermanager.c)	
 	{ g3V3_SW_EN, 	"PD6"				},	// OUT: 1 to power SDCard & eMMC
 	{ gEMMC_RSTN, 	"PE10"			},	// OUT: 0 to reset eMMC?		MTFC2GMDEA eMMC RSTN	(powermanager.c)	
 	
@@ -170,6 +171,8 @@ static GPIO_Signal gpioSignals[] = {  	// GPIO signal definitions
 	{ gUSB_ID, 			"PA10|10"		},	// std pinout assumed by USBD (altFn=10)
 	
 	{ gQSPI_CLK, 			"PB1|9"		},	// W25Q64JVSS & MT29F4G01 clock for NOR and NAND Flash (altFn=9)
+
+	{ gMCO2,					"PC9|0"		},  // DEBUG: MCO2 for external SystemClock/4
 	
 	{ gQSPI_BK1_IO0, 	"PC9|9"		},	// W25Q64JVSS  NOR flash  U5 (altFn=9)
 	{ gQSPI_BK1_IO1, 	"PC10|9"	},	// W25Q64JVSS  NOR flash  U5 (altFn=9)
