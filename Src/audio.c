@@ -57,10 +57,10 @@ void 								audSquareWav( int nsecs ){												// preload wavHdr & buffers w
 	for ( int i=0; i<nBuffs; i++ ){	// preload audio_buffers with !KHz square wave @ 8KHz == (1,1,1,1,0,0,0,0)...
 		Buffer_t *pB = &audio_buffers[i];
 		uint16_t *data = (uint16_t *) &pB->data[0];
-		for ( int j=0; j<BuffLen/2; j++ ){  // # of 16bit words
+		for ( int j=0; j<BuffLen/4; j++ ){  // # of 16bit words in just 1st half of buffer
 			data[ j ] = 0;
-		if ( !gGet( gPLUS ))
-			data[ j ] = (j & 4)? 0x1010 : 0x9090;
+			if ( !gGet( gPLUS ))
+				data[ j ] = (j & 4)? 0x1010 : 0x9090;
 		}
 	}
 }
@@ -150,11 +150,17 @@ void 								printAudSt(){										// DBG: display audio state
 Buffer_t * 					loadBuff( ){										// read next block of audio into a buffer
 	Buffer_t *pB = allocBuff();
 	pB->firstSample = pSt.nPlayed;
+	int len = pSt.monoMode? BuffLen/2 : BuffLen;		// leave room to duplicate if mono
 	if ( pSt.SqrWAVE ){	// data is pre-loaded in all buffers
-		pSt.SqrBytes -= BuffLen;
-		pB->cntBytes = pSt.SqrBytes>0? BuffLen : 0;
-	} else
-		pB->cntBytes = fread( pB->data, 1, BuffLen, pSt.wavF );		// read up to BuffLen bytes
+		pSt.SqrBytes -= len;
+		pB->cntBytes = pSt.SqrBytes>0? len : 0;
+	} else {
+		pB->cntBytes = fread( pB->data, 1, len, pSt.wavF );		// read up to BuffLen bytes
+	}
+	if ( pSt.monoMode ){
+		for ( int i=len-1; i>0; i-- )
+			pB->data[i] = pB->data[ i>>1 ];   // len==2048:  d[2047] = d[1023], d[2046]=d[1023], d[2045] = d[1022], ... d[2]=d[1], d[1]=d[0] 
+	}
 	pB->state = bFull;
 	return pB;
 }
@@ -184,17 +190,17 @@ void 								PlayWave( const char *fname ){ 		// play the WAV file
 			errLog( "open wav failed" );
 	}
 	pSt.state = pbGotHdr;
-	
 	int audioFreq = pSt.wavHdr->SampleRate;
   if ((audioFreq < SAMPLE_RATE_MIN) || (audioFreq > SAMPLE_RATE_MAX))
     errLog( "bad audioFreq" );  
 	pSt.samplesPerSec = audioFreq;
 	
 	Driver_SAI0.PowerControl( ARM_POWER_FULL );		// power up audio
+	pSt.monoMode = (pSt.wavHdr->NbrChannels == 1);
 
 	uint32_t ctrl = ARM_SAI_CONFIGURE_TX | ARM_SAI_MODE_SLAVE  | ARM_SAI_ASYNCHRONOUS | ARM_SAI_PROTOCOL_I2S | ARM_SAI_DATA_SIZE(16);
-	if ( pSt.wavHdr->NbrChannels == 1 )
-		ctrl |= ARM_SAI_MONO_MODE;		// request setting for mono data
+//	if ( pSt.monoMode )
+//		ctrl |= ARM_SAI_MONO_MODE;		// request setting for mono data
 	
 	Driver_SAI0.Control( ctrl, 0, audioFreq );	// set sample rate, init codec clock, power up speaker and unmute
 	

@@ -80,6 +80,7 @@ typedef struct { 			// PlaybackFile_t			-- audio state block
 
 	uint32_t nPlayed;			// samples played
 	uint32_t nToPlay;			// samples currently playing
+	bool monoMode;
 	bool reqPause;				// true if pause requested
 	bool reqStop;					// true if stop requested
 	playback_state_t  state;
