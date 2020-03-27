@@ -477,6 +477,11 @@
               <FileType>2</FileType>
               <FilePath>.\Src\Rev2b\hardfault.s</FilePath>
             </File>
+            <File>
+              <FileName>system_stm32f4xx.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Src\Rev2b\system_stm32f4xx.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -730,11 +735,6 @@
               <FileName>startup_stm32f412vx.s</FileName>
               <FileType>2</FileType>
               <FilePath>.\Keil\STM32F4xx\STM32F412VETx\startup_stm32f412vx.s</FilePath>
-            </File>
-            <File>
-              <FileName>system_stm32f4xx.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Keil\STM32F4xx\STM32F412VETx\system_stm32f4xx.c</FilePath>
             </File>
             <File>
               <FileName>I2C_STM32F4xx.c</FileName>

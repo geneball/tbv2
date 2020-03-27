@@ -26,8 +26,8 @@ int  										main( void ){
 	GPIO_DefineSignals( gpioSignals );   // create GPIO_Def_t entries { id, port, pin, intq, signm, pressed } for each GPIO signal in use
 	// main.h defines gpioSignals[] for this platform configuration,  e.g.  { gRED, "PF8" } for STM3210E eval board RED LED
 	//  used by various initializers to cal GPIOconfigure()
+	gConfigI2S( gMCO2 );  // TBookV2B 	{ gMCO2,					"PC9|0"		},  // DEBUG: MCO2 for external SystemClock/4 on PC9
 
-	
   initPrintf(  TBV2_Version );
   flashInit();		// init Keypad for debugging
 	if ( gGet( gPLUS )){  //  PLUS => tbook with no OS -> debugLoop
