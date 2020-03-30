@@ -510,11 +510,14 @@ static int32_t 								I2S_PowerControl( ARM_POWER_STATE state, I2S_RESOURCES *i
     case ARM_POWER_OFF:				// power down when audio not in use
       NVIC_DisableIRQ( i2s->irq_num );      // Disable I2S IRQ
       NVIC_ClearPendingIRQ(i2s->irq_num);		// Clear pending I2S interrupts in NVIC
-			ak_PowerDown();
+
+			ak_PowerDown();					// power down AK4637 & I2C1 device
+ //     RCC->APB1ENR &= ~RCC_APB1ENR_I2C1EN; 	// disable I2C1 device
 
       RCC->APB1ENR &= ~RCC_APB1ENR_SPI2EN; 	// disable SPI2 device
       RCC->APB1ENR &= ~RCC_APB1ENR_SPI3EN; 	// disable SPI3 device (for codec clock)
-      RCC->APB1ENR &= ~RCC_APB1ENR_I2C1EN; 	// disable I2C1 device
+			RCC->AHB1ENR &= ~RCC_AHB1ENR_DMA1EN;	// disable clock for DMA1
+		
 			
 			reset_I2S_Info( i2s );      // Clear driver variables
       i2s->info->flags &= ~I2S_FLAG_POWERED;
@@ -535,6 +538,8 @@ static int32_t 								I2S_PowerControl( ARM_POWER_STATE state, I2S_RESOURCES *i
 
       RCC->APB1ENR |= RCC_APB1ENR_SPI2EN; 	// start clocking SPI2 (==I2S)
       RCC->APB1ENR |= RCC_APB1ENR_SPI3EN; 	// enable SPI3 device -- for clock generation
+			RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;		// enable clock for DMA1
+			
       // Clear and Enable SAI IRQ
       NVIC_ClearPendingIRQ( i2s->irq_num );
       NVIC_EnableIRQ( i2s->irq_num );
