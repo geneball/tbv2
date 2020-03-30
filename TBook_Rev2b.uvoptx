@@ -157,201 +157,57 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>178</LineNumber>
+          <LineNumber>664</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134258930</Address>
+          <Address>134250270</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\Src\Rev2b\system_stm32f4xx.c</Filename>
+          <Filename>.\Src\Rev2b\I2S_stm32F4xx.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Src/Rev2b/system_stm32f4xx.c\178</Expression>
+          <Expression>\\TBookRev2b\Src/Rev2b/I2S_stm32F4xx.c\664</Expression>
         </Bp>
         <Bp>
           <Number>1</Number>
           <Type>0</Type>
-          <LineNumber>236</LineNumber>
+          <LineNumber>359</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134285270</Address>
+          <Address>134283018</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\Src\audio.c</Filename>
+          <Filename>.\Src\ak4xxx.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Src/audio.c\236</Expression>
+          <Expression>\\TBookRev2b\Src/ak4xxx.c\359</Expression>
         </Bp>
         <Bp>
           <Number>2</Number>
           <Type>0</Type>
-          <LineNumber>676</LineNumber>
-          <EnabledFlag>0</EnabledFlag>
-          <Address>134250348</Address>
+          <LineNumber>236</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134235274</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\Src\Rev2b\I2S_stm32F4xx.c</Filename>
+          <Filename>.\Src\ak4xxx.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Src/Rev2b/I2S_stm32F4xx.c\676</Expression>
+          <Expression>\\TBookRev2b\Src/ak4xxx.c\236</Expression>
         </Bp>
         <Bp>
           <Number>3</Number>
           <Type>0</Type>
-          <LineNumber>674</LineNumber>
-          <EnabledFlag>0</EnabledFlag>
-          <Address>134250344</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\Src\Rev2b\I2S_stm32F4xx.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Src/Rev2b/I2S_stm32F4xx.c\674</Expression>
-        </Bp>
-        <Bp>
-          <Number>4</Number>
-          <Type>0</Type>
-          <LineNumber>673</LineNumber>
-          <EnabledFlag>0</EnabledFlag>
-          <Address>134250330</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\Src\Rev2b\I2S_stm32F4xx.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Src/Rev2b/I2S_stm32F4xx.c\673</Expression>
-        </Bp>
-        <Bp>
-          <Number>5</Number>
-          <Type>0</Type>
-          <LineNumber>672</LineNumber>
-          <EnabledFlag>0</EnabledFlag>
-          <Address>134250324</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\Src\Rev2b\I2S_stm32F4xx.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Src/Rev2b/I2S_stm32F4xx.c\672</Expression>
-        </Bp>
-        <Bp>
-          <Number>6</Number>
-          <Type>0</Type>
-          <LineNumber>671</LineNumber>
-          <EnabledFlag>0</EnabledFlag>
-          <Address>134250322</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\Src\Rev2b\I2S_stm32F4xx.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Src/Rev2b/I2S_stm32F4xx.c\671</Expression>
-        </Bp>
-        <Bp>
-          <Number>7</Number>
-          <Type>0</Type>
-          <LineNumber>670</LineNumber>
-          <EnabledFlag>0</EnabledFlag>
-          <Address>134250318</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\Src\Rev2b\I2S_stm32F4xx.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Src/Rev2b/I2S_stm32F4xx.c\670</Expression>
-        </Bp>
-        <Bp>
-          <Number>8</Number>
-          <Type>0</Type>
-          <LineNumber>669</LineNumber>
-          <EnabledFlag>0</EnabledFlag>
-          <Address>134250312</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\Src\Rev2b\I2S_stm32F4xx.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Src/Rev2b/I2S_stm32F4xx.c\669</Expression>
-        </Bp>
-        <Bp>
-          <Number>9</Number>
-          <Type>0</Type>
-          <LineNumber>667</LineNumber>
-          <EnabledFlag>0</EnabledFlag>
-          <Address>134250292</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\Src\Rev2b\I2S_stm32F4xx.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Src/Rev2b/I2S_stm32F4xx.c\667</Expression>
-        </Bp>
-        <Bp>
-          <Number>10</Number>
-          <Type>0</Type>
-          <LineNumber>668</LineNumber>
-          <EnabledFlag>0</EnabledFlag>
-          <Address>134250298</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\Src\Rev2b\I2S_stm32F4xx.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Src/Rev2b/I2S_stm32F4xx.c\668</Expression>
-        </Bp>
-        <Bp>
-          <Number>11</Number>
-          <Type>0</Type>
-          <LineNumber>666</LineNumber>
-          <EnabledFlag>0</EnabledFlag>
-          <Address>134250286</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\Src\Rev2b\I2S_stm32F4xx.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Src/Rev2b/I2S_stm32F4xx.c\666</Expression>
-        </Bp>
-        <Bp>
-          <Number>12</Number>
-          <Type>0</Type>
           <LineNumber>484</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134254052</Address>
+          <Address>134254068</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -363,55 +219,7 @@
           <Expression>\\TBookRev2b\Src/tbUtil.c\484</Expression>
         </Bp>
         <Bp>
-          <Number>13</Number>
-          <Type>0</Type>
-          <LineNumber>663</LineNumber>
-          <EnabledFlag>0</EnabledFlag>
-          <Address>134250284</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\Src\Rev2b\I2S_stm32F4xx.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Src/Rev2b/I2S_stm32F4xx.c\663</Expression>
-        </Bp>
-        <Bp>
-          <Number>14</Number>
-          <Type>0</Type>
-          <LineNumber>661</LineNumber>
-          <EnabledFlag>0</EnabledFlag>
-          <Address>134250270</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\Src\Rev2b\I2S_stm32F4xx.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Src/Rev2b/I2S_stm32F4xx.c\661</Expression>
-        </Bp>
-        <Bp>
-          <Number>15</Number>
-          <Type>0</Type>
-          <LineNumber>1112</LineNumber>
-          <EnabledFlag>0</EnabledFlag>
-          <Address>134244870</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\Keil\STM32F4xx\I2C_STM32F4xx.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Keil/STM32F4xx/I2C_STM32F4xx.c\1112</Expression>
-        </Bp>
-        <Bp>
-          <Number>16</Number>
+          <Number>4</Number>
           <Type>0</Type>
           <LineNumber>404</LineNumber>
           <EnabledFlag>0</EnabledFlag>
@@ -427,11 +235,11 @@
           <Expression>\\TBookRev2b\Keil/STM32F4xx/stm32f4xx_hal.c\404</Expression>
         </Bp>
         <Bp>
-          <Number>17</Number>
+          <Number>5</Number>
           <Type>0</Type>
           <LineNumber>122</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134323298</Address>
+          <Address>134323394</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -443,11 +251,11 @@
           <Expression>\\TBookRev2b\Keil/CMSIS/rtx_system.c\122</Expression>
         </Bp>
         <Bp>
-          <Number>18</Number>
+          <Number>6</Number>
           <Type>0</Type>
           <LineNumber>354</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134283002</Address>
+          <Address>134283736</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -459,68 +267,116 @@
           <Expression>\\TBookRev2b\Src/ak4xxx.c\354</Expression>
         </Bp>
         <Bp>
-          <Number>19</Number>
+          <Number>7</Number>
           <Type>0</Type>
-          <LineNumber>231</LineNumber>
+          <LineNumber>428</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134235274</Address>
+          <Address>0</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\Src\ak4xxx.c</Filename>
+          <BreakIfRCount>0</BreakIfRCount>
+          <Filename>.\Src\Rev2b\I2S_stm32F4xx.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Src/ak4xxx.c\231</Expression>
+          <Expression></Expression>
         </Bp>
         <Bp>
-          <Number>20</Number>
+          <Number>8</Number>
           <Type>0</Type>
-          <LineNumber>166</LineNumber>
+          <LineNumber>722</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134247148</Address>
+          <Address>0</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\Src\ak4xxx.c</Filename>
+          <BreakIfRCount>0</BreakIfRCount>
+          <Filename>.\Src\Rev2b\I2S_stm32F4xx.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Src/ak4xxx.c\166</Expression>
+          <Expression></Expression>
         </Bp>
         <Bp>
-          <Number>21</Number>
+          <Number>9</Number>
           <Type>0</Type>
-          <LineNumber>159</LineNumber>
+          <LineNumber>723</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134249386</Address>
+          <Address>0</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\Src\ak4xxx.c</Filename>
+          <BreakIfRCount>0</BreakIfRCount>
+          <Filename>.\Src\Rev2b\I2S_stm32F4xx.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Src/ak4xxx.c\159</Expression>
+          <Expression></Expression>
         </Bp>
         <Bp>
-          <Number>22</Number>
+          <Number>10</Number>
           <Type>0</Type>
-          <LineNumber>220</LineNumber>
+          <LineNumber>725</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134253360</Address>
+          <Address>0</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\Src\audio.c</Filename>
+          <BreakIfRCount>0</BreakIfRCount>
+          <Filename>.\Src\Rev2b\I2S_stm32F4xx.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Src/audio.c\220</Expression>
+          <Expression></Expression>
+        </Bp>
+        <Bp>
+          <Number>11</Number>
+          <Type>0</Type>
+          <LineNumber>730</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>0</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>0</BreakIfRCount>
+          <Filename>.\Src\Rev2b\I2S_stm32F4xx.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression></Expression>
+        </Bp>
+        <Bp>
+          <Number>12</Number>
+          <Type>0</Type>
+          <LineNumber>733</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>0</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>0</BreakIfRCount>
+          <Filename>.\Src\Rev2b\I2S_stm32F4xx.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression></Expression>
+        </Bp>
+        <Bp>
+          <Number>13</Number>
+          <Type>0</Type>
+          <LineNumber>87</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>0</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>0</BreakIfRCount>
+          <Filename>.\Src\tbook.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression></Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -704,6 +560,11 @@
           <WinNumber>1</WinNumber>
           <ItemText>RCC-&gt;CKGATENR</ItemText>
         </Ww>
+        <Ww>
+          <count>36</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>dbgToggleCnt</ItemText>
+        </Ww>
       </WatchWindow1>
       <MemoryWindow1>
         <Mm>
@@ -805,7 +666,7 @@
 
   <Group>
     <GroupName>TBook</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -1057,7 +918,7 @@
 
   <Group>
     <GroupName>config</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -1497,7 +1358,7 @@
 
   <Group>
     <GroupName>STM32F4xx</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>

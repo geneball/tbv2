@@ -174,6 +174,11 @@ void						I2C_Reinit(int lev ){			// lev&1 SWRST, &2 => RCC reset, &4 => device 
 		RCC->APB1RSTR |= RCC_APB1RSTR_I2C1RST;		// set device reset bit for I2C1
 		tbDelay_ms( 1 );
 		RCC->APB1RSTR = 0;		// TURN OFF device reset bit for I2C1
+/* reset sequence in PowerControl( ARM_POWER_FULL )
+        __HAL_RCC_I2C1_FORCE_RESET();
+        __NOP(); __NOP(); __NOP(); __NOP(); 
+        __HAL_RCC_I2C1_RELEASE_RESET();
+*/		
 	}
 	if ( lev & 1 ){
 		uint32_t cr1 = I2C1->CR1;
@@ -445,6 +450,15 @@ void						ak_PowerUp( void ){
 	
 	gSet( gBOOT1_PDN, 0 );  //  set power_down INACTIVE to Power on the codec 
 	tbDelay_ms(5); 		 			//  wait for it to start up
+}
+
+static int dbgToggleCnt = 0;
+void dbgToggleVolume(){
+	dbgToggleCnt++;
+	if ( akFmtVolume == VOLUME_CONVERT( 20 ))
+		ak_SetVolume( 80 );
+	else
+		ak_SetVolume( 20 );
 }
 void		 				ak_SetVolume( uint8_t Volume ){				// sets volume 0..100%
   akFmtVolume = VOLUME_CONVERT( Volume );

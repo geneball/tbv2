@@ -132,12 +132,13 @@
 typedef struct _I2S_INFO {
   ARM_SAI_SignalEvent_t   cb_event;      // Event callback
   ARM_SAI_STATUS          status;        // Status flags
-	bool 										monoMode;	 		 // mono data stream-- use sample duplicating intq handler
-	uint16_t							* dataPtr;			 // monoMode-- curr 16bit sample being transmitted
-	bool										firstChannel;	 // monoMode-- ready to send 1st copy of *dataPtr
+//	bool 										monoMode;	 		 // mono data stream-- use sample duplicating intq handler
+//	uint16_t							* dataPtr;			 // monoMode-- curr 16bit sample being transmitted
+//	bool										firstChannel;	 // monoMode-- ready to send 1st copy of *dataPtr
 	
 	uint32_t                tx_req;				 // bytes requested to be sent
 	uint32_t                tx_cnt;				 // tx bytes sent
+
 	uint32_t                rx_req;				 // bytes requested to be received
 	uint32_t                rx_cnt;				 // rx bytes received
   uint8_t                 data_bytes;    // Number of bytes/sample
@@ -149,6 +150,10 @@ typedef struct _I2S_RESOURCES {
   ARM_SAI_CAPABILITIES    capabilities;  // Capabilities
   SPI_TypeDef		          *instance;     // Pointer to I2S peripheral
 	SPI_TypeDef							*clock;				 // I2S peripheral used to generate clock
+	DMA_TypeDef							*dma;					 // DMA controller for tx & rx streams
+	DMA_Stream_TypeDef			*tx_dma;			 // DMA stream for TX
+	DMA_Stream_TypeDef			*rx_dma;			 // DMA stream for RX
+	
 	//REPLACED:  I2S_PINS                rxtx_pins;     // I2S receive pins configuration
 	// pins used are  gI2S2_SD,	gI2S2_WS,	gI2S2_CK,	gI2S2_MCK
 

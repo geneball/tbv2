@@ -1,25 +1,39 @@
 //  Gene Ball Dec-2019: based on keil/arm/pack/amr/cmsis/pack/example/cmsis_driver/I2S_LBC18xx.c
-//  configured only for I2S using SPI2 & interrupt/word transfer, only Master mode, with codec driven from MCLK 
-//     see RM0008, STM32F103xx Reference Manual, Section 25.4
+//  configured only for TalkingBook Rev2b: F412vet & AK4637 codec
+//     control of the AK4637 is managed in ak4xxx.c   (AK registers written over I2C1)
+//     audio data travels over I2S-- managed in this file
+//  this driver is based on the SAI CMSIS interface, but handles only one configuration
+//     currently:
+//         1) SPI3 is used to generate an accurate 12MHz clock to the AK4637 on I2S3_MCK
+//         2) AK4637 is configured to generate I2S clocks at the desired audio frequency
+//               (on I2S2_CK & I2S2_WS)
+//         3) SPI2 is operated in I2S slave mode with double-buffer DMA, to send/receive stereo samples
+//     see RM0402, STM32F412xx Reference Manual, Section 26.6
 //      uses 4 GPIO pins:
-//				SD: Serial Data (mapped on MOSI pin)
-//				WS: Word Select (mapped on NSS pin)
-//				CK: Serial Clock (mapped on SCK pin)
-//				MCK: Master Clock (mapped separately), for I2S in master mode & MCKOE bit of SPI_I2SPR set
-//						generated (for codec) at rate equal to 256 × FS, where FS is the audio sampling frequency
+//				SD: Serial Data (mapped on MOSI pin     I2S2_SD )
+//				WS: Word Select (mapped on NSS pin as   I2S2_WS )
+//				CK: Serial Clock (mapped on SCK pin as  I2S2_CK )
+//				MCK: Master Clock (mapped separately as I2S3_MCK )  12MHz reference clock to codec
 //	Usage: 
 //		Driver_SAI0.Initialize( cb_func ) -- allocate & initialize I2S & codec hardware, register event callback fn
-//			does:
-//				Driver_SAI0.PowerControl( ARM_POWER_FULL ) -- power up codec & interfaces
-//				Driver_SAI0.Control( ARM_SAI_CONFIGURE_TX | ARM_SAI_MODE_MASTER  | // configure Transmitter to Asynchronous Master
-//    			ARM_SAI_ASYNCHRONOUS | ARM_SAI_PROTOCOL_I2S | ARM_SAI_DATA_SIZE(16), 0, 16000); // I2S Protocol, 16-bit data, 16kHz Audio frequency
-//		Driver_SAI0.Control( ARM_SAI_CONTROL_TX, 1, 0 );		// enable Transmitter, un-mute speaker
-//		Driver_SAI0.Send( buf, nsamples );						// transmit audio buffer
-//		Driver_SAI0.Control( ARM_SAI_ABORT_SEND );		// if necessary
-//		-> cb_func( evts ) // called on error or completion
-//		Driver_SAI0.Control( ARM_SAI_CONTROL_TX, 0, 0 );		// power down speaker amp
-//		Driver_SAI0.PowerControl( ARM_POWER_OFF ) -- power down codec
-//		Driver_SAI0.Uninitialize( ) -- shut down I2S & I2C, release GPIOs
+//		Driver_SAI0.PowerControl( ARM_POWER_FULL );		// power up audio
+//		Driver_SAI0.Control( control, 0, freq); 		 // control settings & audio_frequency
+//      supported playback values for 'control':
+//				ARM_SAI_CONFIGURE_TX | ARM_SAI_MODE_SLAVE |			// configure Transmitter as Slave
+//    		ARM_SAI_ASYNCHRONOUS | ARM_SAI_PROTOCOL_I2S |		// Asynchronous  I2S Protocol
+//		  	ARM_SAI_DATA_SIZE(16) |													// 16-bit samples
+//  preload buf0 & buf1 from audio file, then:
+//		Driver_SAI0.Send( buf0, nsamples );									// transmit audio buffer
+//		Driver_SAI0.Send( buf1, nsamples );									// transmit audio buffer
+//  then preload buf2
+//		-> cb_func( evts ) 																	// called by ISR (on error or buffer complete)
+//      should call Driver_SAI0.Send() to chain buffers, then preload the next buffer
+//  the last buffer should have zero padding to let the codec pipeline empty of real data,
+//  then call
+//		Driver_SAI0.Control( ARM_SAI_ABORT_SEND, arg, 0 );	// required at end with arg==0, to shutdown I2S device
+//		Driver_SAI0.PowerControl( ARM_POWER_OFF ) 					// power down codec
+//  and optionally
+//		Driver_SAI0.Uninitialize( )													// shut down I2S & I2C, release GPIOs
 /* -------------------------------------------------------------------------- 
  * Copyright (c) 2013-2016 ARM Limited. All rights reserved.
  *
@@ -66,13 +80,12 @@
  *  Version 1.0
  *    - Initial release
  */
- #include "tbook.h"	// includes main.h with GPIO_IDs:   gI2S2_SD,	gI2S2_WS,	gI2S2_CK,	gI2S2_MCK
+#include "tbook.h"						// includes main.h with GPIO_IDs:   gI2S2_SD,	gI2S2_WS,	gI2S2_CK,	gI2S2_MCK
 
-//#include "RTE_Components.h"
-//#include "RTE_I2SDevice.h"		// custom additions to RTE_I2SDevice.h -- just for I2S/SAI
-#include "I2S_STM32F4xx.h"
+#include "I2S_STM32F4xx.h"		// could be SAI instead of I2S
 #include "ak4xxx.h"
 #include <math.h>
+void dbgToggleVolume( void );		// DEBUG
 
 /* REPLACED: RTE_Device configuration
 // ************** Configuration based on RTE_Device
@@ -116,10 +129,10 @@ static DMA_INFO I2S_DMA_Tx = {
 };
 */
 
-static I2S_INFO I2S0_Info = {0};		// run-time info block
+static I2S_INFO I2S2_Info = {0};		// run-time info block
 
-static const I2S_RESOURCES I2S0_Resources = {		// capabilities & hardware links
-  {  					// capabilities:
+static const I2S_RESOURCES I2S2_Resources = {		// capabilities & hardware links
+  {  								// capabilities:
     1,   ///< supports asynchronous Transmit/Receive
     0,   ///< supports synchronous Transmit/Receive
     0,   ///< supports user defined Protocol
@@ -132,8 +145,8 @@ static const I2S_RESOURCES I2S0_Resources = {		// capabilities & hardware links
     1,   ///< supports MCLK (Master Clock) pin
     0,   ///< supports Frame error event: \ref ARM_SAI_EVENT_FRAME_ERROR
   },
-  I2S2,    		// instance: Pointer to I2S device-- SPI2 == I2S2
-	I2S3,				// I2S device for clock
+  I2S2,    					// instance: Pointer to I2S device-- SPI2 == I2S2
+	I2S3,							// I2S device for clock
 /* REMOVED: RTE_Device based pin config
 //  {  // I2S0 RX&TX Pin configuration
 //    &I2S_sck,
@@ -142,20 +155,21 @@ static const I2S_RESOURCES I2S0_Resources = {		// capabilities & hardware links
 //    &I2S_mck,
 //  },
 */
-	
-  I2S2_IRQn,	// intq_num
-/* REMOVED:  no DMA
-// NULL, //&I2S_DMA_Tx,
-//  NULL, //&I2S_DMA_Rx,
-*/
-  &I2S0_Info	// I2S_INFO
+	DMA1,							// DMA controller for both TX & RX
+	DMA1_Stream4, 		// DMA Stream for SPI2==I2S2 TX 
+	DMA1_Stream3,			// DMA Stream for SPI2==I2S2 RX
+  I2S2_IRQn,				// intq_num
+  &I2S2_Info				// I2S_INFO
 };
 
+typedef enum { ctlAbort=0, ctlPause=1, ctlResume=2 } controlTyp;
+
+//DEBUG
 int BrkCnt = 200;							// DEBUG:  break during audio send
 int initialUnderRunCnt = 0;		// DEBUG: count any underruns at the start of a buffer
 
 // forward decls for self calls
-static int32_t 								I2S_Send( const void *data, uint32_t nSamples, I2S_RESOURCES *i2s );
+static int32_t 								I2S2only_Send( const void *data, uint32_t nSamples, I2S_RESOURCES *i2s );
 static int32_t 								I2S_Control( uint32_t control, uint32_t arg1, uint32_t arg2, I2S_RESOURCES *i2s );
 static int32_t 								I2S_PowerControl( ARM_POWER_STATE state, I2S_RESOURCES *i2s );
 
@@ -173,19 +187,51 @@ void 													reset_I2S_Info( I2S_RESOURCES *i2s ) {																// initi
 
 	// default for stereo -- but set by I2S_Control( Configure )
 	i2s->info->data_bytes = 2; // = 2 channels * 16bit samples
-	i2s->info->dataPtr = NULL; 	
-	i2s->info->monoMode = false;
-	i2s->info->firstChannel = false;
+//	i2s->info->dataPtr = NULL; 	
+//	i2s->info->monoMode = false;
+//	i2s->info->firstChannel = false;
 	
 	i2s->info->tx_cnt = 0;
 	i2s->info->tx_req = 0;
 	i2s->info->rx_cnt = 0;
 	i2s->info->rx_req = 0;
 }
-void													abortTXMT( I2S_RESOURCES *i2s ){  																		// abort I2S Transmit operation
-	i2s->instance->I2SCFGR 	&= ~I2S_MODE_ENAB;										// disable I2S device
-	i2s->instance->CR2 			&= ~(I2S_CR2_TXEIE | I2S_CR2_ERRIE);	// disable interrupts on transmit empty & error
-	reset_I2S_Info( i2s );
+void													controlTXMT( I2S_RESOURCES *i2s, controlTyp typ ){  											// abort I2S Transmit operation
+  // stop DMA transmission
+	// if pause:
+	//    reset DMA to resume if re-enabled, leave I2S2 enabled
+	// else
+	//    disable I2S2
+	
+	I2S_INFO *info = i2s->info;
+	DMA_Stream_TypeDef * dma = DMA1_Stream4;				// DMA stream for TX
+	
+	dma->CR &= ~DMA_SxCR_TCIE;											// reset interrupt on complete-- since disabling will cause one
+	
+	while ( (dma->CR & DMA_SxCR_EN) != 0 )					// reset DMA CR.EN to pause
+		dma->CR &= 	~DMA_SxCR_EN;											// keep trying till its true
+	
+	// reset any leftover int reqs  -- (there should be a TCIF)
+	DMA1->HIFCR &= ~( DMA_HISR_TCIF4 |DMA_HISR_HTIF4 |DMA_HISR_TEIF4 |DMA_HISR_DMEIF4 | DMA_HISR_FEIF4  );
+	uint32_t nSent;
+	switch ( typ ){
+
+		case ctlAbort: 
+			i2s->instance->I2SCFGR &= ~I2S_MODE_ENAB;			// disable I2S device
+			break;
+		
+		case ctlPause: // set up DMA so re-enabling will pick up at correct spot  
+			nSent = info->tx_req - dma->NDTR;			// see how many samples were sent before pause
+			if ( (dma->CR & DMA_SxCR_CT)==0 )								// and update memAddr of current buffer 
+				dma->M0AR += nSent;														// to restart after that
+			else
+				dma->M1AR += nSent;														// to restart after that
+			break;
+			
+		case ctlResume: 
+			dma->CR |= 	DMA_SxCR_EN;												// re-enable DMA
+			break;
+	}
 }
 void													abortRCV( I2S_RESOURCES *i2s ){  																			// abort I2S receive operation
 	i2s->instance->I2SCFGR 	&= ~I2S_MODE_ENAB;										// disable I2S device
@@ -194,7 +240,7 @@ void													abortRCV( I2S_RESOURCES *i2s ){  																			// abort I2
 }
 
 
-static void		 								I2S3_ClockEnable( bool enab ){ 	// enable/disable I2S3 clock generator -- as base clock for AK4637 codec
+static void		 								I2S3_ClockEnable( bool enab ){ 								// enable/disable I2S3 clock generator -- as base clock for AK4637 codec
 	// TBookRev2B device outputs I2S3_MCK to codec
 	// 	enable(disable) I2S clock generation on spi3 device
 	// 	output to I2S3_MCK which is used to generate PLL clock on codec, which then acts as I2S master
@@ -254,7 +300,7 @@ static int32_t 								I2S_Configure( I2S_RESOURCES *i2s, uint32_t freq, bool mo
 
 	i2s->instance->I2SPR   = 0;		// reset unused PreScaler
 	
-	i2s->info->monoMode = monoMode;
+//	i2s->info->monoMode = monoMode;
 	i2s->info->flags |= I2S_FLAG_CONFIGURED;
 	
 	// MUST be AFTER SPI2->I2SCFGR.I2SCFG is set to SLAVE_TX
@@ -396,12 +442,12 @@ static int32_t 								I2S_Initialize( ARM_SAI_SignalEvent_t cb_event, I2S_RESOU
 	//	I2S_clk = 192000000 / I2S_R;		// PLLI2S configuration -- default: 96MHz 
 	
 	RCC->APB1RSTR |= 	RCC_APB1RSTR_SPI2RST;		// reset spi2 
-	RCC->APB1RSTR |= 	RCC_APB1RSTR_SPI3RST;		// reset spi3
-	
 	RCC->APB1RSTR &= ~RCC_APB1RSTR_SPI2RST;	// un-reset spi2
+
+	RCC->APB1RSTR |= 	RCC_APB1RSTR_SPI3RST;		// reset spi3
 	RCC->APB1RSTR &= ~RCC_APB1RSTR_SPI3RST;	// un-reset spi3
 #endif	
-	
+
 /* REMOVED: RTE_Device based configuration
 	//GPIO_AFConfigure();	no alternate configurations are required-- using SPI2: SCK,NSS,MOSI & PC6
   //GPIO_PinConfigure(i2s->rxtx_pins.sck->port, i2s->rxtx_pins.sck->pin, GPIO_MODE_OUT, GPIO_OTYP_PUSHPULL, GPIO_SPD_FAST, GPIO_PUPD_NONE );
@@ -421,7 +467,6 @@ static int32_t 								I2S_Initialize( ARM_SAI_SignalEvent_t cb_event, I2S_RESOU
 	// Configure MCK Pin  (using I2S3_MCK on TBookRev2B)
 	gConfigI2S( gI2S3_MCK ); // TBookV2B { gI2S3_MCK,		"PC7|6"			},	// AK4637 MCLK 	 									(RTE_I2SDevice.h I2S3==SPI2 altFn=6)
 	//gConfigI2S( gI2S2_MCK ); // TBookV2B { gI2S2_MCK,		"PC6|5"			},	// AK4637 MCLK   									(RTE_I2SDevice.h I2S0==SPI2 altFn=5)
-	
 
 	i2s->info->flags = I2S_FLAG_INITIALIZED;
 	
@@ -490,7 +535,6 @@ static int32_t 								I2S_PowerControl( ARM_POWER_STATE state, I2S_RESOURCES *i
 
       RCC->APB1ENR |= RCC_APB1ENR_SPI2EN; 	// start clocking SPI2 (==I2S)
       RCC->APB1ENR |= RCC_APB1ENR_SPI3EN; 	// enable SPI3 device -- for clock generation
-
       // Clear and Enable SAI IRQ
       NVIC_ClearPendingIRQ( i2s->irq_num );
       NVIC_EnableIRQ( i2s->irq_num );
@@ -500,21 +544,25 @@ static int32_t 								I2S_PowerControl( ARM_POWER_STATE state, I2S_RESOURCES *i
   }
   return ARM_DRIVER_OK;
 }
-static void 									I2S_SendWord( I2S_RESOURCES *i2s ){																									// send next stereo sample-- duplicate if mono
+/*static void 									I2S_SendWord( I2S_RESOURCES *i2s ){																									// send next stereo sample-- duplicate if mono
 	I2S_INFO *info = i2s->info;	
 	if ( info->tx_cnt == 0 ){
 		int sr = i2s->instance->SR;    // get status register-- left from end of previous buffer
 		if (sr & SPI_SR_UDR) initialUnderRunCnt++;
+dbgToggleVolume();
 	}
 	i2s->instance->DR = *info->dataPtr;		// clears TXE
-	info->firstChannel = !info->firstChannel;
-	if ( info->monoMode && info->firstChannel ) return;  // send same sample next time
+//	info->firstChannel = !info->firstChannel;
+//	if ( info->monoMode && info->firstChannel ) 
+//		return;  // send same sample next time
 
  	if ( info->tx_cnt == info->tx_req ){		// buffer complete-- just stored 2nd copy of last word 
+dbgToggleVolume();
 		i2s->instance->CR2 &= ~I2S_CR2_TXEIE;									// disable TXE interrupt
 		i2s->info->status.tx_busy = 0;
 		i2s->info->cb_event( ARM_SAI_EVENT_SEND_COMPLETE );		// call buffer complete callback ( audio.c saiEvent )
 	}
+dbgToggleVolume();
 	
 	info->dataPtr++;							// move ptr to next sample-- always if stereo, every other if monoMode
 	info->tx_cnt += 2;						// 2 more bytes (1 sample) consumed from buffer
@@ -532,43 +580,73 @@ static void 									I2S_GetWord(I2S_RESOURCES *i2s ){																										
 			i2s->info->cb_event( ARM_SAI_EVENT_RECEIVE_COMPLETE );		// call buffer complete callback
 	}	else {
 		int data = i2s->instance->DR;		// clears RXNE
-		info->firstChannel = !info->firstChannel;
-		if ( info->firstChannel ){
-			*info->dataPtr++ = data;		// store left channel sample
-			info->rx_cnt += 2;					// 2 more bytes (1 mono sample) received
-		}
+//		info->firstChannel = !info->firstChannel;
+//		if ( info->firstChannel ){
+//			*info->dataPtr++ = data;		// store left channel sample
+//			info->rx_cnt += 2;					// 2 more bytes (1 mono sample) received
+//		}
 	}
-}
+} */
 
-static int32_t 								I2S_Send( const void *data, uint32_t nSamples, I2S_RESOURCES *i2s ){								// start data transmit
-//   Start sending data to I2S transmitter.
+static int32_t 								I2S2only_Send( const void *data, uint32_t nSamples, I2S_RESOURCES *i2s ){						// start data transmit
+// ONLY for I2S2 (SPI2) using DMA1_Stream4
+//   Start sending data to I2S transmitter.  
 //	   data  Pointer to buffer with data to send to I2S transmitter
 //	   num   Number of data items to send ( #stereo samples )
 //	   i2s   Pointer to I2S resources
 //		 return execution_status
 
   if ((data == NULL) || (nSamples == 0U))             { return ARM_DRIVER_ERROR_PARAMETER; }
-  if ((i2s->info->flags & I2S_FLAG_CONFIGURED) == 0U) { return ARM_DRIVER_ERROR; } // I2S is not configured (mode not selected)
-  if ( i2s->info->status.tx_busy ) 										{ return ARM_DRIVER_ERROR_BUSY; } // Send is not completed yet
-
-  i2s->info->status.tx_busy = 1U;  			// Set Send active flag
-  i2s->info->status.tx_underflow = 0U;  // Clear TX underflow flag
-
-	uint32_t nbytes = nSamples * i2s->info->data_bytes;  // Convert from number of samples to number of bytes
-  i2s->info->tx_req = nbytes;
+	I2S_INFO *info = i2s->info;
 	
-	i2s->info->tx_cnt = 0;	// bytes transmitted
-	i2s->info->dataPtr = (uint16_t *) data;
-	i2s->info->firstChannel = true;		// ready to send 1st copy of sample
+  if ((info->flags & I2S_FLAG_CONFIGURED) == 0U) 		// I2S is not configured (mode not selected)
+			return ARM_DRIVER_ERROR; 
+	
+	DMA_Stream_TypeDef * dma = DMA1_Stream4;				// DMA stream for TX
+	
+  if ( info->status.tx_busy ){ 										// FOR DMA Double Buffering:  allow multiple calls to Send, to keep M0AR & M1AR
+				//	return ARM_DRIVER_ERROR_BUSY;	 // previous Send is not completed yet
+		if ( (dma->CR & DMA_SxCR_CT)==0 )
+			dma->M1AR = (uint32_t) data;		// Mem0 in progress, set up Mem1
+		else 
+			dma->M0AR = (uint32_t) data;
+		return ARM_DRIVER_OK;
+	}
 
+	// First buffer of file
+  info->status.tx_busy = 1U;  							// Set Send active flag
+  info->status.tx_underflow = 0U;  					// Clear TX underflow flag
+
+//	uint32_t nbytes = nSamples * info->data_bytes;  // Convert from number of samples to number of bytes
+//  info->tx_req = nbytes;
+	
+	info->tx_cnt = 0;	// bytes transmitted
+//	info->dataPtr = (uint16_t *) data;
+
+	// set up DMA for Mem0 -> codec
+	while ( (dma->CR & DMA_SxCR_EN) != 0 )		// reset DMA CR.EN to make sure it's disabled
+		dma->CR &= 	~DMA_SxCR_EN;								// keep trying till its true
+	
+	// clear any leftover interrupt requests
+	DMA1->HIFCR &= ~( DMA_HISR_TCIF4 |DMA_HISR_HTIF4 |DMA_HISR_TEIF4 |DMA_HISR_DMEIF4 | DMA_HISR_FEIF4  );
+
+	dma->PAR = (uint32_t) &SPI2->DR;		// periph is SPI2 DataRegister
+	dma->M0AR = (uint32_t) data;				// load M0AR -- 1st buff
+	dma->NDTR = nSamples;
+	
+	// CHSEL, PFCTRL, PL, FIFO, BURST at defaults
+	int cfg = DMA_SxCR_MSIZE_0 | DMA_SxCR_PSIZE_0 | DMA_SxCR_MINC | DMA_SxCR_DIR_0;   // mem->codec, 16bit words
+	cfg |= 0 << DMA_SxCR_CHSEL_Pos;							// SPI2_TX is in DMA1 (Table 30) row for Channel 0, as Stream4
+	cfg |= DMA_SxCR_DBM;																						// double buffer, M0AR first
+	cfg |= DMA_SxCR_TCIE | DMA_SxCR_TEIE | DMA_SxCR_DMEIE;					// interrupt on complete, error, direct mode error
+	dma->CR = cfg;
+	
 	ak_SpeakerEnable( true );			// power up codec & amplifier (if not already)
 	ak_SetMute( false );
-	
+
 	// clocks from codec are stable at selected frequency-- from ak_SetMasterFreq()
-	I2S_SendWord( i2s );	// send 1st sample -- other channel (or duplicate if monoMode) will be sent by TXE int handler => saiEvent
-	
-	i2s->instance->CR2 |= (I2S_CR2_TXEIE | I2S_CR2_ERRIE);	// enable interrupt on transmit data empty or error
 	i2s->instance->I2SCFGR |= I2S_MODE_ENAB;		// enable I2S device-- starts transmitting audio
+	dma->CR |= DMA_SxCR_EN;											// enable DMA
   return ARM_DRIVER_OK;
 }
 
@@ -600,7 +678,7 @@ static uint32_t 							I2S_GetRxCount( I2S_RESOURCES *i2s ){ 																			
   return (cnt);
 }
 
-static int32_t 								I2S_Control( uint32_t control, uint32_t arg1, uint32_t arg2, I2S_RESOURCES *i2s){		// control I2S Interface.
+static int32_t 								I2S_Control( uint32_t control, uint32_t arg1, uint32_t arg2, I2S_RESOURCES *i2s ){	// control I2S Interface.
 //   			control  Operation
 //   			arg1     Argument 1 of operation (optional)
 //   			arg2     Argument 2 of operation (optional)
@@ -610,7 +688,7 @@ static int32_t 								I2S_Control( uint32_t control, uint32_t arg1, uint32_t ar
 	
 	uint32_t req = control & ARM_SAI_CONTROL_Msk;
 	if ( req == ARM_SAI_ABORT_SEND ){
-			abortTXMT( i2s ); 
+		  controlTXMT( i2s, (controlTyp) arg1 ); 
 			return ARM_DRIVER_OK;
   }
 	if ( req == ARM_SAI_ABORT_RECEIVE ){
@@ -633,7 +711,7 @@ static int32_t 								I2S_Control( uint32_t control, uint32_t arg1, uint32_t ar
 		return ARM_DRIVER_ERROR_UNSUPPORTED;    // no other options supported 
 }
 
-static ARM_SAI_STATUS 				I2S_GetStatus (I2S_RESOURCES *i2s) {																								// return current status
+static ARM_SAI_STATUS 				I2S_GetStatus( I2S_RESOURCES *i2s ) {																								// return current status
   ARM_SAI_STATUS status;
   // only returns values updated by IRQ_Handler?
   status.frame_error  = i2s->info->status.frame_error;
@@ -644,7 +722,7 @@ static ARM_SAI_STATUS 				I2S_GetStatus (I2S_RESOURCES *i2s) {																		
 
   return status;
 }
-static void 									I2S_IRQHandler( I2S_RESOURCES *i2s ){																								// I2S2 interrupts -- per data word events, reports completion to callback
+/*static void 									I2S_IRQHandler( I2S_RESOURCES *i2s ){																								// I2S2 interrupts -- per data word events, reports completion to callback
   uint16_t sr;
   uint32_t event = 0;
 	NVIC_ClearPendingIRQ( i2s->irq_num );		// reset IRQ
@@ -676,21 +754,24 @@ static void 									I2S_IRQHandler( I2S_RESOURCES *i2s ){																						
     i2s->info->cb_event( event );
 	}
 }
+*/
 
-/* NO DMA SUPPORT -- need per word handling for monoaural
-void 													I2S_TX_DMA_Complete(uint32_t events, const I2S_RESOURCES *i2s) {	// handle TX complete
-  DMA_ChannelDisable( i2s->dma_tx->ptr_channel );
-  int bytesLeft = DMA_ChannelTransferItemCount( i2s->dma_tx->ptr_channel );		// read bytes left in DMA channel
-	if ( bytesLeft == 0 )  // transfer complete?
-		i2s->info->tx_cnt = i2s->info->tx_req;
-	else  // TX DMA Complete caused by transfer abort-- no event
-    return;
-
-  i2s->info->status.tx_busy = 0U;
-  if (i2s->info->cb_event != NULL)
-    i2s->info->cb_event( ARM_SAI_EVENT_SEND_COMPLETE );
-}
-void 													I2S_RX_DMA_Complete(uint32_t events, const I2S_RESOURCES *i2s) {	// handle RX complete
+void 													I2S_TX_DMA_Complete( uint32_t intReqs, const I2S_RESOURCES *i2s ) {									// handle TX complete
+	// DMA1_Stream4_IRQ clears int req & passes reqBits (shifted to stream0) as intReqs
+	// call cb_event to chain to next buffer
+	const int DMA_COMPLETE = DMA_LISR_TCIF0;			// transfer complete flag (as Stream 0)
+	const int DMA_ERROR_MSK = DMA_LISR_TEIF0 | DMA_LISR_DMEIF0 | DMA_LISR_FEIF0;  // mask for transfer error, direct mode error & fifi error 
+	
+	if ( (intReqs & DMA_COMPLETE) != 0 )					// SEND complete first, if appropriate
+		i2s->info->cb_event( ARM_SAI_EVENT_SEND_COMPLETE );
+		
+	if ( (intReqs & DMA_ERROR_MSK) != 0 )
+		i2s->info->cb_event( intReqs << 3 );			// << so they don't look like ARM RX or TX complete
+} 
+void 													I2S_RX_DMA_Complete( uint32_t events, const I2S_RESOURCES *i2s ) {					// handle RX complete
+/* TODO: Receive
+  DMA1_Stream4->CR =  ;
+	
   DMA_ChannelDisable( i2s->dma_rx->ptr_channel );
   int bytesLeft = DMA_ChannelTransferItemCount( i2s->dma_rx->ptr_channel );		// read bytes left in DMA channel
   if ( bytesLeft == 0 )  // transfer complete?
@@ -701,46 +782,57 @@ void 													I2S_RX_DMA_Complete(uint32_t events, const I2S_RESOURCES *i2s)
   i2s->info->status.rx_busy = 0U;
   if (i2s->info->cb_event != NULL)
     i2s->info->cb_event( ARM_SAI_EVENT_RECEIVE_COMPLETE );
-}
-// override handlers called by DMAx_Channely_IRQHandler in DMA_STM32F10x.c
-void 	 I2S0_TX_DMA_Handler( uint32_t events )  { I2S_TX_DMA_Complete( events, &I2S0_Resources ); } // define override
-void   I2S0_RX_DMA_Handler( uint32_t events )  { I2S_RX_DMA_Complete( events, &I2S0_Resources ); } // define override
 */
+}
 
 //------------------
 // I2S0 Driver Wrapper functions -- pass resource ptr to general fn
-static ARM_SAI_CAPABILITIES 	I2S0_GetCapabilities (void) {
-  return I2S_GetCapabilities (&I2S0_Resources);
+static ARM_SAI_CAPABILITIES 	I2S2_GetCapabilities (void) {
+  return I2S_GetCapabilities (&I2S2_Resources);
 }
-static int32_t 								I2S0_Initialize (ARM_SAI_SignalEvent_t cb_event) {
-  return I2S_Initialize (cb_event, &I2S0_Resources);
+static int32_t 								I2S2_Initialize (ARM_SAI_SignalEvent_t cb_event) {
+  return I2S_Initialize (cb_event, &I2S2_Resources);
 }
-static int32_t 								I2S0_Uninitialize (void) {
-  return I2S_Uninitialize (&I2S0_Resources);
+static int32_t 								I2S2_Uninitialize (void) {
+  return I2S_Uninitialize (&I2S2_Resources);
 }
-static int32_t 								I2S0_PowerControl (ARM_POWER_STATE state) {
-  return I2S_PowerControl (state, &I2S0_Resources);
+static int32_t 								I2S2_PowerControl (ARM_POWER_STATE state) {
+  return I2S_PowerControl (state, &I2S2_Resources);
 }
-static int32_t 								I2S0_Send (const void *data, uint32_t num) {
-  return I2S_Send (data, num, &I2S0_Resources);
+static int32_t 								I2S2_Send (const void *data, uint32_t num) {
+  return I2S2only_Send( data, num, &I2S2_Resources );
 }
-static int32_t 								I2S0_Receive (void *data, uint32_t num) { 
-  return I2S_Receive (data, num, &I2S0_Resources);
+static int32_t 								I2S2_Receive (void *data, uint32_t num) { 
+  return I2S_Receive (data, num, &I2S2_Resources);
 }
-static uint32_t 							I2S0_GetTxCount (void) {
-  return I2S_GetTxCount (&I2S0_Resources);
+static uint32_t 							I2S2_GetTxCount (void) {
+  return I2S_GetTxCount (&I2S2_Resources);
 }
-static uint32_t 							I2S0_GetRxCount (void) {
-  return I2S_GetRxCount (&I2S0_Resources);
+static uint32_t 							I2S2_GetRxCount (void) {
+  return I2S_GetRxCount (&I2S2_Resources);
 }
-static int32_t 								I2S0_Control (uint32_t control, uint32_t arg1, uint32_t arg2) {
-  return I2S_Control (control, arg1, arg2, &I2S0_Resources);
+static int32_t 								I2S2_Control (uint32_t control, uint32_t arg1, uint32_t arg2) {
+  return I2S_Control (control, arg1, arg2, &I2S2_Resources);
 }
-static ARM_SAI_STATUS 				I2S0_GetStatus (void) {
-  return I2S_GetStatus (&I2S0_Resources);
+static ARM_SAI_STATUS 				I2S2_GetStatus (void) {
+  return I2S_GetStatus (&I2S2_Resources);
 }
-void 													I2S2_IRQHandler (void) {		// SPI2 == I2S0
-  I2S_IRQHandler (&I2S0_Resources);
+/*void 													I2S2_IRQHandler (void) {				// SPI2 == I2S0
+  I2S_IRQHandler (&I2S2_Resources);
+} */
+void 													DMA1_Stream4_IRQ( void ){				// I2S2 TX DMA interrupt
+	// get values of Stream4 interrupt flags
+	int events = DMA1->HISR & (DMA_HISR_TCIF4 | DMA_HISR_HTIF4 | DMA_HISR_TEIF4 | DMA_HISR_DMEIF4 | DMA_HISR_FEIF4 );
+  DMA1->HIFCR |= events;		// clear all
+	
+	I2S_TX_DMA_Complete( events, &I2S2_Resources );		// pass flags shifted into Stream0 position
+}
+void 													DMA1_Stream3_IRQ( void ){				// I2S2 RX DMA interrupt
+	// get values of Stream3 interrupt flags
+	int events = DMA1->LISR & (DMA_LISR_TCIF3 | DMA_LISR_HTIF3 | DMA_LISR_TEIF3 | DMA_LISR_DMEIF3 | DMA_LISR_FEIF3 );
+  DMA1->LIFCR |= events;		// clear all
+
+	I2S_RX_DMA_Complete( events >> DMA_LISR_FEIF3_Pos, &I2S2_Resources );		// pass flags shifted into Stream0 position
 }
 
 
@@ -748,16 +840,16 @@ void 													I2S2_IRQHandler (void) {		// SPI2 == I2S0
 // define externally referenced SAI0 Driver Control Block == I2S2
 ARM_DRIVER_SAI Driver_SAI0 = {
     I2Sx_GetVersion,
-    I2S0_GetCapabilities,
-    I2S0_Initialize,
-    I2S0_Uninitialize,
-    I2S0_PowerControl,
-    I2S0_Send,
-    I2S0_Receive,
-    I2S0_GetTxCount,
-    I2S0_GetRxCount,
-    I2S0_Control,
-    I2S0_GetStatus
+    I2S2_GetCapabilities,
+    I2S2_Initialize,
+    I2S2_Uninitialize,
+    I2S2_PowerControl,
+    I2S2_Send,
+    I2S2_Receive,
+    I2S2_GetTxCount,
+    I2S2_GetRxCount,
+    I2S2_Control,
+    I2S2_GetStatus
 };
 
 //*********** end I2S_stm32F10x.c 

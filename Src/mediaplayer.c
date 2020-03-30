@@ -36,10 +36,10 @@ void					initMediaPlayer( void ){						// init mediaPlayer & spawn thread to han
 		tbErr( "mediaThread spawn failed" );	
 	
 	//registerPowerEventHandler( handlePowerEvent );
-	audInitialize( mMediaEventId );
+	audInitialize( );
 }
 void					mediaPowerDown( void ){
-	audPowerDown();
+	audStopAudio();
 }
 
 // external methods for  controlManager executeActions
