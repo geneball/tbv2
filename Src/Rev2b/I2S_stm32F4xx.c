@@ -267,10 +267,10 @@ static void		 								I2S3_ClockEnable( bool enab ){ 								// enable/disable I
 			tbDelay_ms( 1 );
 		
 		// RM0402  STM32F412xx Reference Manual
-		//  I2SCLK from PLLI2S = 96MHz by default
+		//  I2SCLK from PLLI2S = 48MHz
 		//  	fs = PLLI2S/ (256*( 2*I2SDIV + ODD )
 		//  set to fs = 46875, which produces MCLK of ( fs*256 ) = 12000000
-		//  div = 4, odd = 0
+		//   div = 2, odd = 0               (div was 4 when PLLI2S was 96MHz)
 		// configure SPI2 I2SCFGR & I2SPR registers -- default modes @ 46875
 	
 		// SPI3: setup I2S Master Mode Receive
@@ -278,7 +278,7 @@ static void		 								I2S3_ClockEnable( bool enab ){ 								// enable/disable I
 		// 2) set CKPOL=0 MCKOE=1 
 		// 3) SET I2SMOD=1  I2SSTD=11 DATLEN=00 CHLEN=0 I2SCFG=11
 		spi->I2SCFGR = I2S_MODE | I2S_CFG_MASTER_RX;	// I2Smode Master Receive (0x5400) ASTREN=0 I2SSTD=0 CKPOL=0 DATLEN=00 CHLEN=0
-		spi->I2SPR   = I2S_MCLKOUTPUT_ENABLE | 4;   	// MCKOE & DIV=4  (0x100)
+		spi->I2SPR   = I2S_MCLKOUTPUT_ENABLE | 2;   	// MCKOE & DIV=2  (0x100)
 		spi->CR2 		 = 0;															// disable all interrupts & DMA
 		// enable I2S to start clock
 		spi->I2SCFGR 	|= I2S_MODE_ENAB;								// enable I2S device, set I2SE (0x200)
@@ -423,16 +423,16 @@ static int32_t 								I2S_Initialize( ARM_SAI_SignalEvent_t cb_event, I2S_RESOU
   // I22_clk = (HSE * PLLI2S_N / PLLI2S_M) / PLLI2S_R 
 	int I2S_N = 0x60;
 	int I2S_M = 4;
-	int I2S_R = 2;	
+	int I2S_R = 4; // (was 2)	
 	int I2S_Q = 4;
-	// configure to: 96MHz as expected by I2S3_ClockEnable() = (8000000 * 96 / 4)/ 2 = 96000000 
+	// configure to: 48MHz as expected by I2S3_ClockEnable() = (8000000 * 96 / 4)/ 4 = 48000000 
 	int cfg = 0;																		// SRC=0 == input from same as PLL (HSE 8MHz crystal clock)
-	cfg |= (I2S_R << RCC_PLLI2SCFGR_PLLI2SR_Pos);		// R == 2
+	cfg |= (I2S_R << RCC_PLLI2SCFGR_PLLI2SR_Pos);		// R == 4
 	cfg |= (I2S_Q << RCC_PLLI2SCFGR_PLLI2SQ_Pos);		// Q == 4  // set to default for USB
 	cfg |= (I2S_N << RCC_PLLI2SCFGR_PLLI2SN_Pos);		// N == 96
 	cfg |= (I2S_M << RCC_PLLI2SCFGR_PLLI2SM_Pos);		// M == 16
 	// PLLI2SCFGR: _RRR QQQQ _S__ ____ _NNN NNNN NNMM MMMM
-	// 0x24001804  0010 1000 0000 0000 0001 1000 0000 0100 R=2 Q=4 S=0 N=0x60 M=4
+	// 0x24001804  0100 1000 0000 0000 0001 1000 0000 0100 R=4 Q=4 S=0 N=0x60 M=4
 	RCC->PLLI2SCFGR = cfg;
 
   // set APB1 peripherals to use PLLI2S_clock -- i.e. I2S3 == SPI3 
@@ -508,8 +508,9 @@ static int32_t 								I2S_PowerControl( ARM_POWER_STATE state, I2S_RESOURCES *i
 
   switch (state) {
     case ARM_POWER_OFF:				// power down when audio not in use
-      NVIC_DisableIRQ( i2s->irq_num );      // Disable I2S IRQ
-      NVIC_ClearPendingIRQ(i2s->irq_num);		// Clear pending I2S interrupts in NVIC
+      NVIC_DisableIRQ( DMA1_Stream4_IRQn );     		// Disable SPI2_TX DMA IRQ
+      NVIC_ClearPendingIRQ( DMA1_Stream4_IRQn );  	// Clear pending PI2_TX DMA interrupts
+		//TODO: RX
 
 			ak_PowerDown();					// power down AK4637 & I2C1 device
  //     RCC->APB1ENR &= ~RCC_APB1ENR_I2C1EN; 	// disable I2C1 device
@@ -540,9 +541,10 @@ static int32_t 								I2S_PowerControl( ARM_POWER_STATE state, I2S_RESOURCES *i
       RCC->APB1ENR |= RCC_APB1ENR_SPI3EN; 	// enable SPI3 device -- for clock generation
 			RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;		// enable clock for DMA1
 			
-      // Clear and Enable SAI IRQ
-      NVIC_ClearPendingIRQ( i2s->irq_num );
-      NVIC_EnableIRQ( i2s->irq_num );
+      // Clear and Enable SPI2_TX DMA IRQ
+      NVIC_ClearPendingIRQ( DMA1_Stream4_IRQn ); 
+      NVIC_EnableIRQ( DMA1_Stream4_IRQn ); 
+		//TODO: RX
       break;
 
     default: return ARM_DRIVER_ERROR_UNSUPPORTED;
@@ -650,8 +652,8 @@ static int32_t 								I2S2only_Send( const void *data, uint32_t nSamples, I2S_R
 	ak_SetMute( false );
 
 	// clocks from codec are stable at selected frequency-- from ak_SetMasterFreq()
-	i2s->instance->I2SCFGR |= I2S_MODE_ENAB;		// enable I2S device-- starts transmitting audio
 	dma->CR |= DMA_SxCR_EN;											// enable DMA
+	i2s->instance->I2SCFGR |= I2S_MODE_ENAB;		// enable I2S device-- starts transmitting audio
   return ARM_DRIVER_OK;
 }
 
@@ -825,14 +827,14 @@ static ARM_SAI_STATUS 				I2S2_GetStatus (void) {
 /*void 													I2S2_IRQHandler (void) {				// SPI2 == I2S0
   I2S_IRQHandler (&I2S2_Resources);
 } */
-void 													DMA1_Stream4_IRQ( void ){				// I2S2 TX DMA interrupt
+void 													DMA1_Stream4_IRQHandler( void ){				// I2S2 TX DMA interrupt
 	// get values of Stream4 interrupt flags
 	int events = DMA1->HISR & (DMA_HISR_TCIF4 | DMA_HISR_HTIF4 | DMA_HISR_TEIF4 | DMA_HISR_DMEIF4 | DMA_HISR_FEIF4 );
   DMA1->HIFCR |= events;		// clear all
 	
 	I2S_TX_DMA_Complete( events, &I2S2_Resources );		// pass flags shifted into Stream0 position
 }
-void 													DMA1_Stream3_IRQ( void ){				// I2S2 RX DMA interrupt
+void 													DMA1_Stream3_IRQHandler( void ){				// I2S2 RX DMA interrupt
 	// get values of Stream3 interrupt flags
 	int events = DMA1->LISR & (DMA_LISR_TCIF3 | DMA_LISR_HTIF3 | DMA_LISR_TEIF3 | DMA_LISR_DMEIF3 | DMA_LISR_FEIF3 );
   DMA1->LIFCR |= events;		// clear all
