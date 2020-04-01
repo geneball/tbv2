@@ -41,14 +41,15 @@ void 								audSquareWav( int nsecs, int hz ){						// preload wavHdr & buffers
 	pSt.SqrWAVE = true;			// set up to generate 'hz' square wave
 	WAVE_FormatTypeDef *wav = pSt.wavHdr;
 	wav->SampleRate = 8000;
-	pSt.sqrWvLen = wav->SampleRate / hz;				// samples per wave
+	pSt.sqrHfLen = wav->SampleRate / (hz*2);		// samples per half wave
 	pSt.sqrWvPh = 0;														// start with beginning of LO
-	pSt.sqrHi = 0x9090;
-	pSt.sqrLo = 0x1010;
+	pSt.sqrHi = 0xAAAA;
+	pSt.sqrLo = 0x0001;
+	pSt.sqrSamples = nsecs * wav->SampleRate;		// number of samples to send
 	
 	wav->NbrChannels = 1;
 	wav->BitPerSample = 16;
-	wav->SubChunk2Size =  nsecs * wav->SampleRate * 2; // bytes of data 
+	wav->SubChunk2Size =  pSt.sqrSamples * 2; // bytes of data 
 /*
 	for ( int i=0; i<nBuffs; i++ ){	// preload audio_buffers with !KHz square wave @ 8KHz == (1,1,1,1,0,0,0,0)...
 		Buffer_t *pB = &audio_buffers[i];
@@ -181,6 +182,7 @@ void 								initBuffs(){																	// create audio buffers
 		Buffer_t *pB = &audio_buffers[i];
 		pB->state = bEmpty;
 		pB->data = (uint16_t *) tbAlloc( BuffLen, "audio buffer" );
+		for( int j =0; j<BuffWds; j++ ) pB->data[j] = 0x33;
 	}
 }
 Buffer_t * 					allocBuff(){																	// get a buffer for use
@@ -223,8 +225,9 @@ Buffer_t * 					loadBuff( ){																	// read next block of audio into a 
 	int nSamp = 0;
 	int len = pSt.monoMode? BuffLen/2 : BuffLen;		// leave room to duplicate if mono
 	if ( pSt.SqrWAVE ){	
-		pSt.nSamples -= len;		// decrement SqrWv samples to go
-		nSamp = pSt.nSamples>0? len : 0;
+		nSamp = pSt.sqrSamples > len? len : pSt.sqrSamples;
+		pSt.sqrSamples -= nSamp;		// decrement SqrWv samples to go
+
 		int phase = pSt.sqrWvPh;			// start from end of previous
 		int val = phase > 0? pSt.sqrHi : pSt.sqrLo;
 		for (int i=0; i<len; i++){ 
@@ -232,8 +235,8 @@ Buffer_t * 					loadBuff( ){																	// read next block of audio into a 
 			phase--;
 			if (phase==0)
 				val = pSt.sqrLo;
-			else if (phase==-pSt.sqrWvLen){
-				phase = pSt.sqrWvLen;
+			else if (phase==-pSt.sqrHfLen){
+				phase = pSt.sqrHfLen;
 				val = pSt.sqrHi;
 			}
 		}

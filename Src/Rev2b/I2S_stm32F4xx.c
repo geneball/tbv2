@@ -653,6 +653,7 @@ static int32_t 								I2S2only_Send( const void *data, uint32_t nSamples, I2S_R
 
 	// clocks from codec are stable at selected frequency-- from ak_SetMasterFreq()
 	dma->CR |= DMA_SxCR_EN;											// enable DMA
+	i2s->instance->CR2 |= I2S_CR2_TXDMAEN;			// enable TXDMA for I2S device
 	i2s->instance->I2SCFGR |= I2S_MODE_ENAB;		// enable I2S device-- starts transmitting audio
   return ARM_DRIVER_OK;
 }

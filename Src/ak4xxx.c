@@ -234,6 +234,7 @@ void 						Codec_WrReg( uint8_t Reg, uint8_t Value){										// write codec reg
 		if ( waitCnt > 1000 ){
 			errLog("I2C Tx hang");
 			reinitCnt++;
+			if ( reinitCnt > 16 ) tbErr( "Can't restart I2C\n" );
 			I2C_Reinit( reinitCnt );			// SW, RST, SW+RST, INIT, INIT+SW, ...
 			Codec_WrReg( Reg, Value );		// recursive call to retry on reset device
 			return;
