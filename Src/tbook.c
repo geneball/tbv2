@@ -111,8 +111,8 @@ void debugLoop( ){
 
 		if ( gGet( gCIRCLE ) && st==Ready ){		// CIRCLE => audio test
 			gSet( gRED, 0 );
-			int hz = gGet( gPLUS )? 440 : 1000;
-			audSquareWav( 10, hz );							// subst file data with square wave for 5sec
+			int hz = gGet( gPLUS )? 440 : gGet( gMINUS )? 523 : gGet( gLHAND )? 659 : 1000;
+			audSquareWav( 5, hz );							// subst file data with square wave for 5sec
 			gSet( gGREEN, 1 );
 			PlayWave( "SQR.wav" );							// play 10 seconds of 1KHz square wave
 		}

@@ -40,7 +40,7 @@ void 								audInitialize( void ){ 												// allocs buffers, sets up SAI
 void 								audSquareWav( int nsecs, int hz ){						// preload wavHdr & buffers with 1KHz square wave
 	pSt.SqrWAVE = true;			// set up to generate 'hz' square wave
 	WAVE_FormatTypeDef *wav = pSt.wavHdr;
-	wav->SampleRate = 8000;
+	wav->SampleRate = 16000;
 	pSt.sqrHfLen = wav->SampleRate / (hz*2);		// samples per half wave
 	pSt.sqrWvPh = 0;														// start with beginning of LO
 	pSt.sqrHi = 0xAAAA;
@@ -223,7 +223,7 @@ Buffer_t * 					loadBuff( ){																	// read next block of audio into a 
 	pSt.nToPlay = BuffWds;			// will always play a full buffer -- padded if necessary
 	
 	int nSamp = 0;
-	int len = pSt.monoMode? BuffLen/2 : BuffLen;		// leave room to duplicate if mono
+	int len = pSt.monoMode? BuffWds/2 : BuffWds;		// leave room to duplicate if mono
 	if ( pSt.SqrWAVE ){	
 		nSamp = pSt.sqrSamples > len? len : pSt.sqrSamples;
 		pSt.sqrSamples -= nSamp;		// decrement SqrWv samples to go
@@ -240,11 +240,13 @@ Buffer_t * 					loadBuff( ){																	// read next block of audio into a 
 				val = pSt.sqrHi;
 			}
 		}
+		pSt.sqrWvPh = phase;		// next starts from here
 	} else {
-		nSamp = fread( pB->data, 1, len, pSt.wavF )/2;		// read up to len bytes (1/2 buffer if mono)
+		nSamp = fread( pB->data, 1, len*2, pSt.wavF )/2;		// read up to len samples (1/2 buffer if mono)
 	}
 	if ( pSt.monoMode ){
-		for ( int i=(nSamp*2)-1; i>0; i-- )	// nSamp*2 stereo samples
+		nSamp *= 2;
+		for ( int i = nSamp-1; i>0; i-- )	// nSamp*2 stereo samples
 			pB->data[i] = pB->data[ i>>1 ];   // len==2048:  d[2047] = d[1023], d[2046]=d[1023], d[2045] = d[1022], ... d[2]=d[1], d[1]=d[0] 
 	}
 
