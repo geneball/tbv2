@@ -50,18 +50,6 @@ void 								audSquareWav( int nsecs, int hz ){						// preload wavHdr & buffers
 	wav->NbrChannels = 1;
 	wav->BitPerSample = 16;
 	wav->SubChunk2Size =  pSt.sqrSamples * 2; // bytes of data 
-/*
-	for ( int i=0; i<nBuffs; i++ ){	// preload audio_buffers with !KHz square wave @ 8KHz == (1,1,1,1,0,0,0,0)...
-		Buffer_t *pB = &audio_buffers[i];
-		int nwds = BuffLen/4;  				// # of 16bit words in just 1st half of buffer
-		for ( int j=0; j<nwds; j++ ){ 
-			pB->data[ j ] = 0;
-			pB->data[ j + nwds ] = 0xFFFF;		
-			if ( !gGet( gPLUS ))
-				pB->data[ j ] = (j & 4)? 0x1010 : 0x9090;
-		}
-	}
-	*/
 }
 void								audInitState( void ){													// set up playback State in pSt
 	pSt.LastError = 0;
@@ -156,18 +144,13 @@ void 								audPauseResumeAudio( void ){									// signal playback to request 
 }
 
 void 								audPlaybackComplete( void ){									// shut down after completed playback
+	ak_SpeakerEnable( false ); 												// power down codec internals & amplifier
 	Driver_SAI0.Control( ARM_SAI_ABORT_SEND, 0, 0 );	// shut down I2S device, arg1==0 => Abort
-	Driver_SAI0.PowerControl( ARM_POWER_OFF );				// shut off I2S device entirely -- I2C problem
-	ak_SpeakerEnable( false ); 		// power down codec & amplifier
+	Driver_SAI0.PowerControl( ARM_POWER_OFF );				// shut off I2S & I2C devices entirely
 
 	freeBuff( 0 );
 	freeBuff( 1 );
 	freeBuff( 2 );
-
-	//	Driver_SAI0.Uninitialize( );   
-//	Driver_SAI0.Initialize( &saiEvent );   
-//	Driver_SAI0.PowerControl( ARM_POWER_FULL );		// power up audio
-//		I2C_Reinit( 1 );							// try an I2C SWRST before reconnecting
 
 	int pct = audPlayPct();
 	sendEvent( AudioDone, pct );				// end of file playback-- generate CSM event 
