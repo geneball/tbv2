@@ -24,6 +24,8 @@ const int	pSTATS_PATH 		= 4;
 const int	pMSGS_PATH 			= 5;
 const int	pLIST_OF_SUBJS 	= 6;
 const int	pPACKAGE_DIR		= 7;
+const int pAUDIO = 8;		// DEBUG
+const int pLAST = 8;
 char * TBP[] = {
 		"M0:/system/status.txt",
 		"M0:/system/bootcount.txt",
@@ -32,7 +34,8 @@ char * TBP[] = {
 		"M0:/stats/",
 		"M0:/messages/",
 		"M0:/package/list_of_subjects.txt",
-		"M0:/package/"
+		"M0:/package/",
+		"M0:/audio.wav"
 };
 	
 const char *	TBOOK_STATUS 				= "M0:/system/status.txt"; 
@@ -57,6 +60,7 @@ char 					MallocHeap[ 20000 ];    // MALLOC_HEAP_SIZE ];
 bool					FileSysOK 						= false;
 bool					TBDataOK 							= true;			// false if no TB config found
 
+void				dbgSetVolume( int vol );
 
 fsStatus fsMount( char *drv ){		// try to finit() & mount()  drv:   finit() code, fmount() code
 		fsStatus stat = finit( drv );  		// init file system driver for device
@@ -79,17 +83,50 @@ fsStatus fsMount( char *drv ){		// try to finit() & mount()  drv:   finit() code
 static char * fsDevs[] = { "M0:", "M1:", "N0:", "F0:", "F1:", NULL };
 static int    fsNDevs = 0;
 
+void copyFile( const char *src, const char * dst ){
+	FILE * fsrc = fopen( src, "r" );
+	FILE * fdst = fopen( dst, "w" );
+	if ( fsrc==NULL || fdst==NULL ) return;
+	char buf[512];
+	while (true){
+		int cnt = fread( buf, 1, 512, fsrc );
+		if ( cnt==0 )	break;
+
+		fwrite( buf, 1, 512, fdst );
+	}
+	fclose(fsrc);
+	fclose(fdst);
+}
 void debugLoop( ){
 	if ( fsNDevs==0 ) dbgLog( "no storage avail \n" );
 	else dbgLog( "no TBook on %s \n", fsDevs[0]  );
+
 	MediaState st = Ready;
 	int ledCntr = 0;
+	bool curPl, prvPl, curMi,prvMi = false;
+	int vol = 60, prvvol = 60;
 	
 	while ( true ){
 		ledCntr++;
 		st = audGetState();
 		if ( st==Ready )
 			gSet( gRED, ((ledCntr >> 14) & 0x3)== 0 );		// flash RED ON for 1 of 4  
+		if ( st==Playing ){
+			if (((ledCntr >> 14) & 0x3)== 0)
+				vol = vol > 50? 20 : 80;
+			prvPl = curPl;
+			curPl = gGet( gPLUS );
+			prvMi = curMi;
+			curMi = gGet( gMINUS );
+			if ( curPl & !prvPl )
+				vol = (vol*110)/100; 
+			else if ( curMi & !prvMi )
+				vol = (vol*90)/100; 
+			vol = vol<0? 0: vol>100? 100 : vol;
+			if ( vol != prvvol )
+				dbgSetVolume( vol );
+			prvvol = vol;
+		}
 		
 		if ( fsNDevs > 0 && gGet( gHOME ) && !isMassStorageEnabled()){  // HOME => if have a filesystem but no data -- try USB MSC
 			gSet( gRED, 1 );
@@ -111,11 +148,17 @@ void debugLoop( ){
 
 		if ( gGet( gCIRCLE ) && st==Ready ){		// CIRCLE => audio test
 			gSet( gRED, 0 );
-			int hz = gGet( gPLUS )? 440 : gGet( gMINUS )? 523 : gGet( gLHAND )? 659 : 1000;
-			audSquareWav( 5, hz );							// subst file data with square wave for 5sec
 			gSet( gGREEN, 1 );
-			PlayWave( "SQR.wav" );							// play 10 seconds of 1KHz square wave
+			FILE * fa = fopen( TBP[pAUDIO], "r" );
+			if ( fa!=NULL ){
+				PlayWave( TBP[pAUDIO] );
+			} else {
+				int hz = gGet( gPLUS )? 440 : gGet( gMINUS )? 523 : gGet( gLHAND )? 659 : 1000;
+				audSquareWav( 5, hz );							// subst file data with square wave for 5sec
+				PlayWave( "SQR.wav" );							// play x seconds of hz square wave
+			}
 		}
+
 	}
 }
 
@@ -149,11 +192,24 @@ void talking_book( void *argument ) {
 			flashCode( 10 );		// R G R G : not M0:
 			flashLED( "__" );
 		}
-		for ( int i = pSTATUS; i <= pPACKAGE_DIR; i++ ){
+		for ( int i = pSTATUS; i <= pLAST; i++ ){
 				TBP[ i ][0] = fsDevs[0][0];
 				TBP[ i ][1] = fsDevs[0][1];
 		}
-		FILE *f = fopen( TBOOK_STATUS, "r" );			// try to open "system/status.txt"
+		if ( fsNDevs > 1 ){
+			FILE *fa = fopen( TBP[pAUDIO], "r" );
+			if ( fa!=NULL ){
+				fclose( fa );		// audio.wav exists on device fsDevs[0] --- copy it to fsDevs[1]
+				char dst[40];
+				strcpy( dst, TBP[pAUDIO] );
+				dst[0] = fsDevs[1][0];
+				dst[1] = fsDevs[1][1];
+				
+				copyFile( TBP[pAUDIO], dst );
+			}
+		}
+		
+		FILE *f = fopen( TBP[pSTATUS], "r" );			// try to open "system/status.txt"
 		if ( f==NULL )	
 			debugLoop( );
 		else

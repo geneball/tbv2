@@ -164,10 +164,6 @@ static const I2S_RESOURCES I2S2_Resources = {		// capabilities & hardware links
 
 typedef enum { ctlAbort=0, ctlPause=1, ctlResume=2 } controlTyp;
 
-//DEBUG
-int BrkCnt = 200;							// DEBUG:  break during audio send
-int initialUnderRunCnt = 0;		// DEBUG: count any underruns at the start of a buffer
-
 // forward decls for self calls
 static int32_t 								I2S2only_Send( const void *data, uint32_t nSamples, I2S_RESOURCES *i2s );
 static int32_t 								I2S_Control( uint32_t control, uint32_t arg1, uint32_t arg2, I2S_RESOURCES *i2s );
@@ -185,12 +181,8 @@ void 													reset_I2S_Info( I2S_RESOURCES *i2s ) {																// initi
   i2s->info->status.tx_busy       = 0U;
   i2s->info->status.tx_underflow  = 0U;
 
-	// default for stereo -- but set by I2S_Control( Configure )
-	i2s->info->data_bytes = 2; // = 2 channels * 16bit samples
-//	i2s->info->dataPtr = NULL; 	
-//	i2s->info->monoMode = false;
-//	i2s->info->firstChannel = false;
-	
+	i2s->info->data_bytes = 2; 	// default to 1 channels * 16bit samples-- but set by I2S_Control( Configure )
+
 	i2s->info->tx_cnt = 0;
 	i2s->info->tx_req = 0;
 	i2s->info->rx_cnt = 0;
@@ -551,50 +543,6 @@ static int32_t 								I2S_PowerControl( ARM_POWER_STATE state, I2S_RESOURCES *i
   }
   return ARM_DRIVER_OK;
 }
-/*static void 									I2S_SendWord( I2S_RESOURCES *i2s ){																									// send next stereo sample-- duplicate if mono
-	I2S_INFO *info = i2s->info;	
-	if ( info->tx_cnt == 0 ){
-		int sr = i2s->instance->SR;    // get status register-- left from end of previous buffer
-		if (sr & SPI_SR_UDR) initialUnderRunCnt++;
-dbgToggleVolume();
-	}
-	i2s->instance->DR = *info->dataPtr;		// clears TXE
-//	info->firstChannel = !info->firstChannel;
-//	if ( info->monoMode && info->firstChannel ) 
-//		return;  // send same sample next time
-
- 	if ( info->tx_cnt == info->tx_req ){		// buffer complete-- just stored 2nd copy of last word 
-dbgToggleVolume();
-		i2s->instance->CR2 &= ~I2S_CR2_TXEIE;									// disable TXE interrupt
-		i2s->info->status.tx_busy = 0;
-		i2s->info->cb_event( ARM_SAI_EVENT_SEND_COMPLETE );		// call buffer complete callback ( audio.c saiEvent )
-	}
-dbgToggleVolume();
-	
-	info->dataPtr++;							// move ptr to next sample-- always if stereo, every other if monoMode
-	info->tx_cnt += 2;						// 2 more bytes (1 sample) consumed from buffer
-	
-	if ( info->tx_cnt >= BrkCnt && gGet( gMINUS ))		// DEBUG: if MINUS key -- halt when tx_cnt reaches BrkCnt
-			tbErr( "I2S cnt >= %d \n", BrkCnt );
-}
-static void 									I2S_GetWord(I2S_RESOURCES *i2s ){																										// receive next stereo sample-- store left channel only
-	I2S_INFO *info = i2s->info;	
-	if ( info->rx_cnt == info->rx_req ){	// receive buffer full
-		i2s->info->status.tx_busy = 0U;
-		i2s->instance->I2SCFGR &= ~I2S_MODE_ENAB;		// disable I2S device
-		i2s->instance->CR2 &= ~(I2S_CR2_RXNEIE | I2S_CR2_ERRIE);	// disable interrupt on receive data non-empty or error
-		if (i2s->info->cb_event != NULL)
-			i2s->info->cb_event( ARM_SAI_EVENT_RECEIVE_COMPLETE );		// call buffer complete callback
-	}	else {
-		int data = i2s->instance->DR;		// clears RXNE
-//		info->firstChannel = !info->firstChannel;
-//		if ( info->firstChannel ){
-//			*info->dataPtr++ = data;		// store left channel sample
-//			info->rx_cnt += 2;					// 2 more bytes (1 mono sample) received
-//		}
-	}
-} */
-
 static int32_t 								I2S2only_Send( const void *data, uint32_t nSamples, I2S_RESOURCES *i2s ){						// start data transmit
 // ONLY for I2S2 (SPI2) using DMA1_Stream4
 //   Start sending data to I2S transmitter.  
@@ -730,40 +678,6 @@ static ARM_SAI_STATUS 				I2S_GetStatus( I2S_RESOURCES *i2s ) {																	
 
   return status;
 }
-/*static void 									I2S_IRQHandler( I2S_RESOURCES *i2s ){																								// I2S2 interrupts -- per data word events, reports completion to callback
-  uint16_t sr;
-  uint32_t event = 0;
-	NVIC_ClearPendingIRQ( i2s->irq_num );		// reset IRQ
-
-  sr = i2s->instance->SR;    // get status register
-	const int SPI_ERRS = SPI_SR_OVR | SPI_SR_UDR;
-	const int SPI_MSK = SPI_ERRS | SPI_SR_TXE | SPI_SR_RXNE;
-	
-	if ( (sr & SPI_MSK) == SPI_SR_TXE ){		// no error-- word transmitted 
-		I2S_SendWord( i2s );
-		return;
-	}
-	
-	if ( (sr & SPI_MSK) == SPI_SR_RXNE ){		// no error-- word received 
-		I2S_GetWord( i2s );
-		return;
-	}
-	
-	if ( (sr & SPI_ERRS) != 0 ){
-		if ((sr & SPI_SR_OVR) != 0U) {
-			i2s->info->status.rx_overflow = 1;
-			uint16_t tmp = i2s->instance->DR;    // Clear Overrun flag by reading data register
-			event |=	ARM_SAI_EVENT_RX_OVERFLOW;
-		}
-		if ((sr & SPI_SR_UDR) != 0U) {    // Underrun flag is set -- SLAVE mode only
-			i2s->info->status.tx_underflow = 1;
-			event |= ARM_SAI_EVENT_TX_UNDERFLOW;
-		}
-    i2s->info->cb_event( event );
-	}
-}
-*/
-
 void 													I2S_TX_DMA_Complete( uint32_t intReqs, const I2S_RESOURCES *i2s ) {									// handle TX complete
 	// DMA1_Stream4_IRQ clears int req & passes reqBits (shifted to stream0) as intReqs
 	// call cb_event to chain to next buffer

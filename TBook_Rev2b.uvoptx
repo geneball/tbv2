@@ -157,39 +157,7 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>355</LineNumber>
-          <EnabledFlag>0</EnabledFlag>
-          <Address>134283092</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\Src\ak4xxx.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Src/ak4xxx.c\355</Expression>
-        </Bp>
-        <Bp>
-          <Number>1</Number>
-          <Type>0</Type>
-          <LineNumber>359</LineNumber>
-          <EnabledFlag>0</EnabledFlag>
-          <Address>134282370</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\Src\ak4xxx.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Src/ak4xxx.c\359</Expression>
-        </Bp>
-        <Bp>
-          <Number>2</Number>
-          <Type>0</Type>
-          <LineNumber>360</LineNumber>
+          <LineNumber>341</LineNumber>
           <EnabledFlag>0</EnabledFlag>
           <Address>134282374</Address>
           <ByteObject>0</ByteObject>
@@ -200,10 +168,26 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>.\Src\ak4xxx.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Src/ak4xxx.c\360</Expression>
+          <Expression>\\TBookRev2b\Src/ak4xxx.c\341</Expression>
         </Bp>
         <Bp>
-          <Number>3</Number>
+          <Number>1</Number>
+          <Type>0</Type>
+          <LineNumber>340</LineNumber>
+          <EnabledFlag>0</EnabledFlag>
+          <Address>134282370</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\Src\ak4xxx.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\TBookRev2b\Src/ak4xxx.c\340</Expression>
+        </Bp>
+        <Bp>
+          <Number>2</Number>
           <Type>0</Type>
           <LineNumber>484</LineNumber>
           <EnabledFlag>0</EnabledFlag>
@@ -219,10 +203,26 @@
           <Expression>\\TBookRev2b\Src/tbUtil.c\484</Expression>
         </Bp>
         <Bp>
+          <Number>3</Number>
+          <Type>0</Type>
+          <LineNumber>238</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134235298</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\Src\ak4xxx.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\TBookRev2b\Src/ak4xxx.c\238</Expression>
+        </Bp>
+        <Bp>
           <Number>4</Number>
           <Type>0</Type>
-          <LineNumber>354</LineNumber>
-          <EnabledFlag>0</EnabledFlag>
+          <LineNumber>208</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
           <Address>0</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
@@ -230,7 +230,7 @@
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>0</BreakIfRCount>
-          <Filename>.\Src\ak4xxx.c</Filename>
+          <Filename>.\Src\tbook.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression></Expression>
         </Bp>
@@ -326,12 +326,22 @@
           <WinNumber>1</WinNumber>
           <ItemText>reinitCnt</ItemText>
         </Ww>
+        <Ww>
+          <count>18</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>akR</ItemText>
+        </Ww>
+        <Ww>
+          <count>19</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>akFmtVolume</ItemText>
+        </Ww>
       </WatchWindow1>
       <MemoryWindow1>
         <Mm>
           <WinNumber>1</WinNumber>
           <SubType>10</SubType>
-          <ItemText>0x2000fb48</ItemText>
+          <ItemText>0x20011b58</ItemText>
           <AccSizeX>0</AccSizeX>
         </Mm>
       </MemoryWindow1>
@@ -380,10 +390,6 @@
       <SystemViewers>
         <Entry>
           <Name>System Viewer\DMA1</Name>
-          <WinId>35896</WinId>
-        </Entry>
-        <Entry>
-          <Name>System Viewer\EXTI</Name>
           <WinId>35903</WinId>
         </Entry>
         <Entry>
@@ -405,14 +411,6 @@
         <Entry>
           <Name>System Viewer\SPI2</Name>
           <WinId>35902</WinId>
-        </Entry>
-        <Entry>
-          <Name>System Viewer\SPI3</Name>
-          <WinId>35897</WinId>
-        </Entry>
-        <Entry>
-          <Name>System Viewer\SYSCFG</Name>
-          <WinId>35905</WinId>
         </Entry>
       </SystemViewers>
       <DebugDescription>
