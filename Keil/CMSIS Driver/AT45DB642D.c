@@ -56,7 +56,7 @@
 #endif
 
 #ifndef DRIVER_SPI_NUM
-#define DRIVER_SPI_NUM          0         /* Default SPI driver number */
+#define DRIVER_SPI_NUM          1         /* Default SPI driver number */
 #endif
 
 

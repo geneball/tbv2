@@ -15,11 +15,11 @@
 
 //   <o>Core Management <0=>Off <1=>Errors <2=>Errors + API <3=>All
 //   <i>Configure FsCore: Core Management event recording
-#define FS_DEBUG_EVR_CORE       2
+#define FS_DEBUG_EVR_CORE       1
 
 //   <o>FAT File System <0=>Off <1=>Errors <2=>Errors + API <3=>All
 //   <i>Configure FsFAT: FAT File System event recording
-#define FS_DEBUG_EVR_FAT        2
+#define FS_DEBUG_EVR_FAT        1
 
 //   <o>EFS File System <0=>Off <1=>Errors <2=>Errors + API <3=>All
 //   <i>Configure FsEFS: EFS File System event recording
@@ -27,7 +27,7 @@
 
 //   <o>I/O Control Interface <0=>Off <1=>Errors <2=>Errors + API <3=>All
 //   <i>Configure FsIOC: I/O Control Interface event recording
-#define FS_DEBUG_EVR_IOC        2
+#define FS_DEBUG_EVR_IOC        1
 
 //   <o>NAND Flash Translation Layer <0=>Off <1=>Errors <2=>Errors + API <3=>All
 //   <i>Configure FsNFTL: NAND Flash Translation Layer event recording

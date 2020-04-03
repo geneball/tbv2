@@ -159,7 +159,7 @@
           <Type>0</Type>
           <LineNumber>341</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134282374</Address>
+          <Address>134282014</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -175,7 +175,7 @@
           <Type>0</Type>
           <LineNumber>340</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134282370</Address>
+          <Address>134282010</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -191,7 +191,7 @@
           <Type>0</Type>
           <LineNumber>484</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134253476</Address>
+          <Address>134253116</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -221,18 +221,18 @@
         <Bp>
           <Number>4</Number>
           <Type>0</Type>
-          <LineNumber>208</LineNumber>
+          <LineNumber>151</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>0</Address>
+          <Address>134284676</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>0</BreakIfRCount>
-          <Filename>.\Src\tbook.c</Filename>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\Src\audio.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression></Expression>
+          <Expression>\\TBookRev2b\Src/audio.c\151</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -254,7 +254,7 @@
         <Ww>
           <count>3</count>
           <WinNumber>1</WinNumber>
-          <ItemText>pSt,0x10</ItemText>
+          <ItemText>pSt,0x0A</ItemText>
         </Ww>
         <Ww>
           <count>4</count>
@@ -335,6 +335,16 @@
           <count>19</count>
           <WinNumber>1</WinNumber>
           <ItemText>akFmtVolume</ItemText>
+        </Ww>
+        <Ww>
+          <count>20</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>fsDevs</ItemText>
+        </Ww>
+        <Ww>
+          <count>21</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>fsNDevs</ItemText>
         </Ww>
       </WatchWindow1>
       <MemoryWindow1>
@@ -1065,7 +1075,7 @@
 
   <Group>
     <GroupName>CMSIS Driver</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>

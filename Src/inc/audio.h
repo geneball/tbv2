@@ -74,7 +74,7 @@ typedef struct { 			// PlaybackFile_t			-- audio state block
 	uint32_t 							tsPlay;					// timestamp at start of curr playback or resume
 	uint32_t 							tsPause;				// timestamp at pause DMA
 	uint32_t 							tsResume;				// timestamp at resume I2S
-	uint32_t 							msPlayBefore;		// msec played before pause
+	uint32_t 							msPlayed;				// msec of file played
 
 	uint32_t 							nPlayed;				// samples played of file so far
 	uint32_t 							nToPlay;				// samples currently playing

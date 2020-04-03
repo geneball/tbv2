@@ -1154,7 +1154,7 @@
 
 // <e> I2C3 (Inter-integrated Circuit Interface 3) [Driver_I2C3]
 // <i> Configuration settings for Driver_I2C3 in component ::CMSIS Driver:I2C
-#define RTE_I2C3                        1
+#define RTE_I2C3                        0
 
 //   <o> I2C3_SCL Pin <0=>PH7 <1=>PA8
 #define RTE_I2C3_SCL_PORT_ID            0
@@ -1223,7 +1223,7 @@
 
 // <e> SPI1 (Serial Peripheral Interface 1) [Driver_SPI1]
 // <i> Configuration settings for Driver_SPI1 in component ::CMSIS Driver:SPI
-#define RTE_SPI1                        0
+#define RTE_SPI1                        1
 
 //   <o> SPI1_MISO Pin <0=>Not Used <1=>PA6 <2=>PB4
 #define RTE_SPI1_MISO_PORT_ID           0
@@ -1563,7 +1563,7 @@
 
 // <e> SPI4 (Serial Peripheral Interface 4) [Driver_SPI4]
 // <i> Configuration settings for Driver_SPI4 in component ::CMSIS Driver:SPI
-#define RTE_SPI4                        1
+#define RTE_SPI4                        0
 
 //   <o> SPI4_MISO Pin <0=>Not Used <1=>PA11 <2=>PE5 <3=>PE13
 #define RTE_SPI4_MISO_PORT_ID           3
@@ -2096,7 +2096,7 @@
 
 // <e> CAN1 (Controller Area Network 1) [Driver_CAN1]
 // <i> Configuration settings for Driver_CAN1 in component ::CMSIS Driver:CAN
-#define RTE_CAN1                        1
+#define RTE_CAN1                        0
 
 //   <o> CAN1_RX Pin <0=>PA11 <1=>PB8 <2=>PD0 <3=>PI9 <4=>PG0
 #define RTE_CAN1_RX_PORT_ID             0

@@ -25,6 +25,7 @@
 *.d
 *.crf 
 *.lst 
+*.__i
 Listings/*
 Objects/*.o
 Objects/*.crf
