@@ -64,9 +64,13 @@ void								audInitState( void ){													// set up playback State in pSt
 	pSt.tsPlay = 0;
 	pSt.tsPause = 0;
 	pSt.tsResume = 0;
-	pSt.msPlayBefore = 0;
+	pSt.msPlayed = 0;
 	pSt.audioEOF = false;
 	// SqrWave fields don't get initialized
+	if ( pSt.stats==NULL ){
+		pSt.stats = tbAlloc( sizeof( MsgStats ), "stats" );
+		memset( pSt.stats, 0, sizeof(MsgStats ));
+	}
 }
 MediaState 					audGetState( void ){													// => Ready or Playing or Recording
 	switch ( pSt.state ) {
@@ -91,7 +95,7 @@ int32_t 						audPlayPct( void ){														// => current playback pct of fil
 	uint32_t now = tbTimeStamp();	
 	if ( pSt.state == pbDone ) return 100;	// completed
 	
-	uint32_t played = pSt.msPlayBefore + (now - pSt.tsResume);	// elapsed since last Play
+	uint32_t played = pSt.msPlayed + (now - pSt.tsResume);	// elapsed since last Play
 	uint32_t totmsec = pSt.nSamples * 1000 / pSt.samplesPerSec;
 	return played*100 / totmsec;
 }
@@ -122,20 +126,17 @@ void 								audStartRecording( FILE *outFP, MsgStats *stats ){	// start recordi
 void 								audStopRecording( void ){											// signal record loop to stop
 }
 void 								audPauseResumeAudio( void ){									// signal playback to request Pause or Resume
-	if ( pSt.state==pbPaused ){
+	if ( pSt.state==pbPaused ){ // resuming
 		pSt.tsResume = tbTimeStamp();
 		pSt.stats->Resume++;
 		ak_SetMute( false );		// unmute
 		gSet( gGREEN, 1 );			// Turn ON green LED: audio file playing 
-		//TODO: restart DMA
-//		PlayNextBuff();					// continue with next buffer
   	Driver_SAI0.Control( ARM_SAI_ABORT_SEND, 2, 0 );	// resume I2S DMA -- 2 => Resume
 		
-	} else {
+	} else { // pausing
 		ak_SetMute( true );	// (redundant) mute
 		pSt.tsPause = tbTimeStamp();
-		pSt.msPlayBefore += (pSt.tsPause - pSt.tsResume);  // (tsResume == tsPlay, if 1st pause)
-		//TODO: stop DMA, & setup for restart
+		pSt.msPlayed += (pSt.tsPause - pSt.tsResume);  // (tsResume == tsPlay, if 1st pause)
 		gSet( gGREEN, 0 );	// Turn OFF LED green: while paused  
 			// subsequent call to audPauseResumeAudio() will call PlayNext() & un-mute
 		pSt.stats->Pause++;
@@ -144,6 +145,9 @@ void 								audPauseResumeAudio( void ){									// signal playback to request 
 }
 
 void 								audPlaybackComplete( void ){									// shut down after completed playback
+	pSt.tsPause = tbTimeStamp();
+	pSt.msPlayed += (pSt.tsPause - pSt.tsResume);  		// (tsResume == tsPlay, if never paused)
+
 	ak_SpeakerEnable( false ); 												// power down codec internals & amplifier
 	Driver_SAI0.Control( ARM_SAI_ABORT_SEND, 0, 0 );	// shut down I2S device, arg1==0 => Abort
 	Driver_SAI0.PowerControl( ARM_POWER_OFF );				// shut off I2S & I2C devices entirely
@@ -191,7 +195,7 @@ void 								printAudSt(){																	// DBG: display audio state
 	  if ( pSt.bytesPerSample != 0 ){
 			printf( "  %d BpS @ %d \n ", pSt.bytesPerSample, pSt.wavHdr->SampleRate );
 			printf( "  %d of %d \n ", pSt.nPlayed, pSt.nSamples );
-			printf( "  %d + %d msec \n ", pSt.msPlayBefore,  cTmStamp - pSt.tsPlay );
+			printf( "  %d + %d msec \n ", pSt.msPlayed,  cTmStamp - pSt.tsPlay );
 		} else {
 			printf( "  Open %d msec \n ", cTmStamp - pSt.tsOpen );
 		}
@@ -244,53 +248,6 @@ Buffer_t * 					loadBuff( ){																	// read next block of audio into a 
 	pB->state = bFull;
 	return pB;
 }
-/*pnRes_t 						PlayNextBuff(){ 															// start next transter or return false if out of data
-	// play next buffer as quickly as possible
-	freeBuff( pSt.cBuff );		// free buffer that finished	
-	Buffer_t *pB = pSt.nBuff;
-	if( pSt.reqPause ){  // unless asked to pause
-		pSt.reqPause = false;
-		pSt.tsPause = tbTimeStamp();	// time we actually paused
-		pSt.msPlayBefore += (pSt.tsPause - pSt.tsResume);	// elapsed since last Play
-		if ( pSt.reqStop ){
-			pSt.reqStop = false;
-			freeBuff( pB );			// free buffer, since not coming back
-			pSt.state = pbDone;
-			pSt.stats->Left++;	// stopped in middle
-			int pct = audPlayPct();
-			if ( pct < pSt.stats->LeftMinPct ) pSt.stats->LeftMinPct = pct;
-			if ( pct > pSt.stats->LeftMaxPct ) pSt.stats->LeftMaxPct = pct;
-			pSt.stats->LeftSumPct += pct;
-			return pnDone;
-		} else {
-			pSt.state = pbPaused;
-			pSt.cBuff = NULL;   // looks like initial start, cBuff null, nBuff full
-			return pnPaused;
-		}
-	} else if ( pSt.nBuff == NULL){   // or done
-		pSt.state = pbDone;
-		return pnDone;
-	}	else {	
-		if ( pB->state != bFull )
-			errLog( "audio data not ready: %d", pB->state );
-		
-		Driver_SAI0.Send( pB->data, pSt.nToPlay );
-	dbgToggleVolume();
-		
-		pSt.nToPlay = pB->cntBytes / pSt.bytesPerSample;
-		pSt.cBuff = pSt.nBuff;   							// next buff becomes current
-	
-		pSt.state = pbPlaying;
-		pSt.buffNum++;	
-		pB->state = bPlaying;
-	
-		pSt.nPlayed += pSt.nToPlay;						// update samples played (playing)
-		pSt.state = pbPlayFill;
-		pSt.nBuff = loadBuff();								// read next chunk of file
-		pSt.state = pSt.nBuff==NULL? pbLastPlay : pbFullPlay;
-		return pnPlaying;
-	}
-} */
 void 								PlayWave( const char *fname ){ 								// play the WAV file 
 	audInitState();
 	pSt.state = pbLdHdr;
@@ -347,7 +304,7 @@ void 								saiEvent( uint32_t event ){			// called by ISR on buffer complete o
 			pSt.Buff[2] = loadBuff();
 		} else {  // done, close up shop
 			pSt.state = pbDone;
-			audPlaybackComplete();		// => pbIdle
+			audPlaybackComplete();		// => pbDone
 			gSet( gGREEN, 0 );	// Turn OFF LED green: no longer playing  
 			sendEvent( AudioDone, audPlayPct() );				// end of file playback-- generate CSM event 
 			pSt.stats->Finish++;
