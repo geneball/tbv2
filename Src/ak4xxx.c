@@ -300,6 +300,7 @@ void 						ak_SpeakerEnable( bool enable ){														// enable/disable speak
 			// startup sequence re: AK4637 Lineout Uutput pg 91
 			akR.R.SigSel1.SLPSN = 0;  						// set power-save (mute) ON (==0)
 			akUpd();															// and UPDATE
+			gSet( gPA_EN, 1 );										// enable power to speaker & headphones
 																						// 1) done by ak_SetMasterFreq()
 			akR.R.PwrMgmt1.LOSEL = 1; 						// 2) LOSEL=1     MARC 7)
 			akR.R.SigSel3.DACL = 1;  								// 3) DACL=1			  MARC 8)
@@ -308,6 +309,8 @@ void 						ak_SpeakerEnable( bool enable ){														// enable/disable speak
 			akR.R.DigFilMd.PFDAC1_0 = 0;  				// 5) PFDAC=0			 default MARC 9)
 			akR.R.DigFilMd.ADCPF = 1;  						// 5) ADCPF=1			 default MARC 9)
 			akR.R.DigFilMd.PFSDO = 1;  						// 5) PFSDO=1			 default MARC 9)
+			akR.R.PwrMgmt1.PMDAC = 1;							// 6) Power up DAC
+		  akR.R.PwrMgmt2.PMSL = 1;							// 7) set spkr power ON
 			akUpd();															// UPDATE all settings
 			tbDelay_ms( 30 );											// 7) wait up to 300ms   // MARC 11)
 			akR.R.SigSel1.SLPSN = 1;							// 8) exit power-save (mute) mode (==1)
@@ -434,11 +437,13 @@ void						ak_PowerUp( void ){
 	tbDelay_ms(5); 		 			//  wait for it to start up
 }
 
+int dbgVolCnt = 0;
 void dbgSetVolume( int vol ){
   akFmtVolume = VOLUME_CONVERT( vol );
 	#if defined( AK4637 )
 		akR.R.DigVolCtr.DVOL7_0 = akFmtVolume;
 		Codec_WrReg( 0x10, akR.reg[ 0x10 ] );
+	dbgVolCnt++;
 	#endif
 }
 void		 				ak_SetVolume( uint8_t Volume ){				// sets volume 0..100%
