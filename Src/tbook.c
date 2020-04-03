@@ -210,7 +210,7 @@ void talking_book( void *argument ) {
 		}
 		
 		FILE *f = fopen( TBP[pSTATUS], "r" );			// try to open "system/status.txt"
-		if ( f==NULL )	
+		if ( f==NULL || gGet( gMINUS ))	
 			debugLoop( );
 		else
 			fclose( f );		// load full TBook
