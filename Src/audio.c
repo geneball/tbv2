@@ -56,7 +56,7 @@ void								audInitState( void ){													// set up playback State in pSt
 	pSt.ErrCnt = 0;
 	pSt.state = pbOpening;
 	pSt.buffNum = -1;
-	pSt.nPlayed = 0;
+	pSt.nLoaded = 0;
 	pSt.bytesPerSample = 0; 
 	pSt.samplesPerSec = 0;
 	pSt.nSamples = 0;
@@ -66,6 +66,10 @@ void								audInitState( void ){													// set up playback State in pSt
 	pSt.tsResume = 0;
 	pSt.msPlayed = 0;
 	pSt.audioEOF = false;
+	
+	pSt.Buff[0] = NULL;
+	pSt.Buff[1] = NULL;
+	pSt.Buff[2] = NULL;
 	// SqrWave fields don't get initialized
 	if ( pSt.stats==NULL ){
 		pSt.stats = tbAlloc( sizeof( MsgStats ), "stats" );
@@ -147,16 +151,19 @@ void 								audPauseResumeAudio( void ){									// signal playback to request 
 void 								audPlaybackComplete( void ){									// shut down after completed playback
 	pSt.tsPause = tbTimeStamp();
 	pSt.msPlayed += (pSt.tsPause - pSt.tsResume);  		// (tsResume == tsPlay, if never paused)
-
-	ak_SpeakerEnable( false ); 												// power down codec internals & amplifier
+  int ms = (pSt.buffNum+1)*BuffWds*500/pSt.samplesPerSec;	// ms for #buffers of stereo @ rate
+	int extra = pSt.msPlayed - ms;   // elapsed - calculated
+	dbgLog( "%d extra elapsed ms\n", extra );
+	int pct = audPlayPct();
+	
 	Driver_SAI0.Control( ARM_SAI_ABORT_SEND, 0, 0 );	// shut down I2S device, arg1==0 => Abort
+	ak_SpeakerEnable( false ); 												// power down codec internals & amplifier
 	Driver_SAI0.PowerControl( ARM_POWER_OFF );				// shut off I2S & I2C devices entirely
 
 	freeBuff( 0 );
 	freeBuff( 1 );
 	freeBuff( 2 );
 
-	int pct = audPlayPct();
 	sendEvent( AudioDone, pct );				// end of file playback-- generate CSM event 
 	if ( pSt.ErrCnt > 0 ) 
 		dbgLog( "%s audio Errs, Lst=0x%x \n", pSt.ErrCnt, pSt.LastError );
@@ -168,6 +175,8 @@ void 								initBuffs(){																	// create audio buffers
 	for ( int i=0; i<nBuffs; i++ ){
 		Buffer_t *pB = &audio_buffers[i];
 		pB->state = bEmpty;
+		pB->cntBytes = 0;
+		pB->firstSample = 0;
 		pB->data = (uint16_t *) tbAlloc( BuffLen, "audio buffer" );
 		for( int j =0; j<BuffWds; j++ ) pB->data[j] = 0x33;
 	}
@@ -183,9 +192,12 @@ Buffer_t * 					allocBuff(){																	// get a buffer for use
 	errLog("out of audio buffers");
 	return NULL;
 }
-void 								freeBuff( int idx ){											// release buffer (unless NULL)
-	if ( pSt.Buff[ idx ]==NULL ) return;
-	pSt.Buff[ idx ]->state = bEmpty;
+void 								freeBuff( int idx ){											// release Buff[idx] (unless NULL)
+	Buffer_t * pB = pSt.Buff[ idx ];
+	if ( pB==NULL ) return;
+	pB->state = bEmpty;
+	pB->cntBytes = 0;
+	pB->firstSample = 0;
 	pSt.Buff[ idx ] = NULL;
 }
 void 								printAudSt(){																	// DBG: display audio state
@@ -194,7 +206,7 @@ void 								printAudSt(){																	// DBG: display audio state
 		printf( "  pSt.state: %d \n ", pSt.state );
 	  if ( pSt.bytesPerSample != 0 ){
 			printf( "  %d BpS @ %d \n ", pSt.bytesPerSample, pSt.wavHdr->SampleRate );
-			printf( "  %d of %d \n ", pSt.nPlayed, pSt.nSamples );
+			printf( "  %d of %d \n ", pSt.nLoaded, pSt.nSamples );
 			printf( "  %d + %d msec \n ", pSt.msPlayed,  cTmStamp - pSt.tsPlay );
 		} else {
 			printf( "  Open %d msec \n ", cTmStamp - pSt.tsOpen );
@@ -206,7 +218,7 @@ Buffer_t * 					loadBuff( ){																	// read next block of audio into a 
 		return NULL;			// all data & padding finished
 	
 	Buffer_t *pB = allocBuff();
-	pB->firstSample = pSt.nPlayed;
+	pB->firstSample = pSt.nLoaded;
 	pSt.nToPlay = BuffWds;			// will always play a full buffer -- padded if necessary
 	
 	int nSamp = 0;
@@ -244,11 +256,38 @@ Buffer_t * 					loadBuff( ){																	// read next block of audio into a 
 		for( int i=nSamp; i<BuffWds; i++ )		// clear rest of buffer -- can't change count in DoubleBuffer DMA
 			pB->data[i] = 0;
 	}
+	pSt.buffNum++;
+	pSt.nLoaded += nSamp;			// # loaded
 	pB->cntBytes = BuffLen;		// always transmit complete buffer
 	pB->state = bFull;
 	return pB;
 }
+static uint32_t prvEvt=0, evtCnt = 0, sCnt=0, tsEvt[200] = {0};  //DEBUG
+void testRead( const char *fname ){ //DEBUG: time reading all samples of file
+	if ( pSt.SqrWAVE ) return;
+	
+	audInitState();
+	pSt.state = pbLdHdr;
+	uint32_t tsOpen = tbTimeStamp();
+	
+	pSt.wavF = fopen( fname, "r" );
+	if ( pSt.wavF==NULL || fread( pSt.wavHdr, 1, WaveHdrBytes, pSt.wavF ) != WaveHdrBytes ) 
+			errLog( "open wav failed" );
+	while ( !pSt.audioEOF ){
+		pSt.Buff[0] = loadBuff();
+		freeBuff(0);
+	}
+	uint32_t tsClose = tbTimeStamp();
+	fclose( pSt.wavF );
+	sCnt = pSt.nLoaded;
+	dbgLog("tstRd %d in %d \n", pSt.nLoaded, tsClose-tsOpen );
+	prvEvt = tsClose;
+	evtCnt = 0;
+}
 void 								PlayWave( const char *fname ){ 								// play the WAV file 
+	testRead( fname );//DEBUG-- time loading whole file
+	testRead( fname );//DEBUG-- time loading whole file
+	
 	audInitState();
 	pSt.state = pbLdHdr;
   if ( !pSt.SqrWAVE ){	// open file, unless SqrWAVE
@@ -272,7 +311,7 @@ void 								PlayWave( const char *fname ){ 								// play the WAV file
 	pSt.nSamples = pSt.wavHdr->SubChunk2Size / pSt.bytesPerSample;
 	pSt.msecLength = pSt.nSamples*1000 / pSt.samplesPerSec;
 	
-	//DEBUG: TestFileRead();
+
 	pSt.state = pbPlayFill;
 	pSt.Buff[0] = loadBuff();				// load first buffer into Buff0
 	pSt.Buff[1] = loadBuff();				// & 2nd into Buff1 (waits till done)
@@ -295,19 +334,27 @@ void 								PlayWave( const char *fname ){ 								// play the WAV file
 	//PlayNextBuff();								// start 1st buffer playing
 }
 void 								saiEvent( uint32_t event ){			// called by ISR on buffer complete or error -- chain next, or report error
+  if (evtCnt<200){  // DEBUG
+		uint32_t 	nw = tbTimeStamp();
+		tsEvt[ evtCnt++ ] = nw-prvEvt;
+		prvEvt = nw;
+	}
 	if ( (event & ARM_SAI_EVENT_SEND_COMPLETE) != 0 ){
 		if ( pSt.Buff[2] != NULL ){		// have more data to send
 			Driver_SAI0.Send( pSt.Buff[2]->data, pSt.nToPlay );		// set up next buffer 
-			freeBuff( 0 );		// completed, so free buffer
+			freeBuff( 0 );		// buff 0 completed, so free it
 			pSt.Buff[0] = pSt.Buff[1];
 			pSt.Buff[1] = pSt.Buff[2];
+			pSt.Buff[2] = NULL;  // so we can tell if it wasn't loaded in time
 			pSt.Buff[2] = loadBuff();
-		} else {  // done, close up shop
+		} else if ( pSt.audioEOF ){  // done, close up shop
 			pSt.state = pbDone;
 			audPlaybackComplete();		// => pbDone
 			gSet( gGREEN, 0 );	// Turn OFF LED green: no longer playing  
 			sendEvent( AudioDone, audPlayPct() );				// end of file playback-- generate CSM event 
 			pSt.stats->Finish++;
+		} else {
+			tbErr( "Audio underrun\n" );
 		}
 	} else {
 		pSt.LastError = event;

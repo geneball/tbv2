@@ -5,7 +5,7 @@
 #include "controlMgr.h"			// runs on initialization thread
 #include "mediaPlyr.h"			// thread to watch audio status
 
-const char * 	TBV2_Version 				= "V2.04 of 20-Mar-2020";
+const char * 	TBV2_Version 				= "V2.04 of 3-Apr-2020";
 
 //
 // Thread stack sizes
@@ -103,17 +103,17 @@ void debugLoop( ){
 
 	MediaState st = Ready;
 	int ledCntr = 0;
-	bool curPl, prvPl, curMi,prvMi = false;
-	int vol = 60, prvvol = 60;
+	bool curPl, prvPl, prvTr, curMi,prvMi,curTr = false;
+	int vol = 90, prvvol = 60;
 	
 	while ( true ){
 		ledCntr++;
 		st = audGetState();
 		if ( st==Ready )
 			gSet( gRED, ((ledCntr >> 14) & 0x3)== 0 );		// flash RED ON for 1 of 4  
-		if ( st==Playing ){
-			if (((ledCntr >> 14) & 0x3)== 0)
-				vol = vol > 50? 20 : 80;
+		if ( st==Playing ){ // controls while playing  PLUS(vol+), MINUS(vol-), TREE(pause/resume), RHAND(waver vol)
+			if ((ledCntr & 0xFFFF)== 0 && gGet(gRHAND))
+				vol = vol > 50? 60 : 90;
 			prvPl = curPl;
 			curPl = gGet( gPLUS );
 			prvMi = curMi;
@@ -126,6 +126,11 @@ void debugLoop( ){
 			if ( vol != prvvol )
 				dbgSetVolume( vol );
 			prvvol = vol;
+			
+			curTr = gGet(gTREE);
+			if (curTr && !prvTr) 
+				audPauseResumeAudio();
+			prvTr = curTr;
 		}
 		
 		if ( fsNDevs > 0 && gGet( gHOME ) && !isMassStorageEnabled()){  // HOME => if have a filesystem but no data -- try USB MSC
@@ -146,7 +151,7 @@ void debugLoop( ){
 			RebootToDFU();
 		}
 
-		if ( gGet( gCIRCLE ) && st==Ready ){		// CIRCLE => audio test
+		if ( gGet( gCIRCLE ) && st==Ready ){		// CIRCLE => 1KHz audio, (PLUS CIRCLE)440Hz=A, MINUS CIR:C, LH CIR:E
 			gSet( gRED, 0 );
 			gSet( gGREEN, 1 );
 			FILE * fa = fopen( TBP[pAUDIO], "r" );

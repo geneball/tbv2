@@ -97,7 +97,7 @@ void 											initPwrSignals( void ){					// configure power GPIO pins, & EXTI
 	gSet( gEN_5V, 0 );					// initially codec OFF
 	gSet( gEN1V8, 0 );					// initially codec OFF
 	gSet( gBOOT1_PDN, 1 );			// initially codec OFF
-	gSet( gPA_EN, 0 );					// initially headphones OFF
+	gSet( gPA_EN, 0 );					// initially audio external amplifier OFF
 	
 	tbDelay_ms( 3 );		// wait 3 msec to make sure everything is stable
 }

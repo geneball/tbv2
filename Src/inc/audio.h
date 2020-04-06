@@ -76,7 +76,8 @@ typedef struct { 			// PlaybackFile_t			-- audio state block
 	uint32_t 							tsResume;				// timestamp at resume I2S
 	uint32_t 							msPlayed;				// msec of file played
 
-	uint32_t 							nPlayed;				// samples played of file so far
+//	uint32_t 							nPlayed;				// samples played of file so far
+	uint32_t 							nLoaded;				// samples loaded from file so far
 	uint32_t 							nToPlay;				// samples currently playing
 	bool 									monoMode;				// true if data is 1 channel (duplicate on send)
 	bool 									audioEOF;				// true if all sample data has been read
