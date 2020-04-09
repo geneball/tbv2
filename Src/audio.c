@@ -155,7 +155,7 @@ void 								audPlaybackComplete( void ){									// shut down after completed p
 	pSt.msPlayed += (pSt.tsPause - pSt.tsResume);  		// (tsResume == tsPlay, if never paused)
   int ms = (pSt.buffNum+1)*BuffWds*500/pSt.samplesPerSec;	// ms for #buffers of stereo @ rate
 	int extra = pSt.msPlayed - ms;   // elapsed - calculated
-	dbgLog( "%d extra elapsed ms\n", extra );
+	dbgLog( "%d extra msec\n", extra );
 	int pct = audPlayPct();
 	
 chkDevState( "audDn", false );
@@ -265,7 +265,7 @@ Buffer_t * 					loadBuff( ){																	// read next block of audio into a 
 	pB->state = bFull;
 	return pB;
 }
-static uint32_t prvEvt=0, evtCnt = 0, sCnt=0, tsEvt[200] = {0}, rdEvt[200] = { 0xFFFFFFFF };  //DEBUG
+static uint32_t prvEvt=0, evtCnt = 0, sCnt=0, tsEvt[200] = {0}, rdEvt[200] = {0}, rdErr[200]={0};  //DEBUG
 void testRead( const char *fname ){ //DEBUG: time reading all samples of file
 	if ( pSt.SqrWAVE ) return;
 	
@@ -353,6 +353,8 @@ void 								saiEvent( uint32_t event ){			// called by ISR on buffer complete o
 		char tbuff[BLEN];
 		if (pSt.SqrWAVE && pSt.wavF!=NULL){  // have open file, but sending square wave
 			rdEvt[ evtCnt ] = fread( tbuff, 1, BLEN, pSt.wavF );  // try to read a kbyte from file-- save cnt 
+			if ( rdEvt[evtCnt] < BLEN )
+				rdErr[ evtCnt ] = ferror( pSt.wavF );
 		}
 		tsEvt[ evtCnt++ ] = nw-prvEvt;
 		prvEvt = nw;

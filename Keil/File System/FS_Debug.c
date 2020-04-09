@@ -15,11 +15,11 @@
 
 //   <o>Core Management <0=>Off <1=>Errors <2=>Errors + API <3=>All
 //   <i>Configure FsCore: Core Management event recording
-#define FS_DEBUG_EVR_CORE       1
+#define FS_DEBUG_EVR_CORE       2
 
 //   <o>FAT File System <0=>Off <1=>Errors <2=>Errors + API <3=>All
 //   <i>Configure FsFAT: FAT File System event recording
-#define FS_DEBUG_EVR_FAT        1
+#define FS_DEBUG_EVR_FAT        2
 
 //   <o>EFS File System <0=>Off <1=>Errors <2=>Errors + API <3=>All
 //   <i>Configure FsEFS: EFS File System event recording
@@ -39,7 +39,7 @@
 
 //   <o>Memory Card MCI <0=>Off <1=>Errors <2=>Errors + API <3=>All
 //   <i>Configure FsMcMCI: Memory Card MCI event recording
-#define FS_DEBUG_EVR_MC_MCI     1
+#define FS_DEBUG_EVR_MC_MCI     2
 
 //   <o>Memory Card SPI <0=>Off <1=>Errors <2=>Errors + API <3=>All
 //   <i>Configure FsMcSPI: Memory Card SPI event recording

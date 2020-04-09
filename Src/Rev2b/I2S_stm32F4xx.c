@@ -266,7 +266,7 @@ static void		 								I2S3_ClockEnable( bool enab ){ 								// enable/disable I
 		// configure SPI2 I2SCFGR & I2SPR registers -- default modes @ 46875
 	
 		// SPI3: setup I2S Master Mode Receive
-		// 1) set I2SDIV = 4 ODD=0  => fs=46875  I2S3_MCLK = 12000000Hz
+		// 1) set I2SDIV = 2 ODD=0  => fs=46875  I2S3_MCLK = 12000000Hz
 		// 2) set CKPOL=0 MCKOE=1 
 		// 3) SET I2SMOD=1  I2SSTD=11 DATLEN=00 CHLEN=0 I2SCFG=11
 		spi->I2SCFGR = I2S_MODE | I2S_CFG_MASTER_RX;	// I2Smode Master Receive (0x5400) ASTREN=0 I2SSTD=0 CKPOL=0 DATLEN=00 CHLEN=0

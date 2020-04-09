@@ -360,7 +360,7 @@
 //       <o.3>Detailed operation events
 //     </h>
 #ifndef OS_EVR_LEVEL
-#define OS_EVR_LEVEL                0x01U
+#define OS_EVR_LEVEL                0x03U
 #endif
  
 //     <h>RTOS Event Filter Setup
