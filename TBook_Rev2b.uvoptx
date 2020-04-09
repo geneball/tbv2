@@ -157,25 +157,25 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>436</LineNumber>
+          <LineNumber>318</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134243672</Address>
+          <Address>134252346</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\Src\tbUtil.c</Filename>
+          <Filename>.\Src\audio.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Src/tbUtil.c\436</Expression>
+          <Expression>\\TBookRev2b\Src/audio.c\318</Expression>
         </Bp>
         <Bp>
           <Number>1</Number>
           <Type>0</Type>
-          <LineNumber>484</LineNumber>
+          <LineNumber>571</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134253128</Address>
+          <Address>134253190</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -184,14 +184,30 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>.\Src\tbUtil.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Src/tbUtil.c\484</Expression>
+          <Expression>\\TBookRev2b\Src/tbUtil.c\571</Expression>
         </Bp>
         <Bp>
           <Number>2</Number>
           <Type>0</Type>
+          <LineNumber>163</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134284894</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\Src\audio.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\TBookRev2b\Src/audio.c\163</Expression>
+        </Bp>
+        <Bp>
+          <Number>3</Number>
+          <Type>0</Type>
           <LineNumber>343</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134282022</Address>
+          <Address>134282122</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -203,11 +219,11 @@
           <Expression>\\TBookRev2b\Src/ak4xxx.c\343</Expression>
         </Bp>
         <Bp>
-          <Number>3</Number>
+          <Number>4</Number>
           <Type>0</Type>
           <LineNumber>344</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134282026</Address>
+          <Address>134282126</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -217,22 +233,6 @@
           <Filename>.\Src\ak4xxx.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression>\\TBookRev2b\Src/ak4xxx.c\344</Expression>
-        </Bp>
-        <Bp>
-          <Number>4</Number>
-          <Type>0</Type>
-          <LineNumber>129</LineNumber>
-          <EnabledFlag>0</EnabledFlag>
-          <Address>134284992</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\Src\audio.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Src/audio.c\129</Expression>
         </Bp>
         <Bp>
           <Number>5</Number>
@@ -253,9 +253,9 @@
         <Bp>
           <Number>6</Number>
           <Type>0</Type>
-          <LineNumber>254</LineNumber>
+          <LineNumber>129</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134310418</Address>
+          <Address>134285208</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -264,14 +264,14 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>.\Src\audio.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Src/audio.c\254</Expression>
+          <Expression>\\TBookRev2b\Src/audio.c\129</Expression>
         </Bp>
         <Bp>
           <Number>7</Number>
           <Type>0</Type>
           <LineNumber>133</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134284434</Address>
+          <Address>134285232</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -285,9 +285,25 @@
         <Bp>
           <Number>8</Number>
           <Type>0</Type>
-          <LineNumber>159</LineNumber>
+          <LineNumber>574</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134284770</Address>
+          <Address>134253228</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\Src\tbUtil.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\TBookRev2b\Src/tbUtil.c\574</Expression>
+        </Bp>
+        <Bp>
+          <Number>9</Number>
+          <Type>0</Type>
+          <LineNumber>355</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134329492</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -296,23 +312,23 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>.\Src\audio.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Src/audio.c\159</Expression>
+          <Expression>\\TBookRev2b\Src/audio.c\355</Expression>
         </Bp>
         <Bp>
-          <Number>9</Number>
+          <Number>10</Number>
           <Type>0</Type>
-          <LineNumber>245</LineNumber>
+          <LineNumber>351</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>0</Address>
+          <Address>134329468</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>0</BreakIfRCount>
+          <BreakIfRCount>1</BreakIfRCount>
           <Filename>.\Src\audio.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression></Expression>
+          <Expression>\\TBookRev2b\Src/audio.c\351</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -441,12 +457,22 @@
           <WinNumber>1</WinNumber>
           <ItemText>tsEvt,0x0A</ItemText>
         </Ww>
+        <Ww>
+          <count>25</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>rdEvt,0x10</ItemText>
+        </Ww>
+        <Ww>
+          <count>26</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>currDS</ItemText>
+        </Ww>
       </WatchWindow1>
       <MemoryWindow1>
         <Mm>
           <WinNumber>1</WinNumber>
-          <SubType>10</SubType>
-          <ItemText>0x20010B10</ItemText>
+          <SubType>2</SubType>
+          <ItemText>0x40023800</ItemText>
           <AccSizeX>0</AccSizeX>
         </Mm>
       </MemoryWindow1>
@@ -496,6 +522,10 @@
         <Entry>
           <Name>System Viewer\DMA1</Name>
           <WinId>35903</WinId>
+        </Entry>
+        <Entry>
+          <Name>System Viewer\DMA2</Name>
+          <WinId>35905</WinId>
         </Entry>
         <Entry>
           <Name>System Viewer\GPIOB</Name>

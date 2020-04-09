@@ -72,6 +72,7 @@ extern void 			errLog( const char * fmt, ... );
 extern void 			tbErr( const char * fmt, ... );							// report fatal error
 extern void				tbShw( const char *s, char **p1, char **p2 );
 extern void 			_Error_Handler( char *, int );
+extern void 			chkDevState( char *loc, bool reset );
 extern void 			stdout_putchar( char );
 extern int				divTst(int lho, int rho); 	// for fault handler testing
 extern void 			enableLCD( void );
@@ -164,7 +165,7 @@ typedef struct TBConfig {			// TBConfig
 extern TBConfig_t 	TB_Config;		// global TBook configuration
 
 // for tbUtil.c
-#define	dbgLns  				30
+#define	dbgLns  				80
 #define	dbgChs  				20
 typedef  char DbgScr[dbgLns][dbgChs];
 #define	NUM_KEYPADS 		10

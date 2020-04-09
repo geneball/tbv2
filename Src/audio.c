@@ -66,11 +66,13 @@ void								audInitState( void ){													// set up playback State in pSt
 	pSt.tsResume = 0;
 	pSt.msPlayed = 0;
 	pSt.audioEOF = false;
+	pSt.wavF = NULL;
 	
 	pSt.Buff[0] = NULL;
 	pSt.Buff[1] = NULL;
 	pSt.Buff[2] = NULL;
-	// SqrWave fields don't get initialized
+
+	// don't overwrite SqrWAVE fields
 	if ( pSt.stats==NULL ){
 		pSt.stats = tbAlloc( sizeof( MsgStats ), "stats" );
 		memset( pSt.stats, 0, sizeof(MsgStats ));
@@ -156,6 +158,7 @@ void 								audPlaybackComplete( void ){									// shut down after completed p
 	dbgLog( "%d extra elapsed ms\n", extra );
 	int pct = audPlayPct();
 	
+chkDevState( "audDn", false );
 	Driver_SAI0.Control( ARM_SAI_ABORT_SEND, 0, 0 );	// shut down I2S device, arg1==0 => Abort
 	ak_SpeakerEnable( false ); 												// power down codec internals & amplifier
 	Driver_SAI0.PowerControl( ARM_POWER_OFF );				// shut off I2S & I2C devices entirely
@@ -262,7 +265,7 @@ Buffer_t * 					loadBuff( ){																	// read next block of audio into a 
 	pB->state = bFull;
 	return pB;
 }
-static uint32_t prvEvt=0, evtCnt = 0, sCnt=0, tsEvt[200] = {0};  //DEBUG
+static uint32_t prvEvt=0, evtCnt = 0, sCnt=0, tsEvt[200] = {0}, rdEvt[200] = { 0xFFFFFFFF };  //DEBUG
 void testRead( const char *fname ){ //DEBUG: time reading all samples of file
 	if ( pSt.SqrWAVE ) return;
 	
@@ -289,6 +292,7 @@ void 								PlayWave( const char *fname ){ 								// play the WAV file
 	testRead( fname );//DEBUG-- time loading whole file
 	
 	audInitState();
+	chkDevState( "PlayWv", true );
 	pSt.state = pbLdHdr;
   if ( !pSt.SqrWAVE ){	// open file, unless SqrWAVE
 		pSt.wavF = fopen( fname, "r" );
@@ -311,6 +315,14 @@ void 								PlayWave( const char *fname ){ 								// play the WAV file
 	pSt.nSamples = pSt.wavHdr->SubChunk2Size / pSt.bytesPerSample;
 	pSt.msecLength = pSt.nSamples*1000 / pSt.samplesPerSec;
 	
+	if ( !pSt.SqrWAVE && gGet( gPLUS )){	// DEBUG: if PLUS, replace file data with sqrWv @440
+		pSt.sqrSamples = pSt.nSamples;				// sqr wv for same length as file
+		pSt.sqrHfLen = pSt.wavHdr->SampleRate / 880;	// 440Hz @ samplerate from file
+		pSt.sqrWvPh = 0;														// start with beginning of LO
+		pSt.sqrHi = 0xAAAA;
+		pSt.sqrLo = 0x0001;
+		pSt.SqrWAVE = true;   // send sqrWv instead of .wav data
+	}
 
 	pSt.state = pbPlayFill;
 	pSt.Buff[0] = loadBuff();				// load first buffer into Buff0
@@ -322,12 +334,13 @@ void 								PlayWave( const char *fname ){ 								// play the WAV file
 	dbgLog( "Wv: %d msec\n", pSt.msecLength );
 	gSet( gGREEN, 1 );	// Turn ON green LED: audio file playing 
 	pSt.state = pbPlaying;
+chkDevState( "stWv", false );
 	Driver_SAI0.Send( pSt.Buff[0]->data, pSt.nToPlay );		// start first buffer 
 	Driver_SAI0.Send( pSt.Buff[1]->data, pSt.nToPlay );		// & set up next buffer 
 
 	pSt.Buff[2] = loadBuff();
   // buffer complete for cBuff calls saiEvent, which:
-  //   1) Send Buff2 
+  //   1) Sends Buff2 
 	//   2) shifts buffs 1,2 to 0,1
   //   3) loads new Buff2
 	
@@ -336,6 +349,11 @@ void 								PlayWave( const char *fname ){ 								// play the WAV file
 void 								saiEvent( uint32_t event ){			// called by ISR on buffer complete or error -- chain next, or report error
   if (evtCnt<200){  // DEBUG
 		uint32_t 	nw = tbTimeStamp();
+		const int BLEN = 1024;
+		char tbuff[BLEN];
+		if (pSt.SqrWAVE && pSt.wavF!=NULL){  // have open file, but sending square wave
+			rdEvt[ evtCnt ] = fread( tbuff, 1, BLEN, pSt.wavF );  // try to read a kbyte from file-- save cnt 
+		}
 		tsEvt[ evtCnt++ ] = nw-prvEvt;
 		prvEvt = nw;
 	}

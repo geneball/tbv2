@@ -92,7 +92,7 @@ typedef struct { 			// PlaybackFile_t			-- audio state block
 	bool 									SqrWAVE;				// T => wavHdr pre-filled to generate square wave
 	int32_t								sqrSamples;			// samples still to send
 	uint32_t 							sqrHfLen;				// samples per half wave
-	uint32_t 							sqrWvPh;				// position in wave form: HfLen..0:HI 0..-HfLen: LO
+	int32_t 							sqrWvPh;				// position in wave form: HfLen..0:HI 0..-HfLen: LO
 	uint16_t 							sqrHi;					//  = 0x9090;
 	uint16_t 							sqrLo;					//  = 0x1010;
 	MsgStats *						stats;					// statistics to go to logger

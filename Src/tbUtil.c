@@ -404,6 +404,96 @@ void 										stdout_putchar( char ch ){
 }	
 
 
+
+
+struct  {
+	char 			*devNm;		
+	void			*devBase;
+
+	struct {
+						char 			*Nm;
+						uint32_t 	off;
+	}  regs[20];
+} devD[] = 
+{ 
+	{ "RCC", RCC, {
+			{ "C", 0x00 }, { "PLL", 0x04 }, { "CFGR", 0x08 }, { "AHB1ENR", 0x30 }, { "AHB2ENR", 0x34 },
+			{ "APB1ENR", 0x40 }, { "APB2ENR", 0x44 }, { "PLLI2S", 0x84 }, { "DCKCFG", 0x8C },{ "CKGATEN", 0x90 }, { "DCKCFG2", 0x94 }, {NULL,0}
+		}
+	},
+	{ "DMA1.S4", DMA1_Stream4, {
+			{ "LIS", 0x00 }, { "HIS", 0x04 }, { "LIFC", 0x08 }, { "HIFC", 0x0C }, 
+				{ "S4C", 0x70 }, { "S4NDT", 0x74 }, { "S4PA", 0x78 }, { "S4M0A", 0x7C }, { "S4M1A", 0x80 }, {NULL,0}
+		}
+	},
+	{ "EXTI", EXTI, {
+			{ "IM", 0x00 }, { "EM", 0x04 }, { "RTS", 0x08 }, { "FTS", 0x0C }, { "SWIE", 0x10 }, {NULL,0}
+		}
+	},
+	{ "I2C1", I2C1, {
+			{ "CR1", 0x00 }, { "CR2", 0x04 }, { "OA1", 0x08 }, { "OA2", 0x0C }, { "S1", 0x14 }, { "S2", 0x18 }, { "TRISE", 0x20 }, { "FLT", 0x24 }, {NULL,0}
+		}
+	},
+	{ "SPI2", SPI2, {
+			{ "CR1", 0x00 }, { "CR2", 0x04 }, { "SR", 0x08 }, { "I2SCFG", 0x1C }, { "I2SP", 0x20 }, {NULL,0}
+		}
+	},
+	{ "SPI3", SPI3, {
+			{ "CR1", 0x00 }, { "CR2", 0x04 }, { "SR", 0x08 }, { "I2SCFG", 0x1C }, { "I2SP", 0x20 }, {NULL,0}
+		}
+	},
+	{ "SDIO", SDIO, {
+			{ "PWR", 0x00 }, { "CLKCR", 0x04 }, { "ARG", 0x08 }, { "CMD", 0x0C }, { "RESP", 0x10 }, { "DCTRL", 0x2C }, 
+				{ "STA", 0x34 }, { "ICR", 0x38 },  { "MASK", 0x3C }, {NULL,0}
+		}
+	},
+	
+	{ "A", GPIOA, { 
+			{"MD", 0x00 }, { "TY", 0x04 }, { "SP", 0x08 }, { "PU", 0x0C }, { "AL", 0x20 },  { "AH", 0x24 }, {NULL,0}
+		} 
+	}, 
+	{ "B", GPIOB, { 
+			{"MD", 0x00 }, { "TY", 0x04 }, { "SP", 0x08 }, { "PU", 0x0C }, { "AL", 0x20 },  { "AH", 0x24 }, {NULL,0}
+		} 
+	}, 
+	{ "C", GPIOC, { 
+			{"MD", 0x00 }, { "TY", 0x04 }, { "SP", 0x08 }, { "PU", 0x0C }, { "AL", 0x20 },  { "AH", 0x24 }, {NULL,0}
+		} 
+	}, 
+	{ "D", GPIOD, { 
+			{"MD", 0x00 }, { "TY", 0x04 }, { "SP", 0x08 }, { "PU", 0x0C }, { "AL", 0x20 },  { "AH", 0x24 }, {NULL,0}
+		} 
+	},
+	{ "E", GPIOE, { 
+			{"MD", 0x00 }, { "TY", 0x04 }, { "SP", 0x08 }, { "PU", 0x0C }, { "AL", 0x20 },  { "AH", 0x24 }, {NULL,0}
+		} 
+	},
+	{ NULL, 0, { {NULL, 0} }}
+};
+const int MXR = 200;
+uint32_t 	prvDS[MXR], currDS[MXR];
+
+void 										chkDevState( char *loc, bool reset ){ // report any device changes 
+	int idx = 0;		// assign idx for regs in order
+	dbgLog( "chDev: %s\n", loc );
+	for ( int i=0; devD[i].devNm!=NULL; i++ ){
+		uint32_t * d = devD[i].devBase;
+		dbgLog( "%s\n", devD[i].devNm );
+		for ( int j=0; devD[i].regs[j].Nm != NULL; j++){
+			char * rNm = devD[i].regs[j].Nm;
+			int wdoff = devD[i].regs[j].off >> 2;
+			uint32_t val = d[ wdoff ];	// read REG at devBase + regOff
+			currDS[idx] = val;			
+			if ( reset || val != prvDS[idx] ){
+				dbgLog( ".%s %08x\n", rNm, val ); 
+			}
+			prvDS[ idx ] = currDS[ idx ];
+			idx++;
+			if (idx>=MXR) tbErr("too many regs");
+		}
+	}
+}
+
 void 										HardFault_Handler_C( svFault_t *svFault, uint32_t linkReg ){
 // fault handler --- added to startup_stm32f10x_xl.s
 // for 2:NMIHandler, 3:HardFaultHandler, 4:MemManage_Handler, 5:BusFault_Handler, 6:UsageFault_Handler 
