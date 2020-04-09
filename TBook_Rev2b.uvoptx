@@ -298,6 +298,22 @@
           <ExecCommand></ExecCommand>
           <Expression>\\TBookRev2b\Src/audio.c\338</Expression>
         </Bp>
+        <Bp>
+          <Number>9</Number>
+          <Type>0</Type>
+          <LineNumber>72</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134301426</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\Src\tbook.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\TBookRev2b\Src/tbook.c\72</Expression>
+        </Bp>
       </Breakpoint>
       <WatchWindow1>
         <Ww>
@@ -449,6 +465,21 @@
           <AccSizeX>0</AccSizeX>
         </Mm>
       </MemoryWindow1>
+      <ScvdList>
+        <Filename>..\..\..\..\Keil_v5\ARM\PACK\Keil\MDK-Middleware\7.10.0\FileSystem\FileSystem.scvd</Filename>
+        <Type></Type>
+        <SubType>1</SubType>
+      </ScvdList>
+      <ScvdList>
+        <Filename>..\..\..\..\Keil_v5\ARM\PACK\Keil\MDK-Middleware\7.10.0\USB\USB.scvd</Filename>
+        <Type></Type>
+        <SubType>1</SubType>
+      </ScvdList>
+      <ScvdList>
+        <Filename>.\EventRecorderStub.scvd</Filename>
+        <Type></Type>
+        <SubType>1</SubType>
+      </ScvdList>
       <Tracepoint>
         <THDelay>0</THDelay>
       </Tracepoint>
@@ -533,7 +564,7 @@
 
   <Group>
     <GroupName>TBook</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
