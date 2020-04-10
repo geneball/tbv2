@@ -157,7 +157,7 @@ void debugLoop( ){
 			gSet( gGREEN, 1 );
 			FILE * fa = fopen( TBP[pAUDIO], "r" );
 			if ( fa!=NULL ){
-				PlayDBG = (gGet( gPLUS )? 1:0) + (gGet( gMINUS )? 2:0) + (gGet( gLHAND )? 4:0); 
+				PlayDBG = (gGet( gTABLE )? 1:0) + (gGet( gPOT )? 2:0); 
 				PlayWave( TBP[pAUDIO] );
 			} else {
 				int hz = gGet( gPLUS )? 440 : gGet( gMINUS )? 523 : gGet( gLHAND )? 659 : 1000;

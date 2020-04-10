@@ -164,6 +164,8 @@ chkDevState( "audDn", false );
 int good = 0;
 for (int i=0; i< evtCnt; i++) if (rdEvt[i]>0) good++;
 flashCode( good );
+	if (sCnt!=0)
+	dbgLog("nE:%d nG:%d ts0:%d lEr:%x\n", evtCnt, good, tsEvt[0], rdErr[evtCnt-1] );
 tbDelay_ms(5000);
 	
 	ak_SpeakerEnable( false ); 												// power down codec internals & amplifier
@@ -314,7 +316,7 @@ void 								PlayWave( const char *fname ){ 								// play the WAV file
 	pSt.monoMode = (pSt.wavHdr->NbrChannels == 1);
 
 	uint32_t ctrl = ARM_SAI_CONFIGURE_TX | ARM_SAI_MODE_SLAVE  | ARM_SAI_ASYNCHRONOUS | ARM_SAI_PROTOCOL_I2S | ARM_SAI_DATA_SIZE(16);
-if (PlayDBG&2) // DEBUG*********************: if MINUS, use MASTER Mode
+if (PlayDBG&2) // DEBUG*********************: if POT, use MASTER Mode
 	ctrl = ARM_SAI_CONFIGURE_TX | ARM_SAI_MODE_MASTER  | ARM_SAI_ASYNCHRONOUS | ARM_SAI_PROTOCOL_I2S | ARM_SAI_DATA_SIZE(16);
 		
 	Driver_SAI0.Control( ctrl, 0, audioFreq );	// set sample rate, init codec clock, power up speaker and unmute
@@ -323,7 +325,7 @@ if (PlayDBG&2) // DEBUG*********************: if MINUS, use MASTER Mode
 	pSt.nSamples = pSt.wavHdr->SubChunk2Size / pSt.bytesPerSample;
 	pSt.msecLength = pSt.nSamples*1000 / pSt.samplesPerSec;
 	
-	if ( !pSt.SqrWAVE && (PlayDBG & 1)){	// DEBUG*********************: if PLUS (PlayDbg & 1), replace file data with sqrWv @440
+	if ( !pSt.SqrWAVE && (PlayDBG & 1)){	// DEBUG*********************: if TABLE (PlayDbg & 1), replace file data with sqrWv @440
 		pSt.sqrSamples = pSt.nSamples;				// sqr wv for same length as file
 		pSt.sqrHfLen = pSt.wavHdr->SampleRate / 880;	// 440Hz @ samplerate from file
 		pSt.sqrWvPh = 0;														// start with beginning of LO

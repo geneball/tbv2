@@ -159,7 +159,7 @@
           <Type>0</Type>
           <LineNumber>571</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134253222</Address>
+          <Address>134253494</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -175,7 +175,7 @@
           <Type>0</Type>
           <LineNumber>343</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134282154</Address>
+          <Address>134282426</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -191,7 +191,7 @@
           <Type>0</Type>
           <LineNumber>344</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134282158</Address>
+          <Address>134282430</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -207,7 +207,7 @@
           <Type>0</Type>
           <LineNumber>129</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134285284</Address>
+          <Address>134285556</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -223,7 +223,7 @@
           <Type>0</Type>
           <LineNumber>133</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134285308</Address>
+          <Address>134285580</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -239,7 +239,7 @@
           <Type>0</Type>
           <LineNumber>574</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134253260</Address>
+          <Address>134253532</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -249,6 +249,38 @@
           <Filename>.\Src\tbUtil.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression>\\TBookRev2b\Src/tbUtil.c\574</Expression>
+        </Bp>
+        <Bp>
+          <Number>6</Number>
+          <Type>0</Type>
+          <LineNumber>346</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134252784</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\Src\audio.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\TBookRev2b\Src/audio.c\346</Expression>
+        </Bp>
+        <Bp>
+          <Number>7</Number>
+          <Type>0</Type>
+          <LineNumber>348</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>0</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>0</BreakIfRCount>
+          <Filename>.\Src\audio.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression></Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -500,7 +532,7 @@
 
   <Group>
     <GroupName>TBook</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -1192,7 +1224,7 @@
 
   <Group>
     <GroupName>STM32F4xx</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>

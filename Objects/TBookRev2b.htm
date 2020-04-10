@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\Objects\TBookRev2b.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Objects\TBookRev2b.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Fri Apr 10 11:02:14 2020
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Fri Apr 10 11:26:58 2020
 <BR><P>
 <H3>Maximum Stack Usage =       2216 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -4844,7 +4844,7 @@ Global Symbols
 <LI><a href="#[36f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;audStopAudio
 </UL>
 
-<P><STRONG><a name="[36b]"></a>audPlaybackComplete</STRONG> (Thumb, 202 bytes, Stack size 24 bytes, audio.o(i.audPlaybackComplete))
+<P><STRONG><a name="[36b]"></a>audPlaybackComplete</STRONG> (Thumb, 234 bytes, Stack size 24 bytes, audio.o(i.audPlaybackComplete))
 <BR><BR>[Stack]<UL><LI>Max Depth = 264 + Unknown Stack Size
 <LI>Call Chain = audPlaybackComplete &rArr; sendEvent &rArr; osMessageQueuePut &rArr; isrRtxMessageQueuePut &rArr; osRtxPostProcess &rArr; osRtxErrorNotify &rArr; tbErr &rArr; vprintf &rArr; _printf_char_file &rArr; _printf_char_common &rArr; __printf
 </UL>
@@ -5053,7 +5053,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[3b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;debugTest
 </UL>
 
-<P><STRONG><a name="[3ac]"></a>debugLoop</STRONG> (Thumb, 536 bytes, Stack size 56 bytes, tbook.o(i.debugLoop))
+<P><STRONG><a name="[3ac]"></a>debugLoop</STRONG> (Thumb, 518 bytes, Stack size 56 bytes, tbook.o(i.debugLoop))
 <BR><BR>[Stack]<UL><LI>Max Depth = 832 + Unknown Stack Size
 <LI>Call Chain = debugLoop &rArr; disableMassStorage &rArr; ledFg &rArr; logEvtNS &rArr; logEvtS &rArr; fflush &rArr; $Super$$fflush &rArr; _do_fflush &rArr; _fflush &rArr; _writebuf &rArr; _sys_write &rArr; __sys_write &rArr; fat_write &rArr; alloc_clus &rArr; alloc_table_write &rArr; cache_fat &rArr; EvrFsFAT_SectorWriteFailed &rArr; EventRecord4 &rArr; EventRecordItem
 </UL>
