@@ -164,6 +164,7 @@ chkDevState( "audDn", false );
 int good = 0;
 for (int i=0; i< evtCnt; i++) if (rdEvt[i]>0) good++;
 flashCode( good );
+tbDelay_ms(5000);
 	
 	ak_SpeakerEnable( false ); 												// power down codec internals & amplifier
 	Driver_SAI0.PowerControl( ARM_POWER_OFF );				// shut off I2S & I2C devices entirely

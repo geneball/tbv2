@@ -205,6 +205,7 @@ void													controlTXMT( I2S_RESOURCES *i2s, controlTyp typ ){  											
 	
 	// reset any leftover int reqs  -- (there should be a TCIF)
 	DMA1->HIFCR &= ~( DMA_HISR_TCIF4 |DMA_HISR_HTIF4 |DMA_HISR_TEIF4 |DMA_HISR_DMEIF4 | DMA_HISR_FEIF4  );
+  NVIC_ClearPendingIRQ( DMA1_Stream4_IRQn );  	// Clear pending I2S_TX DMA interrupts
 	uint32_t nSent;
 	switch ( typ ){
 
