@@ -150,6 +150,7 @@ void 								audPauseResumeAudio( void ){									// signal playback to request 
 	}
 }
 
+static uint32_t prvEvt=0, evtCnt = 0, sCnt=0, tsEvt[200] = {0}, rdEvt[200] = {0}, rdErr[200]={0};  //DEBUG
 void 								audPlaybackComplete( void ){									// shut down after completed playback
 	pSt.tsPause = tbTimeStamp();
 	pSt.msPlayed += (pSt.tsPause - pSt.tsResume);  		// (tsResume == tsPlay, if never paused)
@@ -160,6 +161,10 @@ void 								audPlaybackComplete( void ){									// shut down after completed p
 	
 chkDevState( "audDn", false );
 	Driver_SAI0.Control( ARM_SAI_ABORT_SEND, 0, 0 );	// shut down I2S device, arg1==0 => Abort
+int good = 0;
+for (int i=0; i< evtCnt; i++) if (rdEvt[i]>0) good++;
+flashCode( good );
+	
 	ak_SpeakerEnable( false ); 												// power down codec internals & amplifier
 	Driver_SAI0.PowerControl( ARM_POWER_OFF );				// shut off I2S & I2C devices entirely
 
@@ -265,7 +270,6 @@ Buffer_t * 					loadBuff( ){																	// read next block of audio into a 
 	pB->state = bFull;
 	return pB;
 }
-static uint32_t prvEvt=0, evtCnt = 0, sCnt=0, tsEvt[200] = {0}, rdEvt[200] = {0}, rdErr[200]={0};  //DEBUG
 void testRead( const char *fname ){ //DEBUG: time reading all samples of file
 	if ( pSt.SqrWAVE ) return;
 	
