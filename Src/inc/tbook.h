@@ -72,6 +72,7 @@ extern void 			errLog( const char * fmt, ... );
 extern void 			tbErr( const char * fmt, ... );							// report fatal error
 extern void				tbShw( const char *s, char **p1, char **p2 );
 extern void 			_Error_Handler( char *, int );
+extern int 				PlayDBG;			// DEBUG flag for DebugLoop & PlayWave
 extern void 			chkDevState( char *loc, bool reset );
 extern void 			stdout_putchar( char );
 extern int				divTst(int lho, int rho); 	// for fault handler testing

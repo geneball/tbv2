@@ -314,13 +314,16 @@ void 								PlayWave( const char *fname ){ 								// play the WAV file
 	pSt.monoMode = (pSt.wavHdr->NbrChannels == 1);
 
 	uint32_t ctrl = ARM_SAI_CONFIGURE_TX | ARM_SAI_MODE_SLAVE  | ARM_SAI_ASYNCHRONOUS | ARM_SAI_PROTOCOL_I2S | ARM_SAI_DATA_SIZE(16);
+if (PlayDBG&2) // DEBUG*********************: if MINUS, use MASTER Mode
+	ctrl = ARM_SAI_CONFIGURE_TX | ARM_SAI_MODE_MASTER  | ARM_SAI_ASYNCHRONOUS | ARM_SAI_PROTOCOL_I2S | ARM_SAI_DATA_SIZE(16);
+		
 	Driver_SAI0.Control( ctrl, 0, audioFreq );	// set sample rate, init codec clock, power up speaker and unmute
 	
 	pSt.bytesPerSample = pSt.wavHdr->NbrChannels * pSt.wavHdr->BitPerSample/8;  // = 4 bytes per stereo sample -- same as ->BlockAlign
 	pSt.nSamples = pSt.wavHdr->SubChunk2Size / pSt.bytesPerSample;
 	pSt.msecLength = pSt.nSamples*1000 / pSt.samplesPerSec;
 	
-	if ( !pSt.SqrWAVE && gGet( gPLUS )){	// DEBUG: if PLUS, replace file data with sqrWv @440
+	if ( !pSt.SqrWAVE && (PlayDBG & 1)){	// DEBUG*********************: if PLUS (PlayDbg & 1), replace file data with sqrWv @440
 		pSt.sqrSamples = pSt.nSamples;				// sqr wv for same length as file
 		pSt.sqrHfLen = pSt.wavHdr->SampleRate / 880;	// 440Hz @ samplerate from file
 		pSt.sqrWvPh = 0;														// start with beginning of LO

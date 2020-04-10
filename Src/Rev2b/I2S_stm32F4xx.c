@@ -277,30 +277,65 @@ static void		 								I2S3_ClockEnable( bool enab ){ 								// enable/disable I
 		spi->I2SCFGR 	|= I2S_MODE_ENAB;								// enable I2S device, set I2SE (0x200)
 	} 
 }
-static int32_t 								I2S_Configure( I2S_RESOURCES *i2s, uint32_t freq, bool monoMode ){ 		// set audio frequency
+static int32_t 								I2S_Configure( I2S_RESOURCES *i2s, uint32_t freq, bool monoMode, bool slaveMode ){ 		// set audio frequency
 #ifdef TBOOKREV2B
-	// RM0402  STM32F412xx Reference Manual
-  //  I2SCLK from PLLI2S = 96MHz by default
-  //  	fs = PLLI2S/ (256*( 2*I2SDIV + ODD )
-	//  
-	I2S3_ClockEnable( true );			// configure & start I2S3 to generate 12MHz on I2S3_MCK
+		// RM0402  STM32F412xx Reference Manual
+		//  I2SCLK from PLLI2S = 96MHz by default
+		//  	fs = PLLI2S/ (256*( 2*I2SDIV + ODD )
+		//  
+		I2S3_ClockEnable( true );			// configure & start I2S3 to generate 12MHz on I2S3_MCK
 
-	i2s->instance->I2SCFGR &=  ~I2S_MODE_ENAB;						// make sure I2S is disabled while changing config
-	
-  // set SPI2 I2SCFGR & I2SPR registers
-	i2s->instance->I2SCFGR = I2S_MODE | I2S_CFG_SLAVE_TX;  // I2SMode & I2SCFG = Slave Transmit
-	// defaults:  I2SSTD = 00 = Phillips, DATLEN = 00, CHLEN = 0  16bits/channel
+		i2s->instance->I2SCFGR &=  ~I2S_MODE_ENAB;						// make sure I2S is disabled while changing config
+		
+	if ( slaveMode ){ // USE AK4637 PLL to generate accurate clock -- I2S3 generates 12MHz ref clock on I2S3_MCK
+		// set SPI2 I2SCFGR & I2SPR registers
+		i2s->instance->I2SCFGR = I2S_MODE | I2S_CFG_SLAVE_TX;  // I2SMode & I2SCFG = Slave Transmit
+		// defaults:  I2SSTD = 00 = Phillips, DATLEN = 00, CHLEN = 0  16bits/channel
 
-	i2s->instance->I2SPR   = 0;		// reset unused PreScaler
+		i2s->instance->I2SPR   = 0;		// reset unused PreScaler
+		
+		// MUST be AFTER SPI2->I2SCFGR.I2SCFG is set to SLAVE_TX
+		ak_SetMasterFreq( freq );			// set AK4637 to MasterMode, 12MHz ref input to PLL, audio @ 'freq'
+	} else {
+		// configure to generate MCK at freq -- for master mode transmission
+		// requires board jumped to send I2S2_MCK (instead of I2S3_MCK) to AK4637
+		i2s->instance->I2SCFGR = I2S_MODE | I2S_CFG_MASTER_TX;  // I2SMode & I2SCFG = Master Transmit
+
+		// make sure the RCC->PLLI2S is running & ready
+		RCC->CR |= RCC_CR_PLLI2SON;					// enable the I2S_clk generator PLLI2S 
+		while ( (RCC->CR & RCC_CR_PLLI2SRDY)== 0 )
+			tbDelay_ms( 1 );
+
+		int I2S_clk = 48000000;							// PLLI2S clock rate
+		// FS = PLLI2S / ( 256*( 2* I2SDIV + ODD ) 
+		int f = freq;
+		int div = I2S_clk/(512*freq);
+		int f1 = I2S_clk /(256 * (2*div+0));   // freq for div & odd=0
+		int f2 = I2S_clk /(256 * (2*div+1));	 // freq for div & odd=1
+		int f3 = I2S_clk /(256 * (2*div+2));   // freq for div+1 & odd=0
+		// f1 > f2 > f3  -- which is closest to f?
+		int e1 = abs(f-f1), e2 = abs(f-f2), e3 = abs(f-f3);
+		int odd = 0;
+		if ( e2 < e1 && e2 < e3 )
+			odd = 1;		// f2 closest: DIV,   ODD=1
+		else if ( e3 < e1 && e3 < e2 )
+			div++;			// f3 closest: DIV+1, ODD=1
+		// else 			// f1 closest: DIV,   ODD=0
+			
+		// I2s config    SPI_I2SCFGR: I2SMOD, I2SE, I2SCFG, PCMSYNC, I2SSTD, CKPOL, DATLEN, CHLEN
+		uint16_t i2s_cfg = 0;
+		i2s_cfg = I2S_MODE | I2S_CFG_MASTER_TX | I2S_STANDARD_PHILIPS | I2S_CPOL_LOW | I2S_DATAFORMAT_16B; 
+
+		// I2S pre-scaler  SPI_I2SPR: MCKOE, ODD, I2SDIV
+		uint16_t i2s_pr = I2S_MCLKOUTPUT_ENABLE | (odd? SPI_I2SPR_ODD : 0) | div; 
+
+		// set SPI2 I2SCFGR & I2SPR registers
+		i2s->instance->I2SCFGR = I2S_MODE;  // set I2S Mode, but reset rest ( esp. I2SE = 0 )
 	
-//	i2s->info->monoMode = monoMode;
+		i2s->instance->I2SPR   = i2s_pr;		// store PreScaler  (while I2S disabled)
+		i2s->instance->I2SCFGR = i2s_cfg;		// store I2S config (while disabled)
+	}
 	i2s->info->flags |= I2S_FLAG_CONFIGURED;
-	
-	// MUST be AFTER SPI2->I2SCFGR.I2SCFG is set to SLAVE_TX
-	ak_SetMasterFreq( freq );			// set AK4637 to MasterMode, 12MHz ref input to PLL, audio @ 'freq'
-	
-//	ak_SpeakerEnable( true );		// power upspeaker amp (w/ mute to avoid pop)
-//	ak_SetMute( false );				// unmute -- ready to play
 #endif
 	
 #ifdef STM3210E_EVAL
@@ -655,13 +690,14 @@ static int32_t 								I2S_Control( uint32_t control, uint32_t arg1, uint32_t ar
   if (i2s->info->status.tx_busy || i2s->info->status.rx_busy) { return ARM_DRIVER_ERROR_BUSY; }
 
   if ( req == ARM_SAI_CONFIGURE_TX ){
-		// only configuration supported
-		const uint32_t supported = ARM_SAI_CONFIGURE_TX | ARM_SAI_MODE_SLAVE  | ARM_SAI_ASYNCHRONOUS |
-			ARM_SAI_PROTOCOL_I2S | ARM_SAI_DATA_SIZE(16);
+		// only configurations supported
+		const uint32_t reqMSK = ARM_SAI_SYNCHRONIZATION_Msk | ARM_SAI_PROTOCOL_Msk | ARM_SAI_DATA_SIZE_Msk;		// mask for fields that must match supported values
+		const uint32_t supported = ARM_SAI_ASYNCHRONOUS |	ARM_SAI_PROTOCOL_I2S | ARM_SAI_DATA_SIZE(16);
+		if ( (control & reqMSK) != supported ) return ARM_DRIVER_ERROR_UNSUPPORTED;
+
 		bool monoMode = (control & ARM_SAI_MONO_MODE) != 0;
-		if ( (control & ~ARM_SAI_MONO_MODE) != supported )
-				return ARM_DRIVER_ERROR_UNSUPPORTED;
-		I2S_Configure( i2s, arg2, monoMode );		// configure audio freq
+		bool slaveMode = (control & ARM_SAI_MODE_Msk) == ARM_SAI_MODE_SLAVE;
+		I2S_Configure( i2s, arg2, monoMode, slaveMode );		// configure audio freq
 		return ARM_DRIVER_OK;
 
   } else

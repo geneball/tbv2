@@ -97,6 +97,7 @@ void copyFile( const char *src, const char * dst ){
 	fclose(fsrc);
 	fclose(fdst);
 }
+int PlayDBG = 0;
 void debugLoop( ){
 	if ( fsNDevs==0 ) dbgLog( "no storage avail \n" );
 	else dbgLog( "no TBook on %s \n", fsDevs[0]  );
@@ -156,6 +157,7 @@ void debugLoop( ){
 			gSet( gGREEN, 1 );
 			FILE * fa = fopen( TBP[pAUDIO], "r" );
 			if ( fa!=NULL ){
+				PlayDBG = (gGet( gPLUS )? 1:0) + (gGet( gMINUS )? 2:0) + (gGet( gLHAND )? 4:0); 
 				PlayWave( TBP[pAUDIO] );
 			} else {
 				int hz = gGet( gPLUS )? 440 : gGet( gMINUS )? 523 : gGet( gLHAND )? 659 : 1000;
