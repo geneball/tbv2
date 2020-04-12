@@ -163,9 +163,9 @@ chkDevState( "audDn", false );
 	Driver_SAI0.Control( ARM_SAI_ABORT_SEND, 0, 0 );	// shut down I2S device, arg1==0 => Abort
 int good = 0;
 for (int i=0; i< evtCnt; i++) if (rdEvt[i]>0) good++;
+	dbgLog("nE:%d nG:%d \n", evtCnt, good );
 flashCode( good );
-	if (sCnt!=0)
-	dbgLog("nE:%d nG:%d ts0:%d lEr:%x\n", evtCnt, good, tsEvt[0], rdErr[evtCnt-1] );
+	if (sCnt!=0)  //ref sCnt so no warning
 tbDelay_ms(5000);
 	
 	ak_SpeakerEnable( false ); 												// power down codec internals & amplifier
@@ -253,6 +253,7 @@ Buffer_t * 					loadBuff( ){																	// read next block of audio into a 
 		pSt.sqrWvPh = phase;		// next starts from here
 	} else {
 		nSamp = fread( pB->data, 1, len*2, pSt.wavF )/2;		// read up to len samples (1/2 buffer if mono)
+		dbgEvt( TB_ldBuff, nSamp, ferror(pSt.wavF), pSt.buffNum, 0 );
 	}
 	if ( pSt.monoMode ){
 		nSamp *= 2;
@@ -295,9 +296,12 @@ void testRead( const char *fname ){ //DEBUG: time reading all samples of file
 	evtCnt = 0;
 }
 void 								PlayWave( const char *fname ){ 								// play the WAV file 
+//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20
+if (PlayDBG & 0x20){
 	testRead( fname );//DEBUG-- time loading whole file
 	testRead( fname );//DEBUG-- time loading whole file
-	
+}
+
 	audInitState();
 	chkDevState( "PlayWv", true );
 	pSt.state = pbLdHdr;
@@ -316,6 +320,7 @@ void 								PlayWave( const char *fname ){ 								// play the WAV file
 	pSt.monoMode = (pSt.wavHdr->NbrChannels == 1);
 
 	uint32_t ctrl = ARM_SAI_CONFIGURE_TX | ARM_SAI_MODE_SLAVE  | ARM_SAI_ASYNCHRONOUS | ARM_SAI_PROTOCOL_I2S | ARM_SAI_DATA_SIZE(16);
+//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20
 if (PlayDBG&2) // DEBUG*********************: if POT, use MASTER Mode
 	ctrl = ARM_SAI_CONFIGURE_TX | ARM_SAI_MODE_MASTER  | ARM_SAI_ASYNCHRONOUS | ARM_SAI_PROTOCOL_I2S | ARM_SAI_DATA_SIZE(16);
 		
@@ -325,6 +330,7 @@ if (PlayDBG&2) // DEBUG*********************: if POT, use MASTER Mode
 	pSt.nSamples = pSt.wavHdr->SubChunk2Size / pSt.bytesPerSample;
 	pSt.msecLength = pSt.nSamples*1000 / pSt.samplesPerSec;
 	
+//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20
 	if ( !pSt.SqrWAVE && (PlayDBG & 1)){	// DEBUG*********************: if TABLE (PlayDbg & 1), replace file data with sqrWv @440
 		pSt.sqrSamples = pSt.nSamples;				// sqr wv for same length as file
 		pSt.sqrHfLen = pSt.wavHdr->SampleRate / 880;	// 440Hz @ samplerate from file
@@ -357,18 +363,22 @@ chkDevState( "stWv", false );
 	//PlayNextBuff();								// start 1st buffer playing
 }
 void 								saiEvent( uint32_t event ){			// called by ISR on buffer complete or error -- chain next, or report error
-  if (evtCnt<200){  // DEBUG
-		uint32_t 	nw = tbTimeStamp();
+//  if (evtCnt<200){  // DEBUG
+//		uint32_t 	nw = tbTimeStamp();
 		const int BLEN = 1024;
 		char tbuff[BLEN];
-		if (pSt.SqrWAVE && pSt.wavF!=NULL){  // have open file, but sending square wave
-			rdEvt[ evtCnt ] = fread( tbuff, 1, BLEN, pSt.wavF );  // try to read a kbyte from file-- save cnt 
-			if ( rdEvt[evtCnt] < BLEN )
-				rdErr[ evtCnt ] = ferror( pSt.wavF );
+//		if (pSt.SqrWAVE && pSt.wavF!=NULL){  // have open file, but sending square wave
+//			rdEvt[ evtCnt ] = fread( tbuff, 1, BLEN, pSt.wavF );  // try to read a kbyte from file-- save cnt 
+//			rdErr[ evtCnt ] = ferror( pSt.wavF );
+//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20
+if ( pSt.wavF!=0 && (PlayDBG & 0x1)){  // DEBUG*********************: if TABLE read 1K from audio.wav
+		  int cnt = fread( tbuff, 1, BLEN, pSt.wavF );
+	rdEvt[ evtCnt++ ] = cnt;		// for audDn, flashCode 
+		  dbgEvt( TB_dmaComp, cnt, ferror(pSt.wavF),0, 0 );
 		}
-		tsEvt[ evtCnt++ ] = nw-prvEvt;
-		prvEvt = nw;
-	}
+//		tsEvt[ evtCnt++ ] = nw-prvEvt;
+//		prvEvt = nw;
+//	}
 	if ( (event & ARM_SAI_EVENT_SEND_COMPLETE) != 0 ){
 		if ( pSt.Buff[2] != NULL ){		// have more data to send
 			Driver_SAI0.Send( pSt.Buff[2]->data, pSt.nToPlay );		// set up next buffer 

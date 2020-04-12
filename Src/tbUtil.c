@@ -387,7 +387,7 @@ void 										initPrintf( const char *hdr ){
 	cX = 0; 
 	cY = 0;
 	InitLCD( hdr );					// eval_LCD if STM3210E
-	
+	EventRecorderInitialize( EventRecordAll, 1 );  // start EventRecorder
 	printf( "%s\n", hdr );
 }
 void 										stdout_putchar( char ch ){
@@ -406,6 +406,9 @@ void 										stdout_putchar( char ch ){
 
 
 
+
+void 										dbgEvt( int id, int a1, int a2, int a3, int a4 ){ EventRecord4( EventLevelError + id, a1, a2, a3, a4 ); }
+
 struct  {
 	char 			*devNm;		
 	void			*devBase;
@@ -421,9 +424,15 @@ struct  {
 			{ "APB1ENR", 0x40 }, { "APB2ENR", 0x44 }, { "PLLI2S", 0x84 }, { "DCKCFG", 0x8C },{ "CKGATEN", 0x90 }, { "DCKCFG2", 0x94 }, {NULL,0}
 		}
 	},
-	{ "DMA1.S4", DMA1_Stream4, {
+	{ "DMA1", DMA1, {
 			{ "LIS", 0x00 }, { "HIS", 0x04 }, { "LIFC", 0x08 }, { "HIFC", 0x0C }, 
 				{ "S4C", 0x70 }, { "S4NDT", 0x74 }, { "S4PA", 0x78 }, { "S4M0A", 0x7C }, { "S4M1A", 0x80 }, {NULL,0}
+		}
+	},
+	{ "DMA2", DMA2, {
+			{ "LIS", 0x00 }, { "HIS", 0x04 }, { "LIFC", 0x08 }, { "HIFC", 0x0C }, 
+				{ "S3C", 0x58 }, { "S3NDT", 0x5c }, { "S3PA", 0x60 }, { "S3M0A", 0x64 }, { "S3M1A", 0x68 }, 
+				{ "S6C", 0xa0 }, { "S3NDT", 0xa4 }, { "S3PA", 0xa8 }, { "S3M0A", 0xac }, { "S3M1A", 0xb0 }, {NULL,0}
 		}
 	},
 	{ "EXTI", EXTI, {
@@ -471,7 +480,7 @@ struct  {
 	{ NULL, 0, { {NULL, 0} }}
 };
 const int MXR = 200;
-uint32_t 	prvDS[MXR], currDS[MXR];
+uint32_t 	prvDS[MXR]={0}, currDS[MXR];
 
 void 										chkDevState( char *loc, bool reset ){ // report any device changes 
 	int idx = 0;		// assign idx for regs in order
@@ -484,7 +493,7 @@ void 										chkDevState( char *loc, bool reset ){ // report any device change
 			int wdoff = devD[i].regs[j].off >> 2;
 			uint32_t val = d[ wdoff ];	// read REG at devBase + regOff
 			currDS[idx] = val;			
-			if ( reset || val != prvDS[idx] ){
+			if ( (reset && val!=0) || val != prvDS[idx] ){
 				dbgLog( ".%s %08x\n", rNm, val ); 
 			}
 			prvDS[ idx ] = currDS[ idx ];

@@ -155,6 +155,8 @@ void 						i2c_Sig_Event( uint32_t event ){		// called for I2C errors or complet
 
 
 void		 				I2C_initialize() {																					// Initialize I2C device
+//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20
+if (PlayDBG & 0x10) return;
 //	I2Cdrv->Control( ARM_I2C_BUS_CLEAR, 0 );  // resets GPIO, etc. -- if needed, should be before initialization
   I2Cdrv->Initialize( i2c_Sig_Event );					// sets up SCL & SDA pins, evt handler
   I2Cdrv->PowerControl( ARM_POWER_FULL );		// clocks I2C device & sets up interrupts
@@ -192,6 +194,9 @@ uint8_t 				Codec_RdReg( uint8_t Reg ){																	// return value of codec
 	uint8_t value;
 	int status;
 	
+//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20
+if (PlayDBG & 0x10) return 0;
+	
   I2C_Event = 0U;  		// Clear event flags before new transfer
   status = I2Cdrv->MasterTransmit( AUDIO_I2C_ADDR, &Reg, 1, true );		// send register index
 	cntErr( I2C_Xmt, ARM_DRIVER_OK, status, 0, 2 );
@@ -219,6 +224,8 @@ uint8_t 				Codec_RdReg( uint8_t Reg ){																	// return value of codec
 #endif
 
 void 						Codec_WrReg( uint8_t Reg, uint8_t Value){										// write codec register Reg with Value
+//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20
+if (PlayDBG & 0x8) return;
 	uint32_t status;
 	int waitCnt = 0;
   

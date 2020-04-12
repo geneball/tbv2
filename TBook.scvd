@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+ 
+<component_viewer schemaVersion="0.1" xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:noNamespaceSchemaLocation="Component_Viewer.xsd">
+  <component name="TB" version="1.0.0"/>    <!-- name and version of the component  -->
+<!--  
+#define TBEvt  0x02
+#define TB_ldBuff              EventID(EventLevelOp,     TBEvt, 0x00)
+#define TB_dmaComp             EventID(EventLevelOp,     TBEvt, 0x01)
+-->
+    <group name="TBook">
+         <component name="TBook"      brief="TB"    no="0x02" prefix="TB_"    info="Talking Book"/>
+    </group>  
+
+    <events>
+      <event id="0x0200" level="Op"   property="loadBuff"   value="nbytes=%x[val1] ferr=%x[val2] buffN=%d[val3]"     info="loadBuff fread()"  />
+      <event id="0x0201" level="Op"   property="DMACompl"   value="nbytes=%x[val1] ferr=%x[val2]"     info="SAIComplete fread"  />
+    </events>
+ 
+</component_viewer>

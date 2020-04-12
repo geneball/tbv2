@@ -66,6 +66,13 @@ extern void 			talking_book ( void *argument );
 extern uint32_t 	tbTimeStamp( void );
 extern void 			tbDelay_ms( int ms ); 					//  Delay execution for a specified number of milliseconds
 extern void *			tbAlloc( int nbytes, const char *msg );
+
+/// TBook component number
+#define TBEvt                  (0x02U)
+#define TB_ldBuff              EventID(EventLevelOp,     TBEvt, 0x00U)
+#define TB_dmaComp             EventID(EventLevelOp,     TBEvt, 0x01U)
+extern void 			dbgEvt( int id, int a1, int a2, int a3, int a4 );
+
 extern void 			usrLog( const char * fmt, ... );
 extern void 			dbgLog( const char * fmt, ... );
 extern void 			errLog( const char * fmt, ... );
