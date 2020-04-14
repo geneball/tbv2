@@ -4,6 +4,7 @@
 #include "tbook.h"
 #include "controlMgr.h"			// runs on initialization thread
 #include "mediaPlyr.h"			// thread to watch audio status
+#include "fs_evr.h"					// FileSys components
 
 const char * 	TBV2_Version 				= "V2.04 of 3-Apr-2020";
 
@@ -159,6 +160,7 @@ void debugLoop( ){
 			if ( fa!=NULL ){
 				//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20
 				PlayDBG = (gGet( gTABLE )? 1:0) + (gGet( gPOT )? 2:0) + (gGet( gPLUS )? 4:0) + (gGet( gMINUS )? 8:0) + (gGet( gSTAR )? 0x10:0) + (gGet( gTREE )? 0x20:0); 
+				dbgEvt( TB_dbgPlay, PlayDBG, 0,0,0 );
 				dbgLog( " PlayDBG=0x%x \n", PlayDBG );
 				PlayWave( TBP[pAUDIO] );
 			} else {
@@ -174,6 +176,10 @@ void debugLoop( ){
 //
 //  TBook main thread
 void talking_book( void *argument ) {
+	
+	EventRecorderInitialize( EventRecordNone, 1 );  // start EventRecorder
+	EventRecorderEnable( EventRecordError + EventRecordAPI, EvtFsCore_No, EvtFsMcSPI_No );  // enable Error & API for FS components
+	EventRecorderEnable( EventRecordAll, TB_no, TBCSM_no );  // enable Error,API,Op,Detail for all TBook components
 	
 	initPowerMgr();			// set up GPIO signals for controlling & monitoring power -- enables MemCard
 	

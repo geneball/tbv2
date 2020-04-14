@@ -387,7 +387,6 @@ void 										initPrintf( const char *hdr ){
 	cX = 0; 
 	cY = 0;
 	InitLCD( hdr );					// eval_LCD if STM3210E
-	EventRecorderInitialize( EventRecordAll, 1 );  // start EventRecorder
 	printf( "%s\n", hdr );
 }
 void 										stdout_putchar( char ch ){
@@ -407,7 +406,9 @@ void 										stdout_putchar( char ch ){
 
 
 
-void 										dbgEvt( int id, int a1, int a2, int a3, int a4 ){ EventRecord4( EventLevelError + id, a1, a2, a3, a4 ); }
+void 										dbgEvt( int id, int a1, int a2, int a3, int a4 ){ EventRecord4( EventLevelAPI + id, a1, a2, a3, a4 ); }
+void 										dbgEvtD( int id, const void *d, int len ){ EventRecordData( EventLevelAPI + id, d, len ); }
+void 										dbgEvtS( int id, const char *d ){ EventRecordData( EventLevelAPI + id, d, strlen(d) ); }
 
 struct  {
 	char 			*devNm;		

@@ -150,7 +150,7 @@ void 								audPauseResumeAudio( void ){									// signal playback to request 
 	}
 }
 
-static uint32_t prvEvt=0, evtCnt = 0, sCnt=0, tsEvt[200] = {0}, rdEvt[200] = {0}, rdErr[200]={0};  //DEBUG
+static uint32_t evtCnt = 0, succCnt=0;  //DEBUG
 void 								audPlaybackComplete( void ){									// shut down after completed playback
 	pSt.tsPause = tbTimeStamp();
 	pSt.msPlayed += (pSt.tsPause - pSt.tsResume);  		// (tsResume == tsPlay, if never paused)
@@ -159,13 +159,10 @@ void 								audPlaybackComplete( void ){									// shut down after completed p
 	dbgLog( "%d extra msec\n", extra );
 	int pct = audPlayPct();
 	
-chkDevState( "audDn", false );
+//chkDevState( "audDn", false );
 	Driver_SAI0.Control( ARM_SAI_ABORT_SEND, 0, 0 );	// shut down I2S device, arg1==0 => Abort
-int good = 0;
-for (int i=0; i< evtCnt; i++) if (rdEvt[i]>0) good++;
-	dbgLog("nE:%d nG:%d \n", evtCnt, good );
-flashCode( good );
-	if (sCnt!=0)  //ref sCnt so no warning
+	dbgLog("nE:%d nS:%d \n", evtCnt, succCnt );
+flashCode( succCnt );
 tbDelay_ms(5000);
 	
 	ak_SpeakerEnable( false ); 												// power down codec internals & amplifier
@@ -275,8 +272,9 @@ Buffer_t * 					loadBuff( ){																	// read next block of audio into a 
 	return pB;
 }
 void testRead( const char *fname ){ //DEBUG: time reading all samples of file
-	if ( pSt.SqrWAVE ) return;
+//	if ( pSt.SqrWAVE ) return;
 	
+	dbgEvtD( TB_tstRd, fname, strlen(fname) );
 	audInitState();
 	pSt.state = pbLdHdr;
 	uint32_t tsOpen = tbTimeStamp();
@@ -284,26 +282,26 @@ void testRead( const char *fname ){ //DEBUG: time reading all samples of file
 	pSt.wavF = fopen( fname, "r" );
 	if ( pSt.wavF==NULL || fread( pSt.wavHdr, 1, WaveHdrBytes, pSt.wavF ) != WaveHdrBytes ) 
 			errLog( "open wav failed" );
+	pSt.samplesPerSec = pSt.wavHdr->SampleRate;
+	pSt.bytesPerSample = pSt.wavHdr->NbrChannels * pSt.wavHdr->BitPerSample/8;  // = 4 bytes per stereo sample -- same as ->BlockAlign
+	pSt.nSamples = pSt.wavHdr->SubChunk2Size / pSt.bytesPerSample;
+	pSt.msecLength = pSt.nSamples*1000 / pSt.samplesPerSec;
+
 	while ( !pSt.audioEOF ){
 		pSt.Buff[0] = loadBuff();
 		freeBuff(0);
+		tbDelay_ms(100);
 	}
 	uint32_t tsClose = tbTimeStamp();
 	fclose( pSt.wavF );
-	sCnt = pSt.nLoaded;
 	dbgLog("tstRd %d in %d \n", pSt.nLoaded, tsClose-tsOpen );
-	prvEvt = tsClose;
 	evtCnt = 0;
 }
 void 								PlayWave( const char *fname ){ 								// play the WAV file 
-//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20
-if (PlayDBG & 0x20){
-	testRead( fname );//DEBUG-- time loading whole file
-	testRead( fname );//DEBUG-- time loading whole file
-}
+	dbgEvtD( TB_playWv, fname, strlen(fname) );
 
 	audInitState();
-	chkDevState( "PlayWv", true );
+//	chkDevState( "PlayWv", true );
 	pSt.state = pbLdHdr;
   if ( !pSt.SqrWAVE ){	// open file, unless SqrWAVE
 		pSt.wavF = fopen( fname, "r" );
@@ -350,10 +348,14 @@ if (PlayDBG&2) // DEBUG*********************: if POT, use MASTER Mode
 	dbgLog( "Wv: %d msec\n", pSt.msecLength );
 	gSet( gGREEN, 1 );	// Turn ON green LED: audio file playing 
 	pSt.state = pbPlaying;
-chkDevState( "stWv", false );
+//chkDevState( "stWv", false );
 	Driver_SAI0.Send( pSt.Buff[0]->data, pSt.nToPlay );		// start first buffer 
 	Driver_SAI0.Send( pSt.Buff[1]->data, pSt.nToPlay );		// & set up next buffer 
 
+if (PlayDBG & 0x8){			//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20
+	testRead( fname );		//DEBUG-- time loading whole file
+	audPlaybackComplete();
+}
 	pSt.Buff[2] = loadBuff();
   // buffer complete for cBuff calls saiEvent, which:
   //   1) Sends Buff2 
@@ -373,7 +375,7 @@ void 								saiEvent( uint32_t event ){			// called by ISR on buffer complete o
 //PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20
 if ( pSt.wavF!=0 && (PlayDBG & 0x1)){  // DEBUG*********************: if TABLE read 1K from audio.wav
 		  int cnt = fread( tbuff, 1, BLEN, pSt.wavF );
-	rdEvt[ evtCnt++ ] = cnt;		// for audDn, flashCode 
+			if (cnt>0) succCnt++; 
 		  dbgEvt( TB_dmaComp, cnt, ferror(pSt.wavF),0, 0 );
 		}
 //		tsEvt[ evtCnt++ ] = nw-prvEvt;

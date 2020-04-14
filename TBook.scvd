@@ -3,17 +3,31 @@
 <component_viewer schemaVersion="0.1" xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:noNamespaceSchemaLocation="Component_Viewer.xsd">
   <component name="TB" version="1.0.0"/>    <!-- name and version of the component  -->
 <!--  
-#define TBEvt  0x02
-#define TB_ldBuff              EventID(EventLevelOp,     TBEvt, 0x00)
-#define TB_dmaComp             EventID(EventLevelOp,     TBEvt, 0x01)
+#define TB                	   (0x01)
+#define TB_dbgPlay             EventID(EventLevelOp,     TB,    0x00)
+#define TBAud                  (0x02)
+#define TB_ldBuff              EventID(EventLevelOp,     TBAud, 0x00)
+#define TB_dmaComp             EventID(EventLevelOp,     TBAud, 0x01)
+#define TB_playWv              EventID(EventLevelOp,     TBAud, 0x02)
+#define TB_tstRd               EventID(EventLevelOp,     TBAud, 0x03)
+#define TBCSM                  (0x03)
+#define TB_csmChSt				EventID(EventLevelOp,     TBCSM, 0x00)
+#define TB_csmDoAct				EventID(EventLevelOp,     TBCSM, 0x01)
 -->
     <group name="TBook">
          <component name="TBook"      brief="TB"    no="0x02" prefix="TB_"    info="Talking Book"/>
     </group>  
 
     <events>
-      <event id="0x0200" level="Op"   property="loadBuff"   value="nbytes=%x[val1] ferr=%x[val2] buffN=%d[val3]"     info="loadBuff fread()"  />
-      <event id="0x0201" level="Op"   property="DMACompl"   value="nbytes=%x[val1] ferr=%x[val2]"     info="SAIComplete fread"  />
-    </events>
+      <event id="0x0100" level="Op"   property="dbgPlay"   value="dbg=%x[val1]"     info="debugLoop Play"  />
+		  
+      <event id="0x0200" level="Op"   property="loadBuff"   value="nSamp=%d[val1] ferr=%d[val2] buffN=%d[val3]"     info="loadBuff fread()"  />
+      <event id="0x0201" level="Op"   property="DMACompl"   value="cnt=%d[val1] ferr=%d[val2]"     info="SAIComplete fread"  />
+      <event id="0x0202" level="Op"   property="PlayWv"   value="%t[val1]"     info="audio PlayWv"  />
+      <event id="0x0203" level="Op"   property="tstRead"   value="%t[val1]"     info="audio testRead"  />
+
+	  <event id="0x0300" level="Op"   property="chgState"   value="%t[val1]"     info="CSM change state"  />
+	  <event id="0x0301" level="Op"   property="doAct"      value="act=%d[val1], a[0]=%d[val2],a[1]=%d[val3],iarg=%d[val4]"     info="CSM doAction"  />
+     </events>
  
 </component_viewer>

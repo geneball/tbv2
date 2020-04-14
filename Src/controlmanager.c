@@ -133,6 +133,7 @@ static int		stIdx( int iSt ){
 	return iSt;
 }
 static void 	doAction( Action act, char *arg, int iarg ){	// execute one csmAction
+	dbgEvt( TB_csmDoAct, act, arg[0],arg[1],iarg );
 	logEvtNSNS( "Action", "nm", actionNm(act), "arg", arg );
 	if (isMassStorageEnabled()){		// if USB MassStorage running: ignore actions referencing files
 		switch ( act ){
@@ -232,6 +233,7 @@ static void 	doAction( Action act, char *arg, int iarg ){	// execute one csmActi
 
 // ------------- interpret TBook CSM 
 static void		changeCSMstate( short nSt, short lastEvtTyp ){
+	dbgEvt( TB_csmChSt, nSt, 0,0,0 );
 	if (nSt==TBook.iCurrSt)
 		logEvtNSNS( "No-op_evt", "state",TBook.cSt->nm, "evt", eventNm( (Event)lastEvtTyp) );
 	while ( nSt != TBook.iCurrSt ){

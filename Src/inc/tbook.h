@@ -68,10 +68,20 @@ extern void 			tbDelay_ms( int ms ); 					//  Delay execution for a specified nu
 extern void *			tbAlloc( int nbytes, const char *msg );
 
 /// TBook component number
-#define TBEvt                  (0x02U)
-#define TB_ldBuff              EventID(EventLevelOp,     TBEvt, 0x00U)
-#define TB_dmaComp             EventID(EventLevelOp,     TBEvt, 0x01U)
+#define TB_no                	 (0x01)
+#define TB_dbgPlay             EventID(EventLevelOp,     TB_no,    0x00)
+#define TBAud_no               (0x02)
+#define TB_ldBuff              EventID(EventLevelOp,     TBAud_no, 0x00)
+#define TB_dmaComp             EventID(EventLevelOp,     TBAud_no, 0x01)
+#define TB_playWv              EventID(EventLevelOp,     TBAud_no, 0x02)
+#define TB_tstRd               EventID(EventLevelOp,     TBAud_no, 0x03)
+#define TBCSM_no               (0x03)
+#define TB_csmChSt						 EventID(EventLevelOp,     TBCSM_no, 0x00)
+#define TB_csmDoAct						 EventID(EventLevelOp,     TBCSM_no, 0x01)
+
 extern void 			dbgEvt( int id, int a1, int a2, int a3, int a4 );
+extern void 			dbgEvtD( int id, const void *d, int len );
+extern void 			dbgEvtS( int id, const char *d );
 
 extern void 			usrLog( const char * fmt, ... );
 extern void 			dbgLog( const char * fmt, ... );

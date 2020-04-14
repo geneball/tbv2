@@ -629,6 +629,7 @@ static int32_t 								I2S2only_Send( const void *data, uint32_t nSamples, I2S_R
 	int cfg = DMA_SxCR_MSIZE_0 | DMA_SxCR_PSIZE_0 | DMA_SxCR_MINC | DMA_SxCR_DIR_0;   // mem->codec, 16bit words
 	cfg |= 0 << DMA_SxCR_CHSEL_Pos;							// SPI2_TX is in DMA1 (Table 30) row for Channel 0, as Stream4
 	cfg |= DMA_SxCR_DBM;																						// double buffer, M0AR first
+if ((PlayDBG & 0x8)==0) 		//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20
 	cfg |= DMA_SxCR_TCIE | DMA_SxCR_TEIE | DMA_SxCR_DMEIE;					// interrupt on complete, error, direct mode error
 	dma->CR = cfg;
 	

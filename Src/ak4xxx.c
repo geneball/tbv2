@@ -155,8 +155,6 @@ void 						i2c_Sig_Event( uint32_t event ){		// called for I2C errors or complet
 
 
 void		 				I2C_initialize() {																					// Initialize I2C device
-//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20
-if (PlayDBG & 0x10) return;
 //	I2Cdrv->Control( ARM_I2C_BUS_CLEAR, 0 );  // resets GPIO, etc. -- if needed, should be before initialization
   I2Cdrv->Initialize( i2c_Sig_Event );					// sets up SCL & SDA pins, evt handler
   I2Cdrv->PowerControl( ARM_POWER_FULL );		// clocks I2C device & sets up interrupts
@@ -194,9 +192,6 @@ uint8_t 				Codec_RdReg( uint8_t Reg ){																	// return value of codec
 	uint8_t value;
 	int status;
 	
-//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20
-if (PlayDBG & 0x10) return 0;
-	
   I2C_Event = 0U;  		// Clear event flags before new transfer
   status = I2Cdrv->MasterTransmit( AUDIO_I2C_ADDR, &Reg, 1, true );		// send register index
 	cntErr( I2C_Xmt, ARM_DRIVER_OK, status, 0, 2 );
@@ -224,8 +219,8 @@ if (PlayDBG & 0x10) return 0;
 #endif
 
 void 						Codec_WrReg( uint8_t Reg, uint8_t Value){										// write codec register Reg with Value
-//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20
-if (PlayDBG & 0x8) return;
+if (PlayDBG & 0x10) return;		//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20
+
 	uint32_t status;
 	int waitCnt = 0;
   
@@ -345,8 +340,19 @@ void 						ak_SpeakerEnable( bool enable ){														// enable/disable speak
 	}	
 }
 
+void						ak_PowerUp( void ){
+	gSet( gBOOT1_PDN, 1 );  // OUT: set power_down ACTIVE to so codec doesn't try to PowerUP
+	gSet( gEN_5V, 1 );			// OUT: 1 to supply 5V to codec		AP6714 EN		
+	gSet( gEN1V8, 1 );		  // OUT: 1 to supply 1.8 to codec  TLV74118 EN		
+	tbDelay_ms( 20 ); 		 	// wait for voltage regulators
+	
+	gSet( gBOOT1_PDN, 0 );  //  set power_down INACTIVE to Power on the codec 
+	tbDelay_ms(5); 		 			//  wait for it to start up
+}
 // external interface functions
-void 						ak_Init( ){ 				// Init codec & I2C 
+void 						ak_Init( ){ 																								// Init codec & I2C (i2s_stm32f4xx.c)
+
+if (PlayDBG & 0x10) return;		//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20
 	ak_PowerUp(); 		// power-up codec
   I2C_Init();  			// powerup & Initialize the Control interface of the Audio Codec
 
@@ -425,7 +431,7 @@ void 						ak_Init( ){ 				// Init codec & I2C
 }
 
 
-void 						ak_PowerDown( void ){																							// power down entire codec
+void 						ak_PowerDown( void ){																				// power down entire codec (i2s_stm..)
 	I2Cdrv->PowerControl( ARM_POWER_OFF );	// power down I2C
 	I2Cdrv->Uninitialize( );								// deconfigures SCL & SDA pins, evt handler
 	
@@ -433,15 +439,6 @@ void 						ak_PowerDown( void ){																							// power down entire code
 	gSet( gBOOT1_PDN, 1 );    // OUT: set power_down ACTIVE to Power Down the codec 
 	gSet( gEN_5V, 0 );				// OUT: 1 to supply 5V to codec		AP6714 EN		
 	gSet( gEN1V8, 0 );			  // OUT: 1 to supply 1.8 to codec  TLV74118 EN		
-}
-void						ak_PowerUp( void ){
-	gSet( gBOOT1_PDN, 1 );  // OUT: set power_down ACTIVE to so codec doesn't try to PowerUP
-	gSet( gEN_5V, 1 );			// OUT: 1 to supply 5V to codec		AP6714 EN		
-	gSet( gEN1V8, 1 );		  // OUT: 1 to supply 1.8 to codec  TLV74118 EN		
-	tbDelay_ms( 20 ); 		 	// wait for voltage regulators
-	
-	gSet( gBOOT1_PDN, 0 );  //  set power_down INACTIVE to Power on the codec 
-	tbDelay_ms(5); 		 			//  wait for it to start up
 }
 
 int dbgVolCnt = 0;
@@ -453,7 +450,7 @@ void dbgSetVolume( int vol ){
 	dbgVolCnt++;
 	#endif
 }
-void		 				ak_SetVolume( uint8_t Volume ){				// sets volume 0..100%
+void		 				ak_SetVolume( uint8_t Volume ){														// sets volume 0..100%  ( mediaplayer )
   akFmtVolume = VOLUME_CONVERT( Volume );
 	#if defined( AK4343 )
 		Codec_WrReg( AK_Lch_Digital_Volume_Control, akFmtVolume );  // Left Channel Digital Volume control
@@ -465,14 +462,14 @@ void		 				ak_SetVolume( uint8_t Volume ){				// sets volume 0..100%
 	#endif
 }
 
-void		 				ak_SetMute( bool muted ){						// true => enable mute on codec
+void		 				ak_SetMute( bool muted ){																	// true => enable mute on codec  (audio)
 	if ( akMuted==muted ) return;
 	akMuted = muted;
 	
 	akR.R.MdCtr3.SMUTE = (muted? 1 : 0);
 	akUpd();
 }
-void						ak_SetMasterFreq( int freq ){					// set AK4637 to MasterMode, 12MHz ref input to PLL, audio @ 'freq', start PLL
+void						ak_SetMasterFreq( int freq ){															// set AK4637 to MasterMode, 12MHz ref input to PLL, audio @ 'freq', start PLL  (i2s_stm32f4xx)
 	#if defined( AK4637 )
 	// set up AK4637 to run in MASTER mode, using PLL to generate audio clock at 'freq'
 	// ref AK4637 Datasheet: pg 27-29

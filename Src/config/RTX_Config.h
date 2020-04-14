@@ -504,7 +504,7 @@
 //     <q>Kernel
 //     <i> Enables Kernel event generation.
 #ifndef OS_EVR_KERNEL
-#define OS_EVR_KERNEL               0
+#define OS_EVR_KERNEL               1
 #endif
  
 //     <q>Thread
