@@ -3,31 +3,52 @@
 <component_viewer schemaVersion="0.1" xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:noNamespaceSchemaLocation="Component_Viewer.xsd">
   <component name="TB" version="1.0.0"/>    <!-- name and version of the component  -->
 <!--  
-#define TB                	   (0x01)
-#define TB_dbgPlay             EventID(EventLevelOp,     TB,    0x00)
-#define TBAud                  (0x02)
-#define TB_ldBuff              EventID(EventLevelOp,     TBAud, 0x00)
-#define TB_dmaComp             EventID(EventLevelOp,     TBAud, 0x01)
-#define TB_playWv              EventID(EventLevelOp,     TBAud, 0x02)
-#define TB_tstRd               EventID(EventLevelOp,     TBAud, 0x03)
-#define TBCSM                  (0x03)
-#define TB_csmChSt				EventID(EventLevelOp,     TBCSM, 0x00)
-#define TB_csmDoAct				EventID(EventLevelOp,     TBCSM, 0x01)
+#define TB_no                	 (0x01)
+#define TB_dbgPlay             EventID(EventLevelOp,     TB_no,    0x00)
+#define TBAud_no               (0x02)
+#define TB_ldBuff              EventID(EventLevelOp,     TBAud_no, 0x00)
+#define TB_dmaComp             EventID(EventLevelOp,     TBAud_no, 0x01)
+#define TB_playWv              EventID(EventLevelOp,     TBAud_no, 0x02)
+#define TB_tstRd               EventID(EventLevelOp,     TBAud_no, 0x03)
+#define TB_saiEvt              EventID(EventLevelOp,     TBAud_no, 0x04)
+#define TB_saiCtrl             EventID(EventLevelOp,     TBAud_no, 0x05)
+#define TB_saiInit             EventID(EventLevelOp,     TBAud_no, 0x06)
+#define TB_saiPower            EventID(EventLevelOp,     TBAud_no, 0x07)
+#define TB_saiSend             EventID(EventLevelOp,     TBAud_no, 0x08)
+#define TB_akInit              EventID(EventLevelOp,     TBAud_no, 0x09)
+#define TB_akPwrDn             EventID(EventLevelOp,     TBAud_no, 0x0a)
+#define TB_akSetVol            EventID(EventLevelOp,     TBAud_no, 0x0b)
+#define TB_akSetMute           EventID(EventLevelOp,     TBAud_no, 0x0c)
+#define TB_akWrReg             EventID(EventLevelOp,     TBAud_no, 0x0d)
+#define TBCSM_no               (0x03)
+#define TB_csmChSt						 EventID(EventLevelOp,     TBCSM_no, 0x00)
+#define TB_csmDoAct						 EventID(EventLevelOp,     TBCSM_no, 0x01)
 -->
     <group name="TBook">
-         <component name="TBook"      brief="TB"    no="0x02" prefix="TB_"    info="Talking Book"/>
-    </group>  
+         <component name="TBook"      brief="TB"    	no="0x01" prefix="TB_"       info="Talking Book"/>
+         <component name="TBaudio"    brief="TBaud"    	no="0x02" prefix="TBaud_"    info="TBook audio"/>
+         <component name="TBcsm"      brief="TBcsm"    	no="0x03" prefix="TBcsm_"    info="TBook control state machine"/>
+     </group>  
 
     <events>
       <event id="0x0100" level="Op"   property="dbgPlay"   value="dbg=%x[val1]"     info="debugLoop Play"  />
 		  
-      <event id="0x0200" level="Op"   property="loadBuff"   value="nSamp=%d[val1] ferr=%d[val2] buffN=%d[val3]"     info="loadBuff fread()"  />
-      <event id="0x0201" level="Op"   property="DMACompl"   value="cnt=%d[val1] ferr=%d[val2]"     info="SAIComplete fread"  />
-      <event id="0x0202" level="Op"   property="PlayWv"   value="%t[val1]"     info="audio PlayWv"  />
-      <event id="0x0203" level="Op"   property="tstRead"   value="%t[val1]"     info="audio testRead"  />
+      <event id="0x0200" level="Op"   		property="loadBuff"   	value="nSamp=%d[val1] ferr=%d[val2] buffN=%d[val3]"     			info="loadBuff fread()"  />
+      <event id="0x0201" level="Op"   		property="DMACompl"   	value="cnt=%d[val1] ferr=%d[val2]"     								info="SAIComplete fread"  />
+      <event id="0x0202" level="API"   		property="PlayWv"     	value="%t[val1]"     												info="audio PlayWv"  />
+      <event id="0x0203" level="Detail"   	property="tstRead"    	value="%t[val1]"     												info="audio testRead"  />
+      <event id="0x0204" level="Op"   		property="saiEvent"   	value="evt=%x[val1]"     											info="saiEvent"  />
+      <event id="0x0205" level="API"   		property="saiControl" 	value="ctrl=%x[val1] a1=%x[val2] a2=%s[val3]"     					info="saiControl"  />
+      <event id="0x0206" level="API"   		property="saiInit"    	value="Init"     													info="saiInit"  />
+      <event id="0x0207" level="API"   		property="saiPower"   	value="state=%x[val1]"     											info="saiPower"  />
+      <event id="0x0208" level="API"   		property="saiSend "   	value="nSamp=%d[val1]"     											info="saiSend"  />
+      <event id="0x0209" level="Op"   		property="akInit"     	value="akInit"     													info="akInit"  />
+      <event id="0x020a" level="Op"   		property="akPwrDn"    	value="akPwrDn"     												info="akPwrDn"  />
+      <event id="0x020b" level="Op"  		property="akSetVol"   	value="vol=%d[val1]"     											info="akSetVol"  />
+      <event id="0x020c" level="Op"   		property="akSetMute"  	value="enab=%d[val1]"     											info="akSetMute"  />
+      <event id="0x020d" level="Detail"   	property="akWrReg"  	value="R%d[val1] <= %s[val2]"										info="akWrReg"  />
 
-	  <event id="0x0300" level="Op"   property="chgState"   value="%t[val1]"     info="CSM change state"  />
-	  <event id="0x0301" level="Op"   property="doAct"      value="act=%d[val1], a[0]=%d[val2],a[1]=%d[val3],iarg=%d[val4]"     info="CSM doAction"  />
+	  <event id="0x0300" level="Op"   		property="chgState"   	value="%t[val1]"     												info="CSM change state"  />
+	  <event id="0x0301" level="Op"   		property="doAct"      	value="act=%d[val1], a[0]=%d[val2],a[1]=%d[val3],iarg=%d[val4]"     info="CSM doAction"  />
      </events>
- 
-</component_viewer>
+ </component_viewer>

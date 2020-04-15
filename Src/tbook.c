@@ -99,6 +99,8 @@ void copyFile( const char *src, const char * dst ){
 	fclose(fdst);
 }
 int PlayDBG = 0;
+void 								saiEvent( uint32_t event );
+
 void debugLoop( ){
 	if ( fsNDevs==0 ) dbgLog( "no storage avail \n" );
 	else dbgLog( "no TBook on %s \n", fsDevs[0]  );
@@ -114,25 +116,33 @@ void debugLoop( ){
 		if ( st==Ready )
 			gSet( gRED, ((ledCntr >> 14) & 0x3)== 0 );		// flash RED ON for 1 of 4  
 		if ( st==Playing ){ // controls while playing  PLUS(vol+), MINUS(vol-), TREE(pause/resume), RHAND(waver vol)
-			if ((ledCntr & 0xFFFF)== 0 && gGet(gRHAND))
-				vol = vol > 50? 60 : 90;
-			prvPl = curPl;
-			curPl = gGet( gPLUS );
-			prvMi = curMi;
-			curMi = gGet( gMINUS );
-			if ( curPl & !prvPl )
-				vol = (vol*110)/100; 
-			else if ( curMi & !prvMi )
-				vol = (vol*90)/100; 
-			vol = vol<0? 0: vol>100? 100 : vol;
-			if ( vol != prvvol )
-				dbgSetVolume( vol );
-			prvvol = vol;
+			if (PlayDBG & 0xC){ //PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20-- if MINUS PLUS, poll to replace DMA interrupts
+				if ( DMA1->HISR & DMA_HISR_TCIF4 ){
+					DMA1->HIFCR |= DMA1->HISR;		// clear all
+					saiEvent( ARM_SAI_EVENT_SEND_COMPLETE );
+				}
+			} 
+			if (PlayDBG==0) { // no debug switches, so audio controls on RHAND,PLUS,MINUS,TREE
+				if ((ledCntr & 0xFFFF)== 0 && gGet(gRHAND))
+					vol = vol > 50? 60 : 90;
+				prvPl = curPl;
+				curPl = gGet( gPLUS );
+				prvMi = curMi;
+				curMi = gGet( gMINUS );
+				if ( curPl & !prvPl )
+					vol = (vol*110)/100; 
+				else if ( curMi & !prvMi )
+					vol = (vol*90)/100; 
+				vol = vol<0? 0: vol>100? 100 : vol;
+				if ( vol != prvvol )
+					dbgSetVolume( vol );
+				prvvol = vol;
 			
-			curTr = gGet(gTREE);
-			if (curTr && !prvTr) 
-				audPauseResumeAudio();
-			prvTr = curTr;
+				curTr = gGet(gTREE);
+				if (curTr && !prvTr) 
+					audPauseResumeAudio();
+				prvTr = curTr;
+			}
 		}
 		
 		if ( fsNDevs > 0 && gGet( gHOME ) && !isMassStorageEnabled()){  // HOME => if have a filesystem but no data -- try USB MSC

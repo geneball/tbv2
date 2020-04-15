@@ -406,9 +406,9 @@ void 										stdout_putchar( char ch ){
 
 
 
-void 										dbgEvt( int id, int a1, int a2, int a3, int a4 ){ EventRecord4( EventLevelAPI + id, a1, a2, a3, a4 ); }
-void 										dbgEvtD( int id, const void *d, int len ){ EventRecordData( EventLevelAPI + id, d, len ); }
-void 										dbgEvtS( int id, const char *d ){ EventRecordData( EventLevelAPI + id, d, strlen(d) ); }
+void 										dbgEvt( int id, int a1, int a2, int a3, int a4 ){ EventRecord4( id, a1, a2, a3, a4 ); }
+void 										dbgEvtD( int id, const void *d, int len ){ EventRecordData( id, d, len ); }
+void 										dbgEvtS( int id, const char *d ){ EventRecordData( id, d, strlen(d) ); }
 
 struct  {
 	char 			*devNm;		

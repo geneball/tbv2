@@ -172,6 +172,7 @@ tbDelay_ms(5000);
 	freeBuff( 1 );
 	freeBuff( 2 );
 
+if (PlayDBG==0)
 	sendEvent( AudioDone, pct );				// end of file playback-- generate CSM event 
 	if ( pSt.ErrCnt > 0 ) 
 		dbgLog( "%s audio Errs, Lst=0x%x \n", pSt.ErrCnt, pSt.LastError );
@@ -318,8 +319,8 @@ void 								PlayWave( const char *fname ){ 								// play the WAV file
 	pSt.monoMode = (pSt.wavHdr->NbrChannels == 1);
 
 	uint32_t ctrl = ARM_SAI_CONFIGURE_TX | ARM_SAI_MODE_SLAVE  | ARM_SAI_ASYNCHRONOUS | ARM_SAI_PROTOCOL_I2S | ARM_SAI_DATA_SIZE(16);
-//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20
-if (PlayDBG&2) // DEBUG*********************: if POT, use MASTER Mode
+
+if (PlayDBG&2) //PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20-- if POT, use MASTER Mode
 	ctrl = ARM_SAI_CONFIGURE_TX | ARM_SAI_MODE_MASTER  | ARM_SAI_ASYNCHRONOUS | ARM_SAI_PROTOCOL_I2S | ARM_SAI_DATA_SIZE(16);
 		
 	Driver_SAI0.Control( ctrl, 0, audioFreq );	// set sample rate, init codec clock, power up speaker and unmute
@@ -328,8 +329,8 @@ if (PlayDBG&2) // DEBUG*********************: if POT, use MASTER Mode
 	pSt.nSamples = pSt.wavHdr->SubChunk2Size / pSt.bytesPerSample;
 	pSt.msecLength = pSt.nSamples*1000 / pSt.samplesPerSec;
 	
-//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20
-	if ( !pSt.SqrWAVE && (PlayDBG & 1)){	// DEBUG*********************: if TABLE (PlayDbg & 1), replace file data with sqrWv @440
+
+	if ( !pSt.SqrWAVE && (PlayDBG & 1)){	//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20-- if TABLE (PlayDbg & 1), replace file data with sqrWv @440
 		pSt.sqrSamples = pSt.nSamples;				// sqr wv for same length as file
 		pSt.sqrHfLen = pSt.wavHdr->SampleRate / 880;	// 440Hz @ samplerate from file
 		pSt.sqrWvPh = 0;														// start with beginning of LO
@@ -352,7 +353,7 @@ if (PlayDBG&2) // DEBUG*********************: if POT, use MASTER Mode
 	Driver_SAI0.Send( pSt.Buff[0]->data, pSt.nToPlay );		// start first buffer 
 	Driver_SAI0.Send( pSt.Buff[1]->data, pSt.nToPlay );		// & set up next buffer 
 
-if (PlayDBG & 0x8){			//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20
+if (PlayDBG & 0x20){			//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20  -- if TREE, testRead under I2S
 	testRead( fname );		//DEBUG-- time loading whole file
 	audPlaybackComplete();
 }
@@ -365,22 +366,16 @@ if (PlayDBG & 0x8){			//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=
 	//PlayNextBuff();								// start 1st buffer playing
 }
 void 								saiEvent( uint32_t event ){			// called by ISR on buffer complete or error -- chain next, or report error
-//  if (evtCnt<200){  // DEBUG
-//		uint32_t 	nw = tbTimeStamp();
+dbgEvt( TB_saiEvt, event, 0,0,0);
+
+if ( pSt.wavF!=0 && (PlayDBG & 0x1)){  //PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20-- if TABLE read 1K from audio.wav
 		const int BLEN = 1024;
 		char tbuff[BLEN];
-//		if (pSt.SqrWAVE && pSt.wavF!=NULL){  // have open file, but sending square wave
-//			rdEvt[ evtCnt ] = fread( tbuff, 1, BLEN, pSt.wavF );  // try to read a kbyte from file-- save cnt 
-//			rdErr[ evtCnt ] = ferror( pSt.wavF );
-//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20
-if ( pSt.wavF!=0 && (PlayDBG & 0x1)){  // DEBUG*********************: if TABLE read 1K from audio.wav
 		  int cnt = fread( tbuff, 1, BLEN, pSt.wavF );
 			if (cnt>0) succCnt++; 
 		  dbgEvt( TB_dmaComp, cnt, ferror(pSt.wavF),0, 0 );
 		}
-//		tsEvt[ evtCnt++ ] = nw-prvEvt;
-//		prvEvt = nw;
-//	}
+
 	if ( (event & ARM_SAI_EVENT_SEND_COMPLETE) != 0 ){
 		if ( pSt.Buff[2] != NULL ){		// have more data to send
 			Driver_SAI0.Send( pSt.Buff[2]->data, pSt.nToPlay );		// set up next buffer 

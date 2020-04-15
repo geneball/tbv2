@@ -70,11 +70,23 @@ extern void *			tbAlloc( int nbytes, const char *msg );
 /// TBook component number
 #define TB_no                	 (0x01)
 #define TB_dbgPlay             EventID(EventLevelOp,     TB_no,    0x00)
+
 #define TBAud_no               (0x02)
 #define TB_ldBuff              EventID(EventLevelOp,     TBAud_no, 0x00)
 #define TB_dmaComp             EventID(EventLevelOp,     TBAud_no, 0x01)
 #define TB_playWv              EventID(EventLevelOp,     TBAud_no, 0x02)
 #define TB_tstRd               EventID(EventLevelOp,     TBAud_no, 0x03)
+#define TB_saiEvt              EventID(EventLevelOp,     TBAud_no, 0x04)
+#define TB_saiCtrl             EventID(EventLevelOp,     TBAud_no, 0x05)
+#define TB_saiInit             EventID(EventLevelOp,     TBAud_no, 0x06)
+#define TB_saiPower            EventID(EventLevelOp,     TBAud_no, 0x07)
+#define TB_saiSend             EventID(EventLevelOp,     TBAud_no, 0x08)
+#define TB_akInit              EventID(EventLevelOp,     TBAud_no, 0x09)
+#define TB_akPwrDn             EventID(EventLevelOp,     TBAud_no, 0x0a)
+#define TB_akSetVol            EventID(EventLevelOp,     TBAud_no, 0x0b)
+#define TB_akSetMute           EventID(EventLevelOp,     TBAud_no, 0x0c)
+#define TB_akWrReg             EventID(EventLevelOp,     TBAud_no, 0x0d)
+
 #define TBCSM_no               (0x03)
 #define TB_csmChSt						 EventID(EventLevelOp,     TBCSM_no, 0x00)
 #define TB_csmDoAct						 EventID(EventLevelOp,     TBCSM_no, 0x01)

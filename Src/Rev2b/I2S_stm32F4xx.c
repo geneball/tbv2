@@ -421,6 +421,7 @@ static int32_t 								I2S_Initialize( ARM_SAI_SignalEvent_t cb_event, I2S_RESOU
 //   	cb_event  Pointer to ARM_SAI_SignalEvent function
 //   	i2s       Pointer to I2S resources
 //		return    execution_status
+dbgEvt( TB_saiInit, 0,0,0,0);
   if (i2s->info->flags & I2S_FLAG_INITIALIZED) return ARM_DRIVER_OK;  // Driver is already initialized
 
   // Initialize I2S Run-Time resources
@@ -533,6 +534,7 @@ static int32_t 								I2S_PowerControl( ARM_POWER_STATE state, I2S_RESOURCES *i
 		i2s       Pointer to I2S resources
 		return    execution_status
 */
+dbgEvt( TB_saiPower, state, 0,0,0);
 
   switch (state) {
     case ARM_POWER_OFF:				// power down when audio not in use
@@ -586,6 +588,7 @@ static int32_t 								I2S2only_Send( const void *data, uint32_t nSamples, I2S_R
 //	   num   Number of data items to send ( #stereo samples )
 //	   i2s   Pointer to I2S resources
 //		 return execution_status
+dbgEvt( TB_saiSend, nSamples, 0,0,0);
 
   if ((data == NULL) || (nSamples == 0U))             { return ARM_DRIVER_ERROR_PARAMETER; }
 	I2S_INFO *info = i2s->info;
@@ -629,7 +632,7 @@ static int32_t 								I2S2only_Send( const void *data, uint32_t nSamples, I2S_R
 	int cfg = DMA_SxCR_MSIZE_0 | DMA_SxCR_PSIZE_0 | DMA_SxCR_MINC | DMA_SxCR_DIR_0;   // mem->codec, 16bit words
 	cfg |= 0 << DMA_SxCR_CHSEL_Pos;							// SPI2_TX is in DMA1 (Table 30) row for Channel 0, as Stream4
 	cfg |= DMA_SxCR_DBM;																						// double buffer, M0AR first
-if ((PlayDBG & 0x8)==0) 		//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20
+if ((PlayDBG & 0x8)==0) 		//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20 -- if MINUS, no DMA interrupts
 	cfg |= DMA_SxCR_TCIE | DMA_SxCR_TEIE | DMA_SxCR_DMEIE;					// interrupt on complete, error, direct mode error
 	dma->CR = cfg;
 	
@@ -677,6 +680,7 @@ static int32_t 								I2S_Control( uint32_t control, uint32_t arg1, uint32_t ar
 //   			arg2     Argument 2 of operation (optional)
 //   			i2s      Pointer to I2S resources
 //				return      common \ref execution_status and driver specific \ref sai_execution_status
+dbgEvt( TB_saiCtrl, control, arg1,arg2,0);
   if ((i2s->info->flags & I2S_FLAG_POWERED) == 0U) { return ARM_DRIVER_ERROR; }
 	
 	uint32_t req = control & ARM_SAI_CONTROL_Msk;
@@ -784,6 +788,7 @@ void 													DMA1_Stream4_IRQHandler( void ){				// I2S2 TX DMA interrupt
 	// get values of Stream4 interrupt flags
 	int events = DMA1->HISR & (DMA_HISR_TCIF4 | DMA_HISR_HTIF4 | DMA_HISR_TEIF4 | DMA_HISR_DMEIF4 | DMA_HISR_FEIF4 );
   DMA1->HIFCR |= events;		// clear all
+	
 	
 	I2S_TX_DMA_Complete( events, &I2S2_Resources );		// pass flags shifted into Stream0 position
 }

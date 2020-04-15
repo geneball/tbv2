@@ -219,7 +219,8 @@ uint8_t 				Codec_RdReg( uint8_t Reg ){																	// return value of codec
 #endif
 
 void 						Codec_WrReg( uint8_t Reg, uint8_t Value){										// write codec register Reg with Value
-if (PlayDBG & 0x10) return;		//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20
+if (PlayDBG & 0x10) return;		//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20 -- if STAR, no I2C
+dbgEvt( TB_akWrReg, Reg,Value,0,0);
 
 	uint32_t status;
 	int waitCnt = 0;
@@ -351,8 +352,9 @@ void						ak_PowerUp( void ){
 }
 // external interface functions
 void 						ak_Init( ){ 																								// Init codec & I2C (i2s_stm32f4xx.c)
+dbgEvt( TB_akInit, 0,0,0,0);
 
-if (PlayDBG & 0x10) return;		//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20
+if (PlayDBG & 0x10) return;		//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20 -- if STAR, no I2C
 	ak_PowerUp(); 		// power-up codec
   I2C_Init();  			// powerup & Initialize the Control interface of the Audio Codec
 
@@ -432,6 +434,7 @@ if (PlayDBG & 0x10) return;		//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x1
 
 
 void 						ak_PowerDown( void ){																				// power down entire codec (i2s_stm..)
+dbgEvt( TB_akPwrDn, 0,0,0,0);
 	I2Cdrv->PowerControl( ARM_POWER_OFF );	// power down I2C
 	I2Cdrv->Uninitialize( );								// deconfigures SCL & SDA pins, evt handler
 	
@@ -451,6 +454,7 @@ void dbgSetVolume( int vol ){
 	#endif
 }
 void		 				ak_SetVolume( uint8_t Volume ){														// sets volume 0..100%  ( mediaplayer )
+dbgEvt( TB_akSetVol, Volume,0,0,0);
   akFmtVolume = VOLUME_CONVERT( Volume );
 	#if defined( AK4343 )
 		Codec_WrReg( AK_Lch_Digital_Volume_Control, akFmtVolume );  // Left Channel Digital Volume control
@@ -463,6 +467,7 @@ void		 				ak_SetVolume( uint8_t Volume ){														// sets volume 0..100%  
 }
 
 void		 				ak_SetMute( bool muted ){																	// true => enable mute on codec  (audio)
+dbgEvt( TB_akSetMute, muted,0,0,0);
 	if ( akMuted==muted ) return;
 	akMuted = muted;
 	
