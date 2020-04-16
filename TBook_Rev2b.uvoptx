@@ -157,9 +157,9 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>154</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>134285246</Address>
+          <LineNumber>130</LineNumber>
+          <EnabledFlag>0</EnabledFlag>
+          <Address>134285968</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -168,14 +168,14 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>.\Src\audio.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Src/audio.c\154</Expression>
+          <Expression>\\TBookRev2b\Src/audio.c\130</Expression>
         </Bp>
         <Bp>
           <Number>1</Number>
           <Type>0</Type>
           <LineNumber>129</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134285992</Address>
+          <Address>134285964</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -205,25 +205,25 @@
         <Bp>
           <Number>3</Number>
           <Type>0</Type>
-          <LineNumber>330</LineNumber>
+          <LineNumber>316</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134253074</Address>
+          <Address>134338520</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\Src\audio.c</Filename>
+          <Filename>.\Src\tbUtil.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Src/audio.c\330</Expression>
+          <Expression>\\TBookRev2b\Src/tbUtil.c\316</Expression>
         </Bp>
         <Bp>
           <Number>4</Number>
           <Type>0</Type>
-          <LineNumber>365</LineNumber>
+          <LineNumber>340</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134330504</Address>
+          <Address>134253090</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -232,7 +232,39 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>.\Src\audio.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Src/audio.c\365</Expression>
+          <Expression>\\TBookRev2b\Src/audio.c\340</Expression>
+        </Bp>
+        <Bp>
+          <Number>5</Number>
+          <Type>0</Type>
+          <LineNumber>213</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134288832</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\Src\Rev2b\I2S_stm32F4xx.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\TBookRev2b\Src/Rev2b/I2S_stm32F4xx.c\213</Expression>
+        </Bp>
+        <Bp>
+          <Number>6</Number>
+          <Type>0</Type>
+          <LineNumber>343</LineNumber>
+          <EnabledFlag>0</EnabledFlag>
+          <Address>0</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>0</BreakIfRCount>
+          <Filename>.\Src\ak4xxx.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression></Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -259,137 +291,27 @@
         <Ww>
           <count>4</count>
           <WinNumber>1</WinNumber>
-          <ItemText>Evts</ItemText>
+          <ItemText>fsDevs</ItemText>
         </Ww>
         <Ww>
           <count>5</count>
           <WinNumber>1</WinNumber>
-          <ItemText>TBP</ItemText>
+          <ItemText>fsNDevs</ItemText>
         </Ww>
         <Ww>
           <count>6</count>
           <WinNumber>1</WinNumber>
-          <ItemText>audio_buffers</ItemText>
+          <ItemText>osRtxInfo</ItemText>
         </Ww>
         <Ww>
           <count>7</count>
           <WinNumber>1</WinNumber>
-          <ItemText>fsDevs</ItemText>
+          <ItemText>osRtxConfig,0x0A</ItemText>
         </Ww>
         <Ww>
           <count>8</count>
           <WinNumber>1</WinNumber>
-          <ItemText>fsNDevs</ItemText>
-        </Ww>
-        <Ww>
-          <count>9</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>BrkWds,0x0A</ItemText>
-        </Ww>
-        <Ww>
-          <count>10</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>delayReq</ItemText>
-        </Ww>
-        <Ww>
-          <count>11</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>actualDelay</ItemText>
-        </Ww>
-        <Ww>
-          <count>12</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>osRtxInfo.kernel.tick</ItemText>
-        </Ww>
-        <Ww>
-          <count>13</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>lastTmStmp</ItemText>
-        </Ww>
-        <Ww>
-          <count>14</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>osRtxInfo</ItemText>
-        </Ww>
-        <Ww>
-          <count>15</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>osRtxConfig,0x0A</ItemText>
-        </Ww>
-        <Ww>
-          <count>16</count>
-          <WinNumber>1</WinNumber>
           <ItemText>SCB</ItemText>
-        </Ww>
-        <Ww>
-          <count>17</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>reinitCnt</ItemText>
-        </Ww>
-        <Ww>
-          <count>18</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>akR</ItemText>
-        </Ww>
-        <Ww>
-          <count>19</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>akFmtVolume</ItemText>
-        </Ww>
-        <Ww>
-          <count>20</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>fsDevs</ItemText>
-        </Ww>
-        <Ww>
-          <count>21</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>fsNDevs</ItemText>
-        </Ww>
-        <Ww>
-          <count>22</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>dbgVolCnt,0x0A</ItemText>
-        </Ww>
-        <Ww>
-          <count>23</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>evtCnt,0x0A</ItemText>
-        </Ww>
-        <Ww>
-          <count>24</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>tsEvt,0x0A</ItemText>
-        </Ww>
-        <Ww>
-          <count>25</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>rdEvt,0x10</ItemText>
-        </Ww>
-        <Ww>
-          <count>26</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>currDS</ItemText>
-        </Ww>
-        <Ww>
-          <count>27</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>rdErr</ItemText>
-        </Ww>
-        <Ww>
-          <count>28</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>prvDS</ItemText>
-        </Ww>
-        <Ww>
-          <count>29</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>PlayDBG</ItemText>
-        </Ww>
-        <Ww>
-          <count>30</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>EventFilter</ItemText>
         </Ww>
       </WatchWindow1>
       <MemoryWindow1>
@@ -466,6 +388,10 @@
         <Entry>
           <Name>System Viewer\DMA1</Name>
           <WinId>35905</WinId>
+        </Entry>
+        <Entry>
+          <Name>System Viewer\SPI2</Name>
+          <WinId>35904</WinId>
         </Entry>
       </SystemViewers>
       <DebugDescription>
@@ -668,7 +594,7 @@
 
   <Group>
     <GroupName>tgtRev2B</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -732,7 +658,7 @@
 
   <Group>
     <GroupName>config</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -1172,7 +1098,7 @@
 
   <Group>
     <GroupName>STM32F4xx</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>

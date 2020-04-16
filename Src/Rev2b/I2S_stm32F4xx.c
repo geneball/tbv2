@@ -211,7 +211,13 @@ void													controlTXMT( I2S_RESOURCES *i2s, controlTyp typ ){  											
 
 		case ctlAbort: 
 			i2s->instance->I2SCFGR &= ~I2S_MODE_ENAB;			// disable I2S device
-			break;
+			i2s->instance->CR2 &= ~I2S_CR2_TXDMAEN;				// disable I2S TXDMA
+			dma->NDTR = 0;
+			dma->PAR = 0;
+			dma->M0AR = 0;
+			dma->M1AR = 0;
+			dma->CR = 0;
+		break;
 		
 		case ctlPause: // set up DMA so re-enabling will pick up at correct spot  
 			nSent = info->tx_req - dma->NDTR;			// see how many samples were sent before pause

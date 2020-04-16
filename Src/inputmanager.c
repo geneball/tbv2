@@ -334,6 +334,8 @@ void 					initInputManager( void ){ 			// initializes keypad & starts thread
 void 					sendEvent( Event key, int32_t arg ){	// log & send TB_Event to CSM
 	if ( key==eNull || key==anyKey || key==eUNDEF || (int)key<0 || (int)key>(int)eUNDEF )
 		tbErr( "bad event" );
+	if (TBEvent_pool==NULL) return; //DEBUG
+	
 	TB_Event *evt = (TB_Event *)osMemoryPoolAlloc( TBEvent_pool, osWaitForever );
 	evt->typ = key;
 	evt->arg = arg;
