@@ -48,6 +48,8 @@ typedef struct { 			// Buffer_t						-- audio buffer
 	int cntBytes;
 	uint16_t * data;		// buffer of 16bit samples
 } Buffer_t;
+
+#define N_AUDIO_BUFFS			4
 typedef enum {				// playback_state_t		-- audio playback state codes
 	pbIdle, 		// not playing anything
 	pbOpening,	// calling fopen 
@@ -86,7 +88,7 @@ typedef struct { 			// PlaybackFile_t			-- audio state block
 	uint32_t 							LastError;			// last audio error code
 	uint32_t 							ErrCnt;					// # of audio errors
 	
-	Buffer_t *						Buff[3];				// pointers to buffers (for double buffering)
+	Buffer_t *						Buff[ N_AUDIO_BUFFS ];		// pointers to buffers (for double buffering)
   FILE * 								wavF;						// stream for data
 	
 	bool 									SqrWAVE;				// T => wavHdr pre-filled to generate square wave

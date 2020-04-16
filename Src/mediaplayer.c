@@ -9,7 +9,8 @@ const int 									MEDIA_RECORD_START =	0x20;
 
 static 	osThreadAttr_t 				thread_attr;
 static 	osThreadId_t					mMediaThreadId;
-static 	osEventFlagsId_t			mMediaEventId;
+
+osEventFlagsId_t							mMediaEventId;			// for signals to mediaThread
 
 static int audioVolume				= DEFAULT_VOLUME;
 
@@ -104,7 +105,8 @@ static void 	mediaThread( void *arg ){						// communicates with audio codec for
 		uint32_t flags = osEventFlagsWait( mMediaEventId, MEDIA_EVENTS,  osFlagsWaitAny, osWaitForever );
 		
 		if ( (flags & CODEC_DATA_TX_DN) != 0 ){								// buffer transmission complete from SAI_event
-			//audPlaybackDn( );				// plays next buffer, or generates  AudioDn event
+			audLoadBuffs();		// preload any empty audio buffers
+
 		} else if ( (flags & MEDIA_PLAY_EVENT) != 0 ){				// request to start playback
 			if ( mPlaybackFilePath[0] == 0 ) continue;
 			audPlayAudio( (const char *)mPlaybackFilePath, (MsgStats *) mPlaybackStats );
