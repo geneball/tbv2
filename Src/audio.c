@@ -8,7 +8,7 @@ const int SAMPLE_RATE_MIN 	=  8000;
 const int SAMPLE_RATE_MAX 	= 96000;
 const int BuffLen 					= 4096;				// in bytes
 const int BuffWds						= BuffLen/2;  // in shorts
-const int nBuffs 						= N_AUDIO_BUFFS + 1;		// number of audio buffers in pool allocated in audio.c
+const int nBuffs 						= N_AUDIO_BUFFS;		// number of audio buffers in pool allocated in audio.c
 const int MIN_AUDIO_PAD			= 37;					// minimum 0-padding samples at end of file, to clear codec pipeline before powering down
 
 static PlaybackFile_t 			pSt;							// audio player state
