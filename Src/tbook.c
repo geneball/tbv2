@@ -63,6 +63,16 @@ bool					TBDataOK 							= true;			// false if no TB config found
 
 void				dbgSetVolume( int vol );
 
+bool fexists( char *fname ){
+	fsFileInfo info;
+	info.fileID = 0;
+	fsStatus stat = ffind( fname, &info );
+	return ( stat==fsOK );
+}
+void setDev( char *fname, const char *dev ){  // replace front of fname with dev
+	for (int i=0; i< strlen(dev); i++ )
+	  fname[i] = dev[i];
+}
 fsStatus fsMount( char *drv ){		// try to finit() & mount()  drv:   finit() code, fmount() code
 		fsStatus stat = finit( drv );  		// init file system driver for device
 	  if ( stat != fsOK ){
@@ -107,8 +117,7 @@ void debugLoop( ){
 
 	MediaState st = Ready;
 	int ledCntr = 0;
-	bool curPl, prvPl, prvTr, curMi,prvMi,curTr = false;
-	int vol = 90, prvvol = 60;
+	bool curPl,prvPl, curMi,prvMi, curTr,prvTr, curLH,prvLH, curRH,prvRH = false;
 	
 	while ( true ){
 		ledCntr++;
@@ -123,25 +132,32 @@ void debugLoop( ){
 				}
 			} 
 			if (PlayDBG==0) { // no debug switches, so audio controls on RHAND,PLUS,MINUS,TREE
-				if ((ledCntr & 0xFFFF)== 0 && gGet(gRHAND))
-					vol = vol > 50? 60 : 90;
-				prvPl = curPl;
 				curPl = gGet( gPLUS );
-				prvMi = curMi;
-				curMi = gGet( gMINUS );
 				if ( curPl & !prvPl )
-					vol = (vol*110)/100; 
-				else if ( curMi & !prvMi )
-					vol = (vol*90)/100; 
-				vol = vol<0? 0: vol>100? 100 : vol;
-				if ( vol != prvvol )
-					dbgSetVolume( vol );
-				prvvol = vol;
+					adjVolume( 5 ); 
+				prvPl = curPl;
+				
+				curMi = gGet( gMINUS );
+				if ( curMi & !prvMi )
+					adjVolume( -5 ); 
+				prvMi = curMi;
 			
 				curTr = gGet(gTREE);
 				if (curTr && !prvTr) 
-					audPauseResumeAudio();
+					pauseResume();
 				prvTr = curTr;
+				
+				curLH = gGet(gLHAND);
+				if (curLH && !prvLH) 
+					adjPlayPosition( -2 );
+				prvLH = curLH;
+				
+				curLH = gGet(gRHAND);
+				if (curRH && !prvRH) 
+					adjPlayPosition( 2 );
+				prvLH = curLH;
+		
+				
 			}
 		}
 		
@@ -166,8 +182,7 @@ void debugLoop( ){
 		if ( gGet( gCIRCLE ) && st==Ready ){		// CIRCLE => 1KHz audio, (PLUS CIRCLE)440Hz=A, MINUS CIR:C, LH CIR:E
 			gSet( gRED, 0 );
 			gSet( gGREEN, 1 );
-			FILE * fa = fopen( TBP[pAUDIO], "r" );
-			if ( fa!=NULL ){
+			if ( fexists( TBP[pAUDIO] )){
 				//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20
 				PlayDBG = (gGet( gTABLE )? 1:0) + (gGet( gPOT )? 2:0) + (gGet( gPLUS )? 4:0) + (gGet( gMINUS )? 8:0) + (gGet( gSTAR )? 0x10:0) + (gGet( gTREE )? 0x20:0); 
 				dbgEvt( TB_dbgPlay, PlayDBG, 0,0,0 );
@@ -188,8 +203,11 @@ void debugLoop( ){
 void talking_book( void *argument ) {
 	
 	EventRecorderInitialize( EventRecordNone, 1 );  // start EventRecorder
-	EventRecorderEnable( EventRecordError + EventRecordAPI, EvtFsCore_No, EvtFsMcSPI_No );  // enable Error & API for FS components
-	EventRecorderEnable( EventRecordAll, TB_no, TBCSM_no );  // enable Error,API,Op,Detail for all TBook components
+	EventRecorderEnable( EventRecordError, EvtFsCore_No, EvtFsMcSPI_No );  													//FS:  Error 
+	EventRecorderEnable( EventRecordError + EventRecordAPI + EventRecordOp, TB_no, TB_no );  				//TB:  Error  API Op
+	EventRecorderEnable( EventRecordError + EventRecordAPI + EventRecordOp, TBAud_no, TBAud_no );   //Aud: Error  API Op
+	EventRecorderEnable( EventRecordError + EventRecordAPI, TBsai_no, TBsai_no ); 									//SAI: Error  API 
+	EventRecorderEnable( EventRecordError + EventRecordAPI + EventRecordOp, TBCSM_no, TBCSM_no );   //CSM: Error  API
 	
 	initPowerMgr();			// set up GPIO signals for controlling & monitoring power -- enables MemCard
 	
@@ -217,28 +235,20 @@ void talking_book( void *argument ) {
 			flashCode( 10 );		// R G R G : not M0:
 			flashLED( "__" );
 		}
-		for ( int i = pSTATUS; i <= pLAST; i++ ){
-				TBP[ i ][0] = fsDevs[0][0];
-				TBP[ i ][1] = fsDevs[0][1];
+		for ( int i = pSTATUS; i <= pLAST; i++ ){		// change paths to fsDevs[0]
+			setDev( TBP[ i ], fsDevs[0] );
 		}
 		if ( fsNDevs > 1 ){
-			FILE *fa = fopen( TBP[pAUDIO], "r" );
-			if ( fa!=NULL ){
-				fclose( fa );		// audio.wav exists on device fsDevs[0] --- copy it to fsDevs[1]
+			if ( fexists( TBP[pAUDIO] )){	// audio.wav exists on device fsDevs[0] --- copy it to fsDevs[1]
 				char dst[40];
 				strcpy( dst, TBP[pAUDIO] );
-				dst[0] = fsDevs[1][0];
-				dst[1] = fsDevs[1][1];
-				
+				setDev( dst, fsDevs[1] );
 				copyFile( TBP[pAUDIO], dst );
 			}
 		}
 		
-		FILE *f = fopen( TBP[pSTATUS], "r" );			// try to open "system/status.txt"
-		if ( f==NULL || gGet( gMINUS ))	
+		if ( gGet( gMINUS ) || !fexists( TBP[pSTATUS] ))	
 			debugLoop( );
-		else
-			fclose( f );		// load full TBook
 	}
 
 	// signal start
