@@ -289,6 +289,8 @@ void 						ak_SpeakerEnable( bool enable ){														// enable/disable speak
 		return;
 	
 	akSpeakerOn = enable;
+	dbgEvt( TB_akSpkEn, enable,0,0,0);
+
 	if ( enable ){ 	
 		#if defined( AK4343 )
 			// power up speaker amp & codec by setting power bits with mute enabled, then disabling mute
@@ -353,6 +355,10 @@ void						ak_PowerUp( void ){
 // external interface functions
 void 						ak_Init( ){ 																								// Init codec & I2C (i2s_stm32f4xx.c)
 dbgEvt( TB_akInit, 0,0,0,0);
+
+	akFmtVolume 	= 0;			// reset static state
+	akSpeakerOn 	= false;
+	akMuted			 	= false;
 
 if (PlayDBG & 0x10) return;		//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20 -- if STAR, no I2C
 	ak_PowerUp(); 		// power-up codec
