@@ -87,6 +87,7 @@ void						logPowerUp( void ){																// re-init logger after USB or slee
 				fclose( stF );
 		  }
 			logEvtNI( "BootCnt", "#", bootcnt );
+			dbgEvt( TB_bootCnt, bootcnt, 0,0,0);
 			
 		} else {
 			logEvtNS( "FileError", "missing", TBP[ pSTATUS ] );

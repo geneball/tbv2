@@ -20,6 +20,4 @@ extern int			recordPosition( void );
 extern MediaState	getStatus( void );
 extern int			recordAudio( const char *fileName, MsgStats *stats );
 extern void			stopRecording( void );
-extern void			audLoadBuffs( void );					// pre-load playback data from mediaThread
-
 #endif

@@ -267,8 +267,9 @@ static int 							tbAllocTotal = 0;																// track total heap allocatio
 void *									tbAlloc( int nbytes, const char *msg ){					// malloc() & check for error
 	tbAllocTotal += nbytes;
 	void *mem = (void *) malloc( nbytes );
+	dbgEvt( TB_Alloc, nbytes, (int)mem, 0, 0 );
 	if ( mem==NULL ){
-		  errLog( "out of heap %s: tbAllocTotal=%d", msg, tbAllocTotal );
+		  errLog( "out of heap %s: tbAllocTotal=%d \n", msg, tbAllocTotal );
 			tbErr("out of heap");
 	}
 	return mem;
@@ -313,6 +314,8 @@ void 										tbErr( const char * fmt, ... ){											// report fatal error
 	va_end( arg_ptr );
 //	errLog( "TBErr: %s \n", msg );
 	//logEvtS( "*** tbError: ", msg );
+	dbgEvtS( TB_Error, fmt );
+	
 	while ( true ){ 
 //	for (int i=0; i<20; i++){
 		flashLED( "RRR__GGG__" );
@@ -537,6 +540,7 @@ void 										HardFault_Handler_C( svFault_t *svFault, uint32_t linkReg ){
 	enableLCD();
 	printf( "Fault: 0x%x = %s \n",  vAct, vAct<7? fNms[vAct]:"" );
 	int cfsr = svSCB.CFSR, usgF = cfsr >> 16, busF = (cfsr & 0xFF00) >> 8, memF = cfsr & 0xFF;
+	dbgEvt( TB_Fault, vAct, cfsr, 0,0 );
 	
 	printf( "CFSR: 0x%08x \n", cfsr );
 	printf( "EXC_R: 0x%08x \n", svSCB.EXC_RET );

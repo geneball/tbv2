@@ -120,7 +120,7 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>EVENTREC_CNF</Key>
-          <Name>-l0 -a1 -s0 -h 0| -h 5|Reset -h 8|ReadDone -h 4|Read -h 6|RESET* -h 7|Config* -h 8|*Config* -h 6|Config -h 4|lba* -h 5|Read* -f0E000000000000000000000000000000FF0000000000000000000000008000000E000000000000000000000000000000770000000000000000000000008000000E000000000000000000000000000000000000000000000000000000008000400E00000000000000000000000000000000000000000000000000000000800000</Name>
+          <Name>-l0 -a1 -s0 -h 3|vol -h 0| -h 5|Reset -h 8|ReadDone -h 4|Read -h 6|RESET* -h 7|Config* -h 8|*Config* -h 6|Config -h 4|lba* -h 5|Read* -fFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF7F000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000008000400000000000000000000000000000000000000000000000000000000000800000</Name>
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
@@ -157,9 +157,25 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
+          <LineNumber>317</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134338776</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\Src\tbUtil.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\TBookRev2b\Src/tbUtil.c\317</Expression>
+        </Bp>
+        <Bp>
+          <Number>1</Number>
+          <Type>0</Type>
           <LineNumber>130</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134285968</Address>
+          <Address>134286040</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -171,11 +187,11 @@
           <Expression>\\TBookRev2b\Src/audio.c\130</Expression>
         </Bp>
         <Bp>
-          <Number>1</Number>
+          <Number>2</Number>
           <Type>0</Type>
           <LineNumber>129</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134285964</Address>
+          <Address>134286036</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -187,7 +203,7 @@
           <Expression>\\TBookRev2b\Src/audio.c\129</Expression>
         </Bp>
         <Bp>
-          <Number>2</Number>
+          <Number>3</Number>
           <Type>0</Type>
           <LineNumber>1172</LineNumber>
           <EnabledFlag>0</EnabledFlag>
@@ -203,43 +219,27 @@
           <Expression>\\TBookRev2b\Keil/Compiler/EventRecorder.c\1172</Expression>
         </Bp>
         <Bp>
-          <Number>3</Number>
-          <Type>0</Type>
-          <LineNumber>316</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>134338520</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\Src\tbUtil.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Src/tbUtil.c\316</Expression>
-        </Bp>
-        <Bp>
           <Number>4</Number>
           <Type>0</Type>
-          <LineNumber>340</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>134253090</Address>
+          <LineNumber>98</LineNumber>
+          <EnabledFlag>0</EnabledFlag>
+          <Address>134290012</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\Src\audio.c</Filename>
+          <Filename>.\Src\tbook.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Src/audio.c\340</Expression>
+          <Expression>\\TBookRev2b\Src/tbook.c\98</Expression>
         </Bp>
         <Bp>
           <Number>5</Number>
           <Type>0</Type>
-          <LineNumber>213</LineNumber>
+          <LineNumber>223</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134288832</Address>
+          <Address>134288942</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -248,12 +248,12 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>.\Src\Rev2b\I2S_stm32F4xx.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Src/Rev2b/I2S_stm32F4xx.c\213</Expression>
+          <Expression>\\TBookRev2b\Src/Rev2b/I2S_stm32F4xx.c\223</Expression>
         </Bp>
         <Bp>
           <Number>6</Number>
           <Type>0</Type>
-          <LineNumber>343</LineNumber>
+          <LineNumber>88</LineNumber>
           <EnabledFlag>0</EnabledFlag>
           <Address>0</Address>
           <ByteObject>0</ByteObject>
@@ -262,7 +262,7 @@
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>0</BreakIfRCount>
-          <Filename>.\Src\ak4xxx.c</Filename>
+          <Filename>.\Src\tbook.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression></Expression>
         </Bp>
@@ -313,12 +313,22 @@
           <WinNumber>1</WinNumber>
           <ItemText>SCB</ItemText>
         </Ww>
+        <Ww>
+          <count>9</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>tbAllocTotal,0x10</ItemText>
+        </Ww>
+        <Ww>
+          <count>10</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>malloc</ItemText>
+        </Ww>
       </WatchWindow1>
       <MemoryWindow1>
         <Mm>
           <WinNumber>1</WinNumber>
           <SubType>2</SubType>
-          <ItemText>0x40023800</ItemText>
+          <ItemText>0x20014C3C</ItemText>
           <AccSizeX>0</AccSizeX>
         </Mm>
       </MemoryWindow1>
@@ -388,10 +398,6 @@
         <Entry>
           <Name>System Viewer\DMA1</Name>
           <WinId>35905</WinId>
-        </Entry>
-        <Entry>
-          <Name>System Viewer\SPI2</Name>
-          <WinId>35904</WinId>
         </Entry>
       </SystemViewers>
       <DebugDescription>
@@ -1046,7 +1052,7 @@
 
   <Group>
     <GroupName>CMSIS Driver</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -1098,7 +1104,7 @@
 
   <Group>
     <GroupName>STM32F4xx</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
