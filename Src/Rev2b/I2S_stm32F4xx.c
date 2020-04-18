@@ -220,7 +220,7 @@ void													controlTXMT( I2S_RESOURCES *i2s, controlTyp typ ){  											
 		break;
 		
 		case ctlPause: // set up DMA so re-enabling will pick up at correct spot  
-			nSent = info->tx_req - dma->NDTR;			// see how many samples were sent before pause
+			nSent = info->tx_req/2 - dma->NDTR;			// see how many samples were sent before pause
 			if ( (dma->CR & DMA_SxCR_CT)==0 )								// and update memAddr of current buffer 
 				dma->M0AR += nSent;														// to restart after that
 			else
@@ -557,7 +557,8 @@ dbgEvt( TB_saiPower, state, 0,0,0);
 		
 			
 			reset_I2S_Info( i2s );      // Clear driver variables
-      i2s->info->flags &= ~I2S_FLAG_POWERED;
+			i2s->info->flags = I2S_FLAG_INITIALIZED;		// back to just INITIALIZED
+//      i2s->info->flags &= ~I2S_FLAG_POWERED;
       break;
 
     case ARM_POWER_LOW:
@@ -617,8 +618,8 @@ dbgEvt( TB_saiSend, nSamples, 0,0,0);
   info->status.tx_busy = 1U;  							// Set Send active flag
   info->status.tx_underflow = 0U;  					// Clear TX underflow flag
 
-//	uint32_t nbytes = nSamples * info->data_bytes;  // Convert from number of samples to number of bytes
-//  info->tx_req = nbytes;
+	uint32_t nbytes = nSamples * info->data_bytes;  // Convert from number of samples to number of bytes
+	info->tx_req = nbytes;
 	
 	info->tx_cnt = 0;	// bytes transmitted
 //	info->dataPtr = (uint16_t *) data;
