@@ -4,6 +4,7 @@
 #include "mediaPlyr.h"
 
 const int 									CODEC_DATA_TX_DN   =	0x01; 			// signal sent by SAI callback when an buffer completes
+const int 									CODEC_PLAYBACK_DN	 =  0x02;				// signal from SAI on playback done
 const int 									MEDIA_PLAY_EVENT	 =	0x10;
 const int 									MEDIA_RECORD_START =	0x20;
 
@@ -19,6 +20,7 @@ static volatile char					mPlaybackFilePath[ MAX_PATH ];
 static volatile MsgStats *		mPlaybackStats;
 static volatile char 					mRecordFilePath[ MAX_PATH ];
 static volatile MsgStats *		mRecordStats;
+static volatile MsgStats *    sysStats;						// subst buffer for system files 
 
 static void 	mediaThread( void *arg );						// forward 
 	
@@ -26,6 +28,8 @@ void					initMediaPlayer( void ){						// init mediaPlayer & spawn thread to han
 	mMediaEventId = osEventFlagsNew(NULL);					// osEvent channel for communication with mediaThread
 	if ( mMediaEventId == NULL)
 		tbErr( "mMediaEventId alloc failed" );	
+	
+	sysStats = tbAlloc( sizeof( MsgStats ), "sysStats" );
 
 	mPlaybackFilePath[0] = 0;			
 	mRecordFilePath[0] = 0;			
@@ -50,7 +54,7 @@ int 					playAudio( const char * fileName, MsgStats *stats ){ // start playback 
 		osDelay( 5 );
 	}
 	strcpy( (char *)mPlaybackFilePath, fileName );
-	mPlaybackStats = stats;
+	mPlaybackStats = stats==NULL? sysStats : stats;
 	osEventFlagsSet( mMediaEventId, MEDIA_PLAY_EVENT );
 	return TB_SUCCESS;
 }
@@ -86,7 +90,7 @@ int						recordAudio( const char * fileName, MsgStats *stats ){	// start recordi
 		osDelay( 5 );
 	}
 	strcpy( (char *)mRecordFilePath, fileName );
-	mRecordStats = stats;
+	mRecordStats = stats==NULL? sysStats : stats;
 	osEventFlagsSet( mMediaEventId, MEDIA_RECORD_START );
 	return TB_SUCCESS;
 }
@@ -100,13 +104,17 @@ void					stopRecording( void ){  						// stop recording
 //		CODEC_PLAY_DONE 	=> send AudioDone CSM event
 ***************/
 static void 	mediaThread( void *arg ){						// communicates with audio codec for playback & recording		
-	const int MEDIA_EVENTS = MEDIA_PLAY_EVENT | MEDIA_RECORD_START | CODEC_DATA_TX_DN;
+	const int MEDIA_EVENTS = MEDIA_PLAY_EVENT | MEDIA_RECORD_START | CODEC_DATA_TX_DN | CODEC_PLAYBACK_DN;
 	while (true){		
 		uint32_t flags = osEventFlagsWait( mMediaEventId, MEDIA_EVENTS,  osFlagsWaitAny, osWaitForever );
 		
+		dbgEvt( TB_mediaEvt, flags, 0,0,0);
 		if ( (flags & CODEC_DATA_TX_DN) != 0 ){								// buffer transmission complete from SAI_event
 			audLoadBuffs();		// preload any empty audio buffers
 
+		} else if ( (flags & CODEC_PLAYBACK_DN) != 0 ){				// playback complete
+			audPlaybackComplete();
+			
 		} else if ( (flags & MEDIA_PLAY_EVENT) != 0 ){				// request to start playback
 			if ( mPlaybackFilePath[0] == 0 ) continue;
 			audPlayAudio( (const char *)mPlaybackFilePath, (MsgStats *) mPlaybackStats );
