@@ -10,7 +10,8 @@
 extern ARM_DRIVER_SAI 			Driver_SAI0;			// from I2S_stm32F4xx.c
 
 // constants defined in mediaplayer.c & referenced in audio.c
-extern const int 						CODEC_DATA_TX_DN; 	// signal sent by SAI callback when an buffer completes
+extern const int 						CODEC_DATA_TX_DN; 	// signal sent by SAI callback when buffer TX done
+extern const int 						CODEC_PLAYBACK_DN; 	// signal sent by SAI callback when playback complete
 extern const int 						MEDIA_PLAY_EVENT;
 extern const int 						MEDIA_RECORD_START;
 
@@ -29,7 +30,7 @@ typedef struct{				// WAV file header
   uint16_t   BitPerSample;  // 34    
   uint32_t   SubChunk2ID;   // 36     
   uint32_t   SubChunk2Size; // 40     
-	uint8_t    Data;
+	uint8_t    Data;					// @44
 
 } WAVE_FormatTypeDef;
 
@@ -117,6 +118,8 @@ extern void 				audStopRecording( void );										// signal record loop to stop
 extern void 				audPauseResumeAudio( void );								// signal playback loop to request Pause or Resume
 extern void 				audPlaybackDn( void );											// handle end of buffer event
 extern void 				audSquareWav( int nsecs, int hz );				  // square: 'nsecs' seconds of 'hz' squareWave
+extern void					audLoadBuffs( void );												// pre-load playback data (from mediaThread)
+extern void 				audPlaybackComplete( void );								// playback complete (from mediaThread)
 
 //DEBUG
 extern void 				PlayWave( const char *fname ); // start playing from file
