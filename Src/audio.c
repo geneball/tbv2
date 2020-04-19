@@ -22,15 +22,16 @@ void 								freeBuff( int idx );													// release buffer[idx] (unless NUL
 void 								printAudSt( void );														// DBG: display audio state
 Buffer_t * 					loadBuff( void );															// read next block of audio into a buffer
 void 								audPlaybackComplete( void );									// shut down after completed playback
+void								setWavPos( int msec );												// set wav file playback position
+void 								startPlayback( void );												// preload & play
 void 								PlayWave( const char *fname ); 								// play a WAV file
-pnRes_t 						PlayNextBuff( void );													// start next I2S buffer transferring
 void 								saiEvent( uint32_t event );										// called to handle transfer complete
 
 // EXTERNAL functions
 void 								audInitialize( void ){ 												// allocs buffers, sets up SAI
 	pSt.state = pbIdle;
 	initBuffs();
-	pSt.wavHdr = (WAVE_FormatTypeDef*) tbAlloc( WaveHdrBytes, "wav file" );  // alloc space for header
+	pSt.wavHdr = (WAVE_FormatTypeDef*) tbAlloc( WaveHdrBytes, "wav file" );  // alloc space for .wav header
 
 	pSt.SqrWAVE = false;			// unless audSquareWav is called
 	// Initialize I2S & register callback
@@ -38,7 +39,7 @@ void 								audInitialize( void ){ 												// allocs buffers, sets up SAI
 	//    calls I2S_TX_DMA_Complete, which calls saiEvent with DMA events
 	Driver_SAI0.Initialize( &saiEvent );   
 }
-void 								audSquareWav( int nsecs, int hz ){						// preload wavHdr & buffers with 1KHz square wave
+void 								audSquareWav( int nsecs, int hz ){						// DEBUG: preload wavHdr & buffers with 1KHz square wave
 	pSt.SqrWAVE = true;			// set up to generate 'hz' square wave
 	WAVE_FormatTypeDef *wav = pSt.wavHdr;
 	wav->SampleRate = 16000;
@@ -68,7 +69,7 @@ void								audInitState( void ){													// set up playback State in pSt
 	pSt.tsResume = 0;
 	pSt.msPlayed = 0;
 	pSt.audioEOF = false;
-	pSt.wavF = NULL;
+	pSt.audF = NULL;
   memset( pSt.wavHdr, 0x00, WaveHdrBytes );
 	for ( int i=0; i<N_AUDIO_BUFFS; i++ )
 		pSt.Buff[i] = NULL;
@@ -107,6 +108,15 @@ int32_t 						audPlayPct( void ){														// => current playback pct of fil
 	return played*100 / totmsec;
 }
 void 								audAdjPlayPos( int32_t adj ){									// shift current playback position +/- by 'adj' seconds
+	if ( pSt.state==pbPlaying )
+		audPauseResumeAudio();
+	
+	if ( pSt.state != pbPaused ) return;
+	
+	if ( pSt.audType==audWave )  
+		setWavPos( pSt.msPos + adj*1000 );
+	else
+		tbErr("NYI");
 }
 void 								audAdjPlaySpeed( int16_t adj ){								// change playback speed by 'adj' * 10%
 }
@@ -115,9 +125,10 @@ void 								audPlayAudio( const char* audioFileName, MsgStats *stats ){ // star
 	stats->Start++;
 	
 	if ( strcmp( &audioFileName[ strlen( audioFileName )-4 ], ".wav" ) == 0 ){
-		
+		pSt.audType = audWave;
 		PlayWave( audioFileName );
-	}
+	} else
+		tbErr("NYI");
 }
 void 								audStopAudio( void ){													// about playback 
 	pSt.stats->Left++;		//TODO:
@@ -133,26 +144,34 @@ void 								audStartRecording( FILE *outFP, MsgStats *stats ){	// start recordi
 void 								audStopRecording( void ){											// signal record loop to stop
 }
 void 								audPauseResumeAudio( void ){									// signal playback to request Pause or Resume
-	if ( pSt.state==pbPaused ){ // resuming
-		pSt.tsResume = tbTimeStamp();
-		pSt.stats->Resume++;
-		ak_SetMute( false );		// unmute
-		gSet( gGREEN, 1 );			// Turn ON green LED: audio file playing 
-  	Driver_SAI0.Control( ARM_SAI_ABORT_SEND, 2, 0 );	// resume I2S DMA -- 2 => Resume
-		pSt.state = pbPlaying;
-
-	} else { // pausing
+	if ( pSt.state==pbPlaying ){ 
+		// pausing 
+		dbgEvt( TB_audPause, 0,0,0,0);
 		ak_SetMute( true );	// (redundant) mute
+		Driver_SAI0.Control( ARM_SAI_ABORT_SEND, 0, 0 );	// shut down I2S device
+		
 		pSt.tsPause = tbTimeStamp();
-		pSt.msPlayed += (pSt.tsPause - pSt.tsResume);  // (tsResume == tsPlay, if 1st pause)
+		int msec = (pSt.tsPause - pSt.tsResume);		// (tsResume == tsPlay, if 1st pause)
+		pSt.msPos += msec;		// update position
+		pSt.msPlayed += msec;  
 		gSet( gGREEN, 0 );	// Turn OFF LED green: while paused  
-			// subsequent call to audPauseResumeAudio() will call PlayNext() & un-mute
+			// subsequent call to audPauseResumeAudio() will start playing at pSt.msPlayed msec
 		pSt.stats->Pause++;
-  	Driver_SAI0.Control( ARM_SAI_ABORT_SEND, 1, 0 );	// pause I2S DMA -- 1 => Pause
 		pSt.state = pbPaused;
+	} else { 
+		// resuming == restarting at msPlayed
+		dbgEvt( TB_audResume, pSt.msPos, 0,0,0);
+		
+		if ( pSt.audType==audWave ) 
+			setWavPos( pSt.msPos );			// start where we stopped
+		pSt.stats->Resume++;
+		startPlayback();
 	}
 }
-
+void								freeBuffs(){			// free all audio buffs
+	for (int i=0; i<N_AUDIO_BUFFS; i++)		// free any allocated audio buffers
+		freeBuff( i );
+}
 void								audLoadBuffs(){																// called on mediaThread to preload audio data
 		for ( int i=0; i<N_AUDIO_BUFFS; i++)	// pre-load any empty audio buffers
 			if ( pSt.Buff[i]==NULL )
@@ -171,24 +190,24 @@ void 								audPlaybackComplete( void ){									// shut down after completed p
 	sendEvent( AudioDone, pct );				// end of file playback-- generate CSM event 
 	pSt.stats->Finish++;
 	
+	if ( pSt.audF!=NULL ){ 
+		fclose( pSt.audF );
+		dbgEvt( TB_audClose, 0, 0,0,0);
+		pSt.audF = NULL;
+	}
 	
-//	ak_SpeakerEnable( false ); 												// power down codec internals & amplifier
+	//DOESN'T WORK:	ak_SpeakerEnable( false ); 												// power down codec internals & amplifier
 	Driver_SAI0.PowerControl( ARM_POWER_OFF );				// shut off I2S & I2C devices entirely
-
-	for (int i=0; i<N_AUDIO_BUFFS; i++)		// free any allocated audio buffers
-		freeBuff( i );
+	freeBuffs( );
 
 	if ( pSt.ErrCnt > 0 ) 
 		dbgLog( "%s audio Errs, Lst=0x%x \n", pSt.ErrCnt, pSt.LastError );
 	pSt.state = pbIdle;
 }
 
-static uint32_t evtCnt = 0, succCnt=0;  //DEBUG
 
 // internal functions
-static bool firstPlay;
 void 								initBuffs(){																	// create audio buffers
-	firstPlay = true;
 	for ( int i=0; i<nBuffs; i++ ){
 		Buffer_t *pB = &audio_buffers[i];
 		pB->state = bEmpty;
@@ -209,7 +228,7 @@ Buffer_t * 					allocBuff(){																	// get a buffer for use
 	errLog("out of audio buffers");
 	return NULL;
 }
-void 								freeBuff( int idx ){											// release Buff[idx] (unless NULL)
+void 								freeBuff( int idx ){													// release Buff[idx] (unless NULL)
 	Buffer_t * pB = pSt.Buff[ idx ];
 	if ( pB==NULL ) return;
 	pB->state = bEmpty;
@@ -230,6 +249,49 @@ void 								printAudSt(){																	// DBG: display audio state
 		}
 }
 
+void 								startPlayback( void ){												// preload buffers & start playback
+	dbgEvt( TB_stPlay, pSt.nLoaded, 0,0,0);
+	
+	pSt.state = pbPlayFill;			// preloading
+	audLoadBuffs();							// preload N_AUDIO_BUFFS of data -- at curr position ( nLoaded & msPos )
+	
+	pSt.state = pbFull;
+	pSt.tsResume = tbTimeStamp();		// start of this playing
+	if ( pSt.tsPlay==0 )
+	 pSt.tsPlay = pSt.tsResume;		// start of file playback
+
+	gSet( gGREEN, 1 );	// Turn ON green LED: audio file playing 
+	pSt.state = pbPlaying;
+	ak_SetMute( false );		// unmute
+
+	Driver_SAI0.Send( pSt.Buff[0]->data, pSt.nToPlay );		// start first buffer 
+	Driver_SAI0.Send( pSt.Buff[1]->data, pSt.nToPlay );		// & set up next buffer 
+
+  // buffer complete for cBuff calls saiEvent, which:
+  //   1) Sends Buff2 
+	//   2) shifts buffs 1,2,..N to 0,1,..N-1
+  //   3) signals mediaThread to refill empty slots
+}
+void								setWavPos( int msec ){
+	if ( pSt.state!=pbPaused ) tbErr("setPos not paused");
+	dbgEvt( TB_audSetWPos, msec, pSt.msecLength, 0,0);
+	freeBuffs();					// release any allocated buffers
+	if ( msec < 0 ) msec = 0;
+	int stSample = msec * pSt.samplesPerSec / 1000;					// sample to start at
+	if ( stSample > pSt.nSamples ){
+		audPlaybackComplete(); 
+		return;
+	}
+	pSt.audioEOF = false;   // in case restarting near end
+	
+	int fpos = WaveHdrBytes + pSt.bytesPerSample * stSample;
+	fseek( pSt.audF, fpos, SEEK_SET );			// seek wav file to byte pos of stSample
+	
+	pSt.nLoaded = stSample;		// so loadBuff() will know where it's at
+	pSt.msPos = msec;
+	
+	startPlayback();	// preload & play
+}
 Buffer_t * 					loadBuff( ){																	// read next block of audio into a buffer
 	if ( pSt.audioEOF ) 
 		return NULL;			// all data & padding finished
@@ -260,8 +322,8 @@ Buffer_t * 					loadBuff( ){																	// read next block of audio into a 
 	} 
 	
 	if ( !pSt.SqrWAVE ){	//NORMAL case
-		nSamp = fread( pB->data, 1, len*2, pSt.wavF )/2;		// read up to len samples (1/2 buffer if mono)
-		dbgEvt( TB_ldBuff, nSamp, ferror(pSt.wavF), pSt.buffNum, 0 );
+		nSamp = fread( pB->data, 1, len*2, pSt.audF )/2;		// read up to len samples (1/2 buffer if mono)
+		dbgEvt( TB_ldBuff, nSamp, ferror(pSt.audF), pSt.buffNum, 0 );
 	}
 	if ( pSt.monoMode ){
 		nSamp *= 2;
@@ -272,9 +334,9 @@ Buffer_t * 					loadBuff( ){																	// read next block of audio into a 
 	if ( nSamp < BuffWds ){ 				// room left in buffer: at EOF, so fill rest with zeros
 		if ( nSamp <= BuffWds-MIN_AUDIO_PAD ){
 			pSt.audioEOF = true;							// enough padding, so stop after this
-			fclose( pSt.wavF );
+			fclose( pSt.audF );
+			pSt.audF = NULL;
 			dbgEvt( TB_audClose, nSamp, 0,0,0);
-			pSt.wavF = NULL;
 		}
 		
 		for( int i=nSamp; i<BuffWds; i++ )		// clear rest of buffer -- can't change count in DoubleBuffer DMA
@@ -286,7 +348,7 @@ Buffer_t * 					loadBuff( ){																	// read next block of audio into a 
 	pB->state = bFull;
 	return pB;
 }
-void testRead( const char *fname ){ //DEBUG: time reading all samples of file
+void 								testRead( const char *fname ){ //DEBUG: time reading all samples of file
 //	if ( pSt.SqrWAVE ) return;
 	
 	dbgEvtD( TB_tstRd, fname, strlen(fname) );
@@ -294,8 +356,8 @@ void testRead( const char *fname ){ //DEBUG: time reading all samples of file
 	pSt.state = pbLdHdr;
 	uint32_t tsOpen = tbTimeStamp();
 	
-	pSt.wavF = fopen( fname, "r" );
-	if ( pSt.wavF==NULL || fread( pSt.wavHdr, 1, WaveHdrBytes, pSt.wavF ) != WaveHdrBytes ) 
+	pSt.audF = fopen( fname, "r" );
+	if ( pSt.audF==NULL || fread( pSt.wavHdr, 1, WaveHdrBytes, pSt.audF ) != WaveHdrBytes ) 
 			errLog( "open wav failed" );
 	pSt.samplesPerSec = pSt.wavHdr->SampleRate;
 	pSt.bytesPerSample = pSt.wavHdr->NbrChannels * pSt.wavHdr->BitPerSample/8;  // = 4 bytes per stereo sample -- same as ->BlockAlign
@@ -308,9 +370,8 @@ void testRead( const char *fname ){ //DEBUG: time reading all samples of file
 		tbDelay_ms(100);
 	}
 	uint32_t tsClose = tbTimeStamp();
-	fclose( pSt.wavF );
+	fclose( pSt.audF );
 	dbgLog("tstRd %d in %d \n", pSt.nLoaded, tsClose-tsOpen );
-	evtCnt = 0;
 }
 
 void 								PlayWave( const char *fname ){ 								// play the WAV file 
@@ -320,8 +381,8 @@ void 								PlayWave( const char *fname ){ 								// play the WAV file
 //	chkDevState( "PlayWv", true );
 	pSt.state = pbLdHdr;
   if ( !pSt.SqrWAVE ){	// open file, unless SqrWAVE
-		pSt.wavF = fopen( fname, "r" );
-		if ( pSt.wavF==NULL || fread( pSt.wavHdr, 1, WaveHdrBytes, pSt.wavF ) != WaveHdrBytes ) 
+		pSt.audF = fopen( fname, "r" );
+		if ( pSt.audF==NULL || fread( pSt.wavHdr, 1, WaveHdrBytes, pSt.audF ) != WaveHdrBytes ) 
 			errLog( "open wav failed" );
 	}
 	pSt.state = pbGotHdr;
@@ -334,61 +395,24 @@ void 								PlayWave( const char *fname ){ 								// play the WAV file
 	pSt.monoMode = (pSt.wavHdr->NbrChannels == 1);
 
 	uint32_t ctrl = ARM_SAI_CONFIGURE_TX | ARM_SAI_MODE_SLAVE  | ARM_SAI_ASYNCHRONOUS | ARM_SAI_PROTOCOL_I2S | ARM_SAI_DATA_SIZE(16);
-
-if (PlayDBG&2) //PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20-- if POT, use MASTER Mode
-	ctrl = ARM_SAI_CONFIGURE_TX | ARM_SAI_MODE_MASTER  | ARM_SAI_ASYNCHRONOUS | ARM_SAI_PROTOCOL_I2S | ARM_SAI_DATA_SIZE(16);
-		
 	Driver_SAI0.Control( ctrl, 0, audioFreq );	// set sample rate, init codec clock, power up speaker and unmute
 	
 	pSt.bytesPerSample = pSt.wavHdr->NbrChannels * pSt.wavHdr->BitPerSample/8;  // = 4 bytes per stereo sample -- same as ->BlockAlign
 	pSt.nSamples = pSt.wavHdr->SubChunk2Size / pSt.bytesPerSample;
 	pSt.msecLength = pSt.nSamples*1000 / pSt.samplesPerSec;
 	
-
-	if ( !pSt.SqrWAVE && (PlayDBG & 1)){	//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20-- if TABLE (PlayDbg & 1), replace file data with sqrWv @440
-		pSt.sqrSamples = pSt.nSamples;				// sqr wv for same length as file
-		pSt.sqrHfLen = pSt.wavHdr->SampleRate / 880;	// 440Hz @ samplerate from file
-		pSt.sqrWvPh = 0;														// start with beginning of LO
-		pSt.sqrHi = 0xAAAA;
-		pSt.sqrLo = 0x0001;
-		pSt.SqrWAVE = true;   // send sqrWv instead of .wav data
-	}
-
-	pSt.state = pbPlayFill;
-	audLoadBuffs();							// preload N_AUDIO_BUFFS of data
-	pSt.state = pbFull;
-	pSt.tsPlay = tbTimeStamp();		// start of playing
-	pSt.tsResume = pSt.tsPlay;		// start of current play also
-
-	dbgLog( "Wv: %d msec\n", pSt.msecLength );
-	gSet( gGREEN, 1 );	// Turn ON green LED: audio file playing 
-	pSt.state = pbPlaying;
-chkDevState( "stWv", firstPlay );	firstPlay = false;
-	
-	Driver_SAI0.Send( pSt.Buff[0]->data, pSt.nToPlay );		// start first buffer 
-	Driver_SAI0.Send( pSt.Buff[1]->data, pSt.nToPlay );		// & set up next buffer 
-
-  // buffer complete for cBuff calls saiEvent, which:
-  //   1) Sends Buff2 
-	//   2) shifts buffs 1,2,..N to 0,1,..N-1
-  //   3) signals mediaThread to refill empty slots
+	startPlayback();
 }
+
 void 								saiEvent( uint32_t event ){			// called by ISR on buffer complete or error -- chain next, or report error
 	dbgEvt( TB_saiEvt, event, 0,0,0);
-
-if ( pSt.wavF!=0 && (PlayDBG & 0x1)){  //PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20-- if TABLE read 1K from audio.wav
-		const int BLEN = 1024;
-		char tbuff[BLEN];
-		  int cnt = fread( tbuff, 1, BLEN, pSt.wavF );
-			if (cnt>0) succCnt++; 
-		  dbgEvt( TB_dmaComp, cnt, ferror(pSt.wavF),0, 0 );
-		}
 
 	if ( (event & ARM_SAI_EVENT_SEND_COMPLETE) != 0 ){
 		if ( pSt.Buff[2] != NULL ){		// have more data to send
 			Driver_SAI0.Send( pSt.Buff[2]->data, pSt.nToPlay );		// set up next buffer 
 			dbgEvt( TB_audSent, pSt.Buff[2]->firstSample, 0,0,0);
 			freeBuff( 0 );		// buff 0 completed, so free it
+			
 			for ( int i=0; i<N_AUDIO_BUFFS-1; i++ )	// shift buffer pointers down
 			  pSt.Buff[i] = pSt.Buff[i+1];
 			pSt.Buff[ N_AUDIO_BUFFS-1 ] = NULL; 

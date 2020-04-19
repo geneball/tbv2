@@ -11,20 +11,24 @@
 #define TB_bootCnt             EventID(EventLevelOp,     TB_no,    0x04)
 
 #define TBAud_no               (0x02)
-#define TB_ldBuff              EventID(EventLevelOp,     TBAud_no, 0x00)
+#define TB_ldBuff              EventID(EventLevelDetail, TBAud_no, 0x00)
 #define TB_dmaComp             EventID(EventLevelDetail, TBAud_no, 0x01)
 #define TB_playWv              EventID(EventLevelAPI,    TBAud_no, 0x02)
 #define TB_tstRd               EventID(EventLevelDetail, TBAud_no, 0x03)
-#define TB_audSent             EventID(EventLevelOp,     TBAud_no, 0x04)
+#define TB_audSent             EventID(EventLevelDetail, TBAud_no, 0x04)
 #define TB_audClose            EventID(EventLevelOp,     TBAud_no, 0x05)
 #define TB_audDone             EventID(EventLevelOp,     TBAud_no, 0x06)
+#define TB_stPlay              EventID(EventLevelOp,     TBAud_no, 0x07)
+#define TB_audPause            EventID(EventLevelAPI,    TBAud_no, 0x08)
+#define TB_audResume           EventID(EventLevelAPI,    TBAud_no, 0x09)
+#define TB_audSetWPos          EventID(EventLevelOp,     TBAud_no, 0x0a)
 
 #define TBsai_no               (0x03)
-#define TB_saiEvt              EventID(EventLevelOp,     TBsai_no, 0x04)
+#define TB_saiEvt              EventID(EventLevelDetail, TBsai_no, 0x04)
 #define TB_saiCtrl             EventID(EventLevelOp,     TBsai_no, 0x05)
 #define TB_saiInit             EventID(EventLevelAPI,    TBsai_no, 0x06)
 #define TB_saiPower            EventID(EventLevelAPI,    TBsai_no, 0x07)
-#define TB_saiSend             EventID(EventLevelAPI,    TBsai_no, 0x08)
+#define TB_saiSend             EventID(EventLevelDetail, TBsai_no, 0x08)
 #define TB_akInit              EventID(EventLevelOp,     TBsai_no, 0x09)
 #define TB_akPwrDn             EventID(EventLevelOp,     TBsai_no, 0x0a)
 #define TB_akSetVol            EventID(EventLevelAPI,    TBsai_no, 0x0b)
@@ -36,8 +40,8 @@
 #define TB_akSpkEn             EventID(EventLevelOp,     TBsai_no, 0x11)
 
 #define TBCSM_no               (0x04)
-#define TB_csmChSt						 EventID(EventLevelOp,     TBCSM_no, 0x00)
-#define TB_csmDoAct						 EventID(EventLevelOp,     TBCSM_no, 0x01)
+#define TB_csmChSt			   EventID(EventLevelOp,     TBCSM_no, 0x00)
+#define TB_csmDoAct			   EventID(EventLevelOp,     TBCSM_no, 0x01)
 -->
     <group name="TBook EventsGroup">
          <component name="TBgen"      brief="TB"    	no="0x01" prefix="TB_"       info="Talking Book"/>
@@ -52,19 +56,22 @@
       <event id="0x0103" level="Detail"   	property="tbAlloc"    	value="nB=%d[val1] mem=%x[val2]"     								info="tbAlloc"  />
       <event id="0x0104" level="Op"  		property="bootCnt"   	value="bootCnt=%d[val1]"     										info="reboot count"  />
 
-	  <event id="0x0200" level="Op"   		property="loadBuff"   	value="nSamp=%d[val1] ferr=%d[val2] buffN=%d[val3]"     			info="loadBuff fread()"  />
+	  <event id="0x0200" level="Detail"		property="loadBuff"   	value="nSamp=%d[val1] ferr=%d[val2] buffN=%d[val3]"     			info="loadBuff fread()"  />
       <event id="0x0201" level="Detail"   	property="DMACompl"   	value="cnt=%d[val1] ferr=%d[val2]"     								info="SAIComplete fread"  />
 	  <event id="0x0202" level="API"   		property="PlayWv"     	value="%t[val1]"     												info="audio PlayWv"  />
       <event id="0x0203" level="Detail"   	property="tstRead"    	value="%t[val1]"     												info="audio testRead"  />
-      <event id="0x0204" level="Op"   		property="AudSent"   	value="fsamp=%d[val1]"     								            info="audio buff sent"  />
+      <event id="0x0204" level="Detail"		property="AudSent"   	value="fsamp=%d[val1]"     								            info="audio buff sent"  />
       <event id="0x0205" level="Op"   		property="AudClose"   	value="nSamp=%d[val1]"     								            info="audio file close"  />
       <event id="0x0206" level="Op"   		property="AudDone"   	value="elapsedms=%d[val1] calcms=%d[val2] pct=%d[val3]"		        info="audio done"  />
+      <event id="0x0207" level="Op"   		property="stPlay"   	value="nLoaded=%d[val1]"		        							info="start audio play"  />
+	  <event id="0x0208" level="API"   		property="audPause"     value="audPause"     												info="audio pause"  />
+	  <event id="0x0209" level="API"   		property="audResume"    value="msPos=%d[val1]"     											info="audio resume"  />
 
-	  <event id="0x0304" level="Op"   		property="saiEvent"   	value="evt=%x[val1]"     											info="saiEvent"  />
+	  <event id="0x0304" level="Detail"		property="saiEvent"   	value="evt=%x[val1]"     											info="saiEvent"  />
       <event id="0x0305" level="Op"   		property="saiControl" 	value="ctrl=%x[val1] a1=%x[val2] a2=%x[val3]"     					info="saiControl"  />
       <event id="0x0306" level="API"   		property="saiInit"    	value="Init"     													info="saiInit"  />
       <event id="0x0307" level="API"   		property="saiPower"   	value="state=%x[val1]"     											info="saiPower"  />
-      <event id="0x0308" level="API"   		property="saiSend "   	value="nBytes=%d[val1]"     										info="saiSend"  />
+      <event id="0x0308" level="Detail"		property="saiSend "   	value="nBytes=%d[val1]"     										info="saiSend"  />
       <event id="0x0309" level="Op"   		property="akInit"     	value="akInit"     													info="akInit"  />
       <event id="0x030a" level="Op"   		property="akPwrDn"    	value="akPwrDn"     												info="akPwrDn"  />
       <event id="0x030b" level="API"  		property="akSetVol"   	value="vol=%d[val1]"     											info="akSetVol"  />

@@ -34,6 +34,12 @@ typedef struct{				// WAV file header
 
 } WAVE_FormatTypeDef;
 
+typedef enum {			// audType
+	audWave,
+	audMP3,
+	audOGG
+} audType_t;
+
 typedef enum {  			// pnRes_t  					-- return codes from PlayNext
 	pnDone,
 	pnPaused,
@@ -65,8 +71,13 @@ typedef enum {				// playback_state_t		-- audio playback state codes
 	pbDone,			// I2S transfer of audio done
 	pbPaused
 } playback_state_t;
+
 typedef struct { 			// PlaybackFile_t			-- audio state block
-	WAVE_FormatTypeDef* 	wavHdr;
+	audType_t 						audType;				// file type to playback
+	WAVE_FormatTypeDef* 	wavHdr;					// WAVE specific info
+	
+  FILE * 								audF;						// stream for data
+	
 	uint32_t 							bytesPerSample;	// eg. 4 for 16bit stereo
 	uint32_t 							nSamples;				// total samples in file
 	uint32_t							msecLength;			// length of file in msec
@@ -75,9 +86,11 @@ typedef struct { 			// PlaybackFile_t			-- audio state block
 
 	uint32_t 							tsOpen;					// timestamp at start of fopen
 	uint32_t 							tsPlay;					// timestamp at start of curr playback or resume
-	uint32_t 							tsPause;				// timestamp at pause DMA
-	uint32_t 							tsResume;				// timestamp at resume I2S
-	uint32_t 							msPlayed;				// msec of file played
+	uint32_t 							tsPause;				// timestamp at pause
+	uint32_t 							tsResume;				// timestamp at resume
+	
+	uint32_t 							msPlayed;				// elapsed msec playing file
+	uint32_t 							msPos;					// msec position in file
 
 //	uint32_t 							nPlayed;				// samples played of file so far
 	uint32_t 							nLoaded;				// samples loaded from file so far
@@ -90,7 +103,6 @@ typedef struct { 			// PlaybackFile_t			-- audio state block
 	uint32_t 							ErrCnt;					// # of audio errors
 	
 	Buffer_t *						Buff[ N_AUDIO_BUFFS ];		// pointers to buffers (for double buffering)
-  FILE * 								wavF;						// stream for data
 	
 	bool 									SqrWAVE;				// T => wavHdr pre-filled to generate square wave
 	int32_t								sqrSamples;			// samples still to send

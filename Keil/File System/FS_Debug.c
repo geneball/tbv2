@@ -15,15 +15,15 @@
 
 //   <o>Core Management <0=>Off <1=>Errors <2=>Errors + API <3=>All
 //   <i>Configure FsCore: Core Management event recording
-#define FS_DEBUG_EVR_CORE       2
+#define FS_DEBUG_EVR_CORE       1
 
 //   <o>FAT File System <0=>Off <1=>Errors <2=>Errors + API <3=>All
 //   <i>Configure FsFAT: FAT File System event recording
-#define FS_DEBUG_EVR_FAT        2
+#define FS_DEBUG_EVR_FAT        1
 
 //   <o>EFS File System <0=>Off <1=>Errors <2=>Errors + API <3=>All
 //   <i>Configure FsEFS: EFS File System event recording
-#define FS_DEBUG_EVR_EFS        2
+#define FS_DEBUG_EVR_EFS        1
 
 //   <o>I/O Control Interface <0=>Off <1=>Errors <2=>Errors + API <3=>All
 //   <i>Configure FsIOC: I/O Control Interface event recording
@@ -31,15 +31,15 @@
 
 //   <o>NAND Flash Translation Layer <0=>Off <1=>Errors <2=>Errors + API <3=>All
 //   <i>Configure FsNFTL: NAND Flash Translation Layer event recording
-#define FS_DEBUG_EVR_NFTL       2
+#define FS_DEBUG_EVR_NFTL       1
 
 //   <o>NAND Device Interface <0=>Off <1=>Errors <2=>Errors + API <3=>All
 //   <i>Configure FsNAND: NAND Device Interface event recording
-#define FS_DEBUG_EVR_NAND       2
+#define FS_DEBUG_EVR_NAND       1
 
 //   <o>Memory Card MCI <0=>Off <1=>Errors <2=>Errors + API <3=>All
 //   <i>Configure FsMcMCI: Memory Card MCI event recording
-#define FS_DEBUG_EVR_MC_MCI     2
+#define FS_DEBUG_EVR_MC_MCI     1
 
 //   <o>Memory Card SPI <0=>Off <1=>Errors <2=>Errors + API <3=>All
 //   <i>Configure FsMcSPI: Memory Card SPI event recording

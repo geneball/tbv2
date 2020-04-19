@@ -183,17 +183,13 @@ void 													reset_I2S_Info( I2S_RESOURCES *i2s ) {																// initi
 
 	i2s->info->data_bytes = 2; 	// default to 1 channels * 16bit samples-- but set by I2S_Control( Configure )
 
+	i2s->info->tx_req = 0;		// nSamples 
 	i2s->info->tx_cnt = 0;
-	i2s->info->tx_req = 0;
 	i2s->info->rx_cnt = 0;
 	i2s->info->rx_req = 0;
 }
-void													controlTXMT( I2S_RESOURCES *i2s, controlTyp typ ){  											// abort I2S Transmit operation
+void													abortTXMT( I2S_RESOURCES *i2s ){  											// abort I2S Transmit operation
   // stop DMA transmission
-	// if pause:
-	//    reset DMA to resume if re-enabled, leave I2S2 enabled
-	// else
-	//    disable I2S2
 	
 	I2S_INFO *info = i2s->info;
 	DMA_Stream_TypeDef * dma = DMA1_Stream4;				// DMA stream for TX
@@ -206,31 +202,15 @@ void													controlTXMT( I2S_RESOURCES *i2s, controlTyp typ ){  											
 	// reset any leftover int reqs  -- (there should be a TCIF)
 	DMA1->HIFCR &= ~( DMA_HISR_TCIF4 |DMA_HISR_HTIF4 |DMA_HISR_TEIF4 |DMA_HISR_DMEIF4 | DMA_HISR_FEIF4  );
   NVIC_ClearPendingIRQ( DMA1_Stream4_IRQn );  	// Clear pending I2S_TX DMA interrupts
-	uint32_t nSent;
-	switch ( typ ){
-
-		case ctlAbort: 
-			i2s->instance->I2SCFGR &= ~I2S_MODE_ENAB;			// disable I2S device
-			i2s->instance->CR2 &= ~I2S_CR2_TXDMAEN;				// disable I2S TXDMA
-			dma->NDTR = 0;
-			dma->PAR = 0;
-			dma->M0AR = 0;
-			dma->M1AR = 0;
-			dma->CR = 0;
-		break;
-		
-		case ctlPause: // set up DMA so re-enabling will pick up at correct spot  
-			nSent = info->tx_req/2 - dma->NDTR;			// see how many samples were sent before pause
-			if ( (dma->CR & DMA_SxCR_CT)==0 )								// and update memAddr of current buffer 
-				dma->M0AR += nSent;														// to restart after that
-			else
-				dma->M1AR += nSent;														// to restart after that
-			break;
-			
-		case ctlResume: 
-			dma->CR |= 	DMA_SxCR_EN;												// re-enable DMA
-			break;
-	}
+	
+	i2s->instance->I2SCFGR &= ~I2S_MODE_ENAB;			// disable I2S device
+	i2s->instance->CR2 &= ~I2S_CR2_TXDMAEN;				// disable I2S TXDMA
+	dma->NDTR = 0;
+	dma->PAR = 0;
+	dma->M0AR = 0;
+	dma->M1AR = 0;
+	dma->CR = 0;
+	info->status.tx_busy = 0;
 }
 void													abortRCV( I2S_RESOURCES *i2s ){  																			// abort I2S receive operation
 	i2s->instance->I2SCFGR 	&= ~I2S_MODE_ENAB;										// disable I2S device
@@ -595,8 +575,7 @@ static int32_t 								I2S2only_Send( const void *data, uint32_t nSamples, I2S_R
 //	   num   Number of data items to send ( #stereo samples )
 //	   i2s   Pointer to I2S resources
 //		 return execution_status
-dbgEvt( TB_saiSend, nSamples, 0,0,0);
-
+	dbgEvt( TB_saiSend, nSamples, 0,0,0);
   if ((data == NULL) || (nSamples == 0U))             { return ARM_DRIVER_ERROR_PARAMETER; }
 	I2S_INFO *info = i2s->info;
 	
@@ -637,10 +616,9 @@ dbgEvt( TB_saiSend, nSamples, 0,0,0);
 	
 	// CHSEL, PFCTRL, PL, FIFO, BURST at defaults
 	int cfg = DMA_SxCR_MSIZE_0 | DMA_SxCR_PSIZE_0 | DMA_SxCR_MINC | DMA_SxCR_DIR_0;   // mem->codec, 16bit words
+  cfg |= DMA_SxCR_TCIE | DMA_SxCR_TEIE | DMA_SxCR_DMEIE;          // interrupt on complete, error, direct mode error
 	cfg |= 0 << DMA_SxCR_CHSEL_Pos;							// SPI2_TX is in DMA1 (Table 30) row for Channel 0, as Stream4
 	cfg |= DMA_SxCR_DBM;																						// double buffer, M0AR first
-if ((PlayDBG & 0x8)==0) 		//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20 -- if MINUS, no DMA interrupts
-	cfg |= DMA_SxCR_TCIE | DMA_SxCR_TEIE | DMA_SxCR_DMEIE;					// interrupt on complete, error, direct mode error
 	dma->CR = cfg;
 	
 	ak_SpeakerEnable( true );			// power up codec & amplifier (if not already)
@@ -666,12 +644,6 @@ static int32_t 								I2S_Receive( void *data, uint32_t num, I2S_RESOURCES *i2s
 }
 
 static uint32_t 							I2S_GetTxCount( I2S_RESOURCES *i2s ){																								// return nSamples transmitted so far
-/**
-  \fn          uint32_t I2S_GetTxCount (I2S_RESOURCES *i2s)
-  \brief       Get transmitted data count.
-  \param[in]   i2s       Pointer to I2S resources
-  \return      number of data items transmitted
-*/
   uint32_t cnt = i2s->info->tx_cnt / i2s->info->data_bytes;  // Convert count in bytes to count of samples
   return (cnt);
 }
@@ -692,7 +664,7 @@ dbgEvt( TB_saiCtrl, control, arg1,arg2,0);
 	
 	uint32_t req = control & ARM_SAI_CONTROL_Msk;
 	if ( req == ARM_SAI_ABORT_SEND ){
-		  controlTXMT( i2s, (controlTyp) arg1 ); 
+		  abortTXMT( i2s ); 
 			return ARM_DRIVER_OK;
   }
 	if ( req == ARM_SAI_ABORT_RECEIVE ){

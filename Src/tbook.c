@@ -61,8 +61,6 @@ char 					MallocHeap[ 20000 ];    // MALLOC_HEAP_SIZE ];
 bool					FileSysOK 						= false;
 bool					TBDataOK 							= true;			// false if no TB config found
 
-void				dbgSetVolume( int vol );
-
 bool fexists( char *fname ){
 	fsFileInfo info;
 	info.fileID = 0;
@@ -152,10 +150,10 @@ void debugLoop( ){
 					adjPlayPosition( -2 );
 				prvLH = curLH;
 				
-				curLH = gGet(gRHAND);
+				curRH = gGet(gRHAND);
 				if (curRH && !prvRH) 
 					adjPlayPosition( 2 );
-				prvLH = curLH;
+				prvRH = curRH;
 		
 				
 			}
@@ -203,11 +201,15 @@ void debugLoop( ){
 void talking_book( void *argument ) {
 	
 	EventRecorderInitialize( EventRecordNone, 1 );  // start EventRecorder
-	EventRecorderEnable( EventRecordError, EvtFsCore_No, EvtFsMcSPI_No );  													//FS:  Error 
-	EventRecorderEnable( EventRecordError + EventRecordAPI + EventRecordOp, TB_no, TB_no );  				//TB:  Error  API Op
-	EventRecorderEnable( EventRecordError + EventRecordAPI + EventRecordOp, TBAud_no, TBAud_no );   //Aud: Error  API Op
-	EventRecorderEnable( EventRecordError + EventRecordAPI, TBsai_no, TBsai_no ); 									//SAI: Error  API 
-	EventRecorderEnable( EventRecordError + EventRecordAPI + EventRecordOp, TBCSM_no, TBCSM_no );   //CSM: Error  API
+	int evrE 		= EventRecordError;
+	int evrEA 	= evrE + EventRecordAPI;
+	int evrEAO 	= evrEA + EventRecordOp;
+	int evrEAOD = evrEAO + EventRecordDetail;
+	EventRecorderEnable( evrE, 	 EvtFsCore_No, EvtFsMcSPI_No );  	//FS:  Error 
+	EventRecorderEnable( evrEA,  TB_no, TB_no );  								//TB:  Error  API
+	EventRecorderEnable( evrEAO, TBAud_no, TBAud_no );   					//Aud: Error  API Op
+	EventRecorderEnable( evrEAO, TBsai_no, TBsai_no ); 	 					//SAI: Error  API Op
+	EventRecorderEnable( evrEAO, TBCSM_no, TBCSM_no );   					//CSM: Error  API Op
 	
 	initPowerMgr();			// set up GPIO signals for controlling & monitoring power -- enables MemCard
 	
