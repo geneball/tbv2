@@ -30,6 +30,7 @@ Objects/*.d
 Objects/*.iex
 Objects/*.lnp
 Objects/*.axf
+old/*
 
 # uVision duplicates files in RTE/* (even though I'm using copies in Keil/
 RTE/*
