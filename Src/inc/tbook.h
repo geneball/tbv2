@@ -67,47 +67,7 @@ extern uint32_t 	tbTimeStamp( void );
 extern void 			tbDelay_ms( int ms ); 					//  Delay execution for a specified number of milliseconds
 extern void *			tbAlloc( int nbytes, const char *msg );
 
-/// TBook component number
-#define TB_no                	 (0x01)
-#define TB_dbgPlay             EventID(EventLevelOp,     TB_no,    0x00)
-#define TB_Error               EventID(EventLevelError,  TB_no,    0x01)
-#define TB_Fault               EventID(EventLevelError,  TB_no,    0x02)
-#define TB_Alloc               EventID(EventLevelDetail, TB_no,    0x03)
-#define TB_bootCnt             EventID(EventLevelOp,     TB_no,    0x04)
-
-#define TBAud_no               (0x02)
-#define TB_ldBuff              EventID(EventLevelDetail, TBAud_no, 0x00)
-#define TB_dmaComp             EventID(EventLevelDetail, TBAud_no, 0x01)
-#define TB_playWv              EventID(EventLevelAPI,    TBAud_no, 0x02)
-#define TB_tstRd               EventID(EventLevelDetail, TBAud_no, 0x03)
-#define TB_audSent             EventID(EventLevelDetail, TBAud_no, 0x04)
-#define TB_audClose            EventID(EventLevelOp,     TBAud_no, 0x05)
-#define TB_audDone             EventID(EventLevelOp,     TBAud_no, 0x06)
-#define TB_stPlay              EventID(EventLevelOp,     TBAud_no, 0x07)
-#define TB_audPause            EventID(EventLevelAPI,    TBAud_no, 0x08)
-#define TB_audResume           EventID(EventLevelAPI,    TBAud_no, 0x09)
-#define TB_audSetWPos          EventID(EventLevelOp,     TBAud_no, 0x0a)
-
-
-#define TBsai_no               (0x03)
-#define TB_saiEvt              EventID(EventLevelDetail, TBsai_no, 0x04)
-#define TB_saiCtrl             EventID(EventLevelOp,     TBsai_no, 0x05)
-#define TB_saiInit             EventID(EventLevelAPI,    TBsai_no, 0x06)
-#define TB_saiPower            EventID(EventLevelAPI,    TBsai_no, 0x07)
-#define TB_saiSend             EventID(EventLevelDetail, TBsai_no, 0x08)
-#define TB_akInit              EventID(EventLevelOp,     TBsai_no, 0x09)
-#define TB_akPwrDn             EventID(EventLevelOp,     TBsai_no, 0x0a)
-#define TB_akSetVol            EventID(EventLevelAPI,    TBsai_no, 0x0b)
-#define TB_akSetMute           EventID(EventLevelAPI,    TBsai_no, 0x0c)
-#define TB_akWrReg             EventID(EventLevelDetail, TBsai_no, 0x0d)
-#define TB_mediaEvt            EventID(EventLevelDetail, TBsai_no, 0x0e)
-#define TB_saiTXDN             EventID(EventLevelDetail, TBsai_no, 0x0f)
-#define TB_saiPLYDN            EventID(EventLevelDetail, TBsai_no, 0x10)
-#define TB_akSpkEn             EventID(EventLevelOp,     TBsai_no, 0x11)
-
-#define TBCSM_no               (0x04)
-#define TB_csmChSt						 EventID(EventLevelOp,     TBCSM_no, 0x00)
-#define TB_csmDoAct						 EventID(EventLevelOp,     TBCSM_no, 0x01)
+#include "tb_evr.h"
 
 extern void 			dbgEvt( int id, int a1, int a2, int a3, int a4 );
 extern void 			dbgEvtD( int id, const void *d, int len );
