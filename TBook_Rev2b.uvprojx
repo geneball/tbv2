@@ -448,14 +448,9 @@
               <FilePath>.\Src\ak4xxx.c</FilePath>
             </File>
             <File>
-              <FileName>USBD_User_Device_SerNum.c</FileName>
+              <FileName>USBD_User_Device_MSC_LUN.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Src\USBD_User_Device_SerNum.c</FilePath>
-            </File>
-            <File>
-              <FileName>USBD_User_MSC_LUN.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Src\USBD_User_MSC_LUN.c</FilePath>
+              <FilePath>.\Src\USBD_User_Device_MSC_LUN.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -524,21 +519,6 @@
               <FileName>FS_Config_MC_0.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Src\config\FS_Config_MC_0.h</FilePath>
-            </File>
-            <File>
-              <FileName>FS_Config_MC_1.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Src\config\FS_Config_MC_1.h</FilePath>
-            </File>
-            <File>
-              <FileName>FS_Config_NAND_0.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Src\config\FS_Config_NAND_0.h</FilePath>
-            </File>
-            <File>
-              <FileName>FS_Config_NOR_0.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Src\config\FS_Config_NOR_0.h</FilePath>
             </File>
             <File>
               <FileName>FS_Debug.c</FileName>
@@ -654,64 +634,6 @@
         </Group>
         <Group>
           <GroupName>CMSIS Driver</GroupName>
-          <Files>
-            <File>
-              <FileName>AT45DB642D.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Keil\CMSIS Driver\AT45DB642D.c</FilePath>
-              <FileOption>
-                <CommonProperty>
-                  <UseCPPCompiler>2</UseCPPCompiler>
-                  <RVCTCodeConst>0</RVCTCodeConst>
-                  <RVCTZI>0</RVCTZI>
-                  <RVCTOtherData>0</RVCTOtherData>
-                  <ModuleSelection>0</ModuleSelection>
-                  <IncludeInBuild>1</IncludeInBuild>
-                  <AlwaysBuild>2</AlwaysBuild>
-                  <GenerateAssemblyFile>2</GenerateAssemblyFile>
-                  <AssembleAssemblyFile>2</AssembleAssemblyFile>
-                  <PublicsOnly>2</PublicsOnly>
-                  <StopOnExitCode>11</StopOnExitCode>
-                  <CustomArgument></CustomArgument>
-                  <IncludeLibraryModules></IncludeLibraryModules>
-                  <ComprImg>1</ComprImg>
-                </CommonProperty>
-                <FileArmAds>
-                  <Cads>
-                    <interw>2</interw>
-                    <Optim>0</Optim>
-                    <oTime>2</oTime>
-                    <SplitLS>2</SplitLS>
-                    <OneElfS>2</OneElfS>
-                    <Strict>2</Strict>
-                    <EnumInt>2</EnumInt>
-                    <PlainCh>2</PlainCh>
-                    <Ropi>2</Ropi>
-                    <Rwpi>2</Rwpi>
-                    <wLevel>0</wLevel>
-                    <uThumb>2</uThumb>
-                    <uSurpInc>2</uSurpInc>
-                    <uC99>2</uC99>
-                    <uGnu>2</uGnu>
-                    <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
-                    <vShortEn>2</vShortEn>
-                    <vShortWch>2</vShortWch>
-                    <v6Lto>2</v6Lto>
-                    <v6WtE>2</v6WtE>
-                    <v6Rtti>2</v6Rtti>
-                    <VariousControls>
-                      <MiscControls></MiscControls>
-                      <Define></Define>
-                      <Undefine></Undefine>
-                      <IncludePath></IncludePath>
-                    </VariousControls>
-                  </Cads>
-                </FileArmAds>
-              </FileOption>
-            </File>
-          </Files>
         </Group>
         <Group>
           <GroupName>Compiler</GroupName>
@@ -1191,7 +1113,7 @@
               <RVCTZI>0</RVCTZI>
               <RVCTOtherData>0</RVCTOtherData>
               <ModuleSelection>0</ModuleSelection>
-              <IncludeInBuild>1</IncludeInBuild>
+              <IncludeInBuild>0</IncludeInBuild>
               <AlwaysBuild>2</AlwaysBuild>
               <GenerateAssemblyFile>2</GenerateAssemblyFile>
               <AssembleAssemblyFile>2</AssembleAssemblyFile>
@@ -1467,13 +1389,13 @@
       <component Cbundle="MDK-Plus" Cclass="File System" Cgroup="Drive" Csub="NAND" Cvendor="Keil" Cversion="6.13.0" condition="File System and NAND Driver" maxInstances="2">
         <package name="MDK-Middleware" schemaVersion="1.4" url="http://www.keil.com/pack/" vendor="Keil" version="7.10.0"/>
         <targetInfos>
-          <targetInfo name="TBv2b"/>
+          <targetInfo excluded="1" name="TBv2b"/>
         </targetInfos>
       </component>
       <component Cbundle="MDK-Plus" Cclass="File System" Cgroup="Drive" Csub="NOR" Cvendor="Keil" Cversion="6.13.0" condition="File System and Flash Driver" maxInstances="2">
         <package name="MDK-Middleware" schemaVersion="1.4" url="http://www.keil.com/pack/" vendor="Keil" version="7.10.0"/>
         <targetInfos>
-          <targetInfo name="TBv2b"/>
+          <targetInfo excluded="1" name="TBv2b"/>
         </targetInfos>
       </component>
       <component Cbundle="MDK-Plus" Cclass="USB" Cgroup="CORE" Cvariant="Debug" Cvendor="Keil" Cversion="6.13.7" condition="USB Core and Event Recorder">
@@ -1705,7 +1627,7 @@
         <component Cbundle="MDK-Plus" Cclass="File System" Cgroup="Drive" Csub="NAND" Cvendor="Keil" Cversion="6.13.0" condition="File System and NAND Driver" maxInstances="2"/>
         <package name="MDK-Middleware" schemaVersion="1.4" url="http://www.keil.com/pack/" vendor="Keil" version="7.10.0"/>
         <targetInfos>
-          <targetInfo name="TBv2b"/>
+          <targetInfo excluded="1" name="TBv2b"/>
         </targetInfos>
       </file>
       <file attr="config" category="header" name="FileSystem\Config\FS_Config_NOR.h" version="6.2.0">
@@ -1713,7 +1635,7 @@
         <component Cbundle="MDK-Plus" Cclass="File System" Cgroup="Drive" Csub="NOR" Cvendor="Keil" Cversion="6.13.0" condition="File System and Flash Driver" maxInstances="2"/>
         <package name="MDK-Middleware" schemaVersion="1.4" url="http://www.keil.com/pack/" vendor="Keil" version="7.10.0"/>
         <targetInfos>
-          <targetInfo name="TBv2b"/>
+          <targetInfo excluded="1" name="TBv2b"/>
         </targetInfos>
       </file>
       <file attr="config" category="source" name="FileSystem\Config\FS_Debug.c" version="1.0.0">

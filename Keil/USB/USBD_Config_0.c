@@ -84,7 +84,7 @@
 
 //       <s.126>Default value
 //       <i>Default device's Serial Number String.
-#define USBD0_STR_DESC_SER              L"0001A0000000"
+#define USBD0_STR_DESC_SER              L"0001A2b00001"
 
 //       <o.0..7>Maximum Length (in characters) <0-126>
 //       <i>Specifies the maximum number of Serial Number String characters that can be set at run-time.
