@@ -415,7 +415,7 @@
 
 // <e> UART4 (Universal asynchronous receiver transmitter) [Driver_USART4]
 // <i> Configuration settings for Driver_USART4 in component ::CMSIS Driver:USART
-#define RTE_UART4                       1
+#define RTE_UART4                       0
 
 //   <o> UART4_TX Pin <0=>Not Used <1=>PA0 <2=>PC10 <3=>PD10 <4=>PA12 <5=>PD1
 #define RTE_UART4_TX_ID                 0
@@ -1949,7 +1949,7 @@
   #error "Invalid SD_DAT0 Pin Configuration!"
 #endif
 //     <e> SDIO_D[1 .. 3]
-#define   RTE_SDIO_BUS_WIDTH_4          1
+#define   RTE_SDIO_BUS_WIDTH_4          0
 //       <o> SDIO_D1 Pin <0=>PC9 <1=>PA8
 #define   RTE_SDIO_D1_PORT_ID           1
 #if      (RTE_SDIO_D1_PORT_ID == 0)
