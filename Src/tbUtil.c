@@ -243,7 +243,7 @@ int 										delayReq, actualDelay;
 uint32_t 								HAL_GetTick(void){															// OVERRIDE for CMSIS drivers that use HAL
 	int tic = tbTimeStamp();
 	HalSameCnt = tic==lastHalTick? HalSameCnt+1 : 0;
-	if ( HalSameCnt > 50 )
+	if ( HalSameCnt > 200 )
 		tbErr( "HalTick stopped" );
 	
 	lastHalTick = tic;
@@ -409,6 +409,14 @@ void 										stdout_putchar( char ch ){
 
 
 
+
+int dbgEvtCnt = 0, dbgEvtMin = 0, dbgEvtMax = 1000000;
+void 										dbgEVR( int id, int a1, int a2, int a3, int a4 ){
+	dbgEvtCnt++;
+	if ( dbgEvtCnt < dbgEvtMin ) return;
+	if ( dbgEvtCnt > dbgEvtMax ) return;
+	EventRecord4( id, a1, a2, a3, a4 ); 
+}
 void 										dbgEvt( int id, int a1, int a2, int a3, int a4 ){ EventRecord4( id, a1, a2, a3, a4 ); }
 void 										dbgEvtD( int id, const void *d, int len ){ EventRecordData( id, d, len ); }
 void 										dbgEvtS( int id, const char *d ){ EventRecordData( id, d, strlen(d) ); }

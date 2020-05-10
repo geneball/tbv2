@@ -44,11 +44,11 @@
 
 //   <o>Core <0=>Off <1=>Errors <2=>Errors + API <3=>All
 //   <i>Configure USB Device Core event recording
-#define USBD_DEBUG_EVR_Core             3
+#define USBD_DEBUG_EVR_Core             1
 
 //   <o>Driver <0=>Off <1=>Errors <2=>Errors + API <3=>All
 //   <i>Configure USB Device Driver event recording
-#define USBD_DEBUG_EVR_Driver           3
+#define USBD_DEBUG_EVR_Driver           1
 
 //   <o>Custom Class <0=>Off <1=>Errors <2=>Errors + API <3=>All
 //   <i>Configure USB Device Custom Class event recording
@@ -68,7 +68,7 @@
 
 //   <o>Mass Storage Class (MSC) <0=>Off <1=>Errors <2=>Errors + API <3=>All
 //   <i>Configure USB Device Mass Storage Class event recording
-#define USBD_DEBUG_EVR_MSC              3
+#define USBD_DEBUG_EVR_MSC              1
 // </e>
 
 //------------- <<< end of configuration section >>> ---------------------------

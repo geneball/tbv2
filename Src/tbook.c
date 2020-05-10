@@ -77,6 +77,7 @@ fsStatus fsMount( char *drv ){		// try to finit() & mount()  drv:   finit() code
 			//dbgLog( "finit( %s ) got %d \n", drv, stat );
 			return stat;
 		}
+	EventRecorderEnable( evrEAOD, 	 EvtFsCore_No, EvtFsMcSPI_No );  	//FS:  Error 
 		stat = fmount( drv );
 		if ( stat==fsOK ) return stat;
 
@@ -201,15 +202,15 @@ void debugLoop( ){
 void talking_book( void *argument ) {
 	
 	EventRecorderInitialize( EventRecordNone, 1 );  // start EventRecorder
-	int evrE 		= EventRecordError;
-	int evrEA 	= evrE + EventRecordAPI;
-	int evrEAO 	= evrEA + EventRecordOp;
-	int evrEAOD = evrEAO + EventRecordDetail;
-	EventRecorderEnable( evrE, 	 EvtFsCore_No, EvtFsMcSPI_No );  	//FS:  Error 
+	EventRecorderEnable( evrEAOD, 	 EvtFsCore_No, EvtFsMcSPI_No );  	//FS:  Error 
+	EventRecorderEnable( evrE, 	 EvtUsbdCore_No, EvtUsbdEnd_No ); //USB:  Error 
+
 	EventRecorderEnable( evrEA,  TB_no, TB_no );  								//TB:  Error  API
-	EventRecorderEnable( evrEAO, TBAud_no, TBAud_no );   					//Aud: Error  API Op
-	EventRecorderEnable( evrEAO, TBsai_no, TBsai_no ); 	 					//SAI: Error  API Op
-	EventRecorderEnable( evrEAO, TBCSM_no, TBCSM_no );   					//CSM: Error  API Op
+	EventRecorderEnable( evrE, TBAud_no, TBAud_no );   					//Aud: Error  API Op
+	EventRecorderEnable( evrE, TBsai_no, TBsai_no ); 	 					//SAI: Error  API Op
+	EventRecorderEnable( evrEA, TBCSM_no, TBCSM_no );   					//CSM: Error  API Op
+	EventRecorderEnable( evrE, TBUSB_no, TBUSB_no );   					//USB: Error  API Op
+	EventRecorderEnable( evrE, TBUSBDrv_no, TBUSBDrv_no );   		//USBDriver: Error
 	
 	initPowerMgr();			// set up GPIO signals for controlling & monitoring power -- enables MemCard
 	

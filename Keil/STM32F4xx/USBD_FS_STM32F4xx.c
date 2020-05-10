@@ -169,6 +169,7 @@ Configuration tab
 #include <string.h>
 
 #include "Driver_USBD.h"
+#include "tb_evr.h"
 
 #include "OTG_FS_STM32F4xx.h"
 
@@ -399,6 +400,7 @@ static void USBD_EndpointReadSet (uint8_t ep_addr) {
 
   ptr_ep = &ep[EP_ID(ep_addr)];
   ep_num = EP_NUM(ep_addr);
+dbgEVR(TBd_usbRcvEnab, ep_addr, 0, 0,0 );
 
   // Set packet count and transfer size
   if  (ptr_ep->num > ptr_ep->max_packet_size) { num = ptr_ep->max_packet_size; }
@@ -474,6 +476,10 @@ static int32_t USBD_ReadFromFifo (uint8_t ep_addr, uint16_t num) {
       *ptr_dest++ = tmp_buf[i];
     }
   }
+uint32_t *pI = (uint32_t *) ptr_dest;
+uint32_t w0 = pI[0], w1 = pI[1], w2 = pI[2];
+if (num==0) dbgEVR(TBd_usbRcv, ep_num, 0,0,0 );
+else dbgEVR(TBd_usbRcv0+ep_num, num, w0,w1,w2 ); //pI[0], pI[1], pI[2] );
 
   if (num != ptr_ep->max_packet_size) { ptr_ep->num  = 0U;  }
   else                                { ptr_ep->num -= num; }
@@ -625,6 +631,7 @@ static int32_t USBD_PowerControl (ARM_POWER_STATE state) {
       (state != ARM_POWER_LOW)) {
     return ARM_DRIVER_ERROR_PARAMETER;
   }
+dbgEVR(TBd_usbPwrCtrl, state, 0, 0,0 );
 
   switch (state) {
     case ARM_POWER_OFF:
@@ -724,7 +731,7 @@ static int32_t USBD_PowerControl (ARM_POWER_STATE state) {
 #ifdef MX_USB_OTG_FS_VBUS_Pin
       OTG->GCCFG    |=  OTG_FS_GCCFG_VBUSBSEN;          // Enable  VBUS sensing device "B"
 #else
-      OTG->GCCFG    |=  OTG_FS_GCCFG_NOVBUSSENS;        // Disable VBUS sensing
+      OTG->GCCFG    |=  OTG_FS_GCCFG_NOVBUSSENS;        //JEB -- GCCFG.bit21==VBDEN==0 to Disable VBUS sensing
 #endif
 
       OTG->DCFG     |=  OTG_FS_DCFG_DSPD_MSK;           // Full Speed
@@ -765,6 +772,7 @@ static int32_t USBD_PowerControl (ARM_POWER_STATE state) {
 static int32_t USBD_DeviceConnect (void) {
 
   if (hw_powered == false) { return ARM_DRIVER_ERROR; }
+dbgEVR(TBd_usbConn, 0, 0, 0,0 );
 
   OTG->DCTL  &= ~OTG_FS_DCTL_SDIS;      // Soft disconnect disabled
   OTG->GCCFG |=  OTG_FS_GCCFG_PWRDWN;   // Power up on-chip PHY
@@ -821,6 +829,7 @@ static int32_t USBD_DeviceRemoteWakeup (void) {
 static int32_t USBD_DeviceSetAddress (uint8_t dev_addr) {
 
   if (hw_powered == false) { return ARM_DRIVER_ERROR; }
+dbgEVR(TBd_usbSetAddr, dev_addr, 0, 0,0 );
 
   OTG->DCFG = (OTG->DCFG & ~OTG_FS_DCFG_DAD_MSK) | OTG_FS_DCFG_DAD(dev_addr);
 
@@ -840,6 +849,10 @@ static int32_t USBD_ReadSetupPacket (uint8_t *setup) {
 
   setup_received = 0U;
   memcpy(setup, setup_packet, 8);
+	
+uint16_t *suPkt = (uint16_t *) setup;
+uint32_t suWd0 = ((uint32_t *) setup)[0];
+dbgEVR(TBd_usbRdSetup, suWd0, suWd0, suPkt[2], suPkt[3] );
 
   if (setup_received != 0U) {           // If new setup packet was received while this was being read
     return ARM_DRIVER_ERROR;
@@ -869,6 +882,7 @@ static int32_t USBD_EndpointConfigure (uint8_t  ep_addr,
   bool                 ep_dir;
 
   ep_num = EP_NUM(ep_addr);
+dbgEVR(TBd_usbEpCfg, ep_addr,ep_type,ep_max_packet_size,0 );
   if (ep_num > USBD0_MAX_ENDPOINT_NUM) { return ARM_DRIVER_ERROR; }
   if (hw_powered == false)             { return ARM_DRIVER_ERROR; }
 
@@ -1042,6 +1056,7 @@ static int32_t USBD_EndpointStall (uint8_t ep_addr, bool stall) {
   uint8_t              ep_num;
   bool                 ep_dir;
 
+dbgEVR(TBd_usbStall, ep_addr, stall, 0,0 );
   ep_num = EP_NUM(ep_addr);
   if (ep_num > USBD0_MAX_ENDPOINT_NUM) { return ARM_DRIVER_ERROR; }
   if (hw_powered == false)             { return ARM_DRIVER_ERROR; }
@@ -1121,6 +1136,7 @@ static int32_t USBD_EndpointTransfer (uint8_t ep_addr, uint8_t *data, uint32_t n
   bool                 ep_dir;
 
   ep_num = EP_NUM(ep_addr);
+
   if (ep_num > USBD0_MAX_ENDPOINT_NUM) { return ARM_DRIVER_ERROR; }
   if (hw_powered == false)             { return ARM_DRIVER_ERROR; }
 
@@ -1137,6 +1153,10 @@ static int32_t USBD_EndpointTransfer (uint8_t ep_addr, uint8_t *data, uint32_t n
   ptr_ep->num_transferring      = 0U;
 
   if (ep_dir != 0U) {                                     // IN Endpoint
+uint32_t *pI = (uint32_t *)data;
+uint32_t w0 = pI[0], w1 = pI[1], w2 = pI[2];
+if (num==0) dbgEVR(TBd_usbXmt, ep_addr,  0,0,0 );
+else dbgEVR(TBd_usbXmt0+ep_num, num, w0,w1,w2);
     if (OTG_EP_IN_TYPE(ep_num) != ARM_USB_ENDPOINT_ISOCHRONOUS) {
       if (num == 0U) {
         ptr_ep->in_zlp     =  1U;                         // Send IN ZLP requested
@@ -1167,6 +1187,7 @@ static uint32_t USBD_EndpointTransferGetResult (uint8_t ep_addr) {
 
   if (EP_NUM(ep_addr) > USBD0_MAX_ENDPOINT_NUM) { return 0U; }
 
+dbgEVR(TBd_usbXfrCnt, ep_addr, ep[EP_ID(ep_addr)].num_transferred_total, 0,0 );
   return (ep[EP_ID(ep_addr)].num_transferred_total);
 }
 
@@ -1183,6 +1204,7 @@ static int32_t USBD_EndpointTransferAbort (uint8_t ep_addr) {
   uint8_t              ep_num;
 
   ep_num = EP_NUM(ep_addr);
+dbgEVR(TBd_usbXfrAbort, ep_addr, 0, 0,0 );
   if (ep_num > USBD0_MAX_ENDPOINT_NUM) { return ARM_DRIVER_ERROR; }
   if (hw_powered == false)             { return ARM_DRIVER_ERROR; }
 
@@ -1247,10 +1269,12 @@ void USBD_FS_IRQ (uint32_t gintsts) {
   uint16_t             num;
   uint8_t              ep_num, i;
   static uint32_t      IsoInIncomplete = 0U;
+dbgEVR(TBd_usbIRQ, gintsts,0,0,0 );
 
   if ((gintsts & OTG_FS_GINTSTS_USBRST) != 0U) {        // Reset interrupt
     OTG->GINTSTS  =  OTG_FS_GINTSTS_USBRST;
     OTG->GINTMSK |=  OTG_FS_GINTMSK_SOFM;               // Unmask SOF interrupts (to detect initial SOF)
+dbgEVR(TBd_usbReset, 0, 0, 0,0 );
     USBD_Reset();
     usbd_state.active = 0U;
     SignalDeviceEvent(ARM_USBD_EVENT_RESET);
@@ -1273,6 +1297,7 @@ void USBD_FS_IRQ (uint32_t gintsts) {
   if ((gintsts & OTG_FS_GINTSTS_ENUMDNE) != 0U) {       // Speed enumeration completed
     OTG->GINTSTS  = OTG_FS_GINTSTS_ENUMDNE;
     usbd_state.speed  = ARM_USB_SPEED_FULL;
+dbgEVR(TBd_usbEnumFS, 0, 0, 0,0 );
     OTG->DCTL    |= OTG_FS_DCTL_CGINAK;                 // Clear global IN NAK
     OTG->DCTL    |= OTG_FS_DCTL_CGONAK;                 // Clear global OUT NAK
   }
@@ -1284,6 +1309,8 @@ void USBD_FS_IRQ (uint32_t gintsts) {
     usbd_state.active = 1U;
     SignalDeviceEvent(ARM_USBD_EVENT_RESUME);
   }
+uint16_t *suPkt = (uint16_t *) setup_packet;
+uint32_t suWd0 = ((uint32_t *) setup_packet)[0];
 
   if ((gintsts & OTG_FS_GINTSTS_RXFLVL) != 0U) {        // Receive FIFO interrupt
     val    =  OTG->GRXSTSP;
@@ -1295,6 +1322,7 @@ void USBD_FS_IRQ (uint32_t gintsts) {
         setup_packet[0] = OTG_RX_FIFO;
         setup_packet[1] = OTG_RX_FIFO;
 
+dbgEVR(TBd_usbRdSetup, suWd0, suWd0, suPkt[2], suPkt[3] );
         // Analyze Setup packet for SetAddress
         if ((setup_packet[0] & 0xFFFFU) == 0x0500U) {
           USBD_DeviceSetAddress((setup_packet[0] >> 16) & 0xFFU);

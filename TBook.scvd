@@ -2,60 +2,168 @@
  
 <component_viewer schemaVersion="0.1" xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:noNamespaceSchemaLocation="Component_Viewer.xsd">
   <component name="TB" version="1.0.0"/>    <!-- name and version of the component  -->
-<!--  
-#define TB_no                	 (0x01)
-#define TB_dbgPlay             EventID(EventLevelOp,     TB_no,    0x00)
-#define TB_Error               EventID(EventLevelError,  TB_no,    0x01)
-#define TB_Fault               EventID(EventLevelError,  TB_no,    0x02)
-#define TB_Alloc               EventID(EventLevelDetail, TB_no,    0x03)
-#define TB_bootCnt             EventID(EventLevelOp,     TB_no,    0x04)
 
-#define TBAud_no               (0x02)
-#define TB_ldBuff              EventID(EventLevelDetail, TBAud_no, 0x00)
-#define TB_dmaComp             EventID(EventLevelDetail, TBAud_no, 0x01)
-#define TB_playWv              EventID(EventLevelAPI,    TBAud_no, 0x02)
-#define TB_tstRd               EventID(EventLevelDetail, TBAud_no, 0x03)
-#define TB_audSent             EventID(EventLevelDetail, TBAud_no, 0x04)
-#define TB_audClose            EventID(EventLevelOp,     TBAud_no, 0x05)
-#define TB_audDone             EventID(EventLevelOp,     TBAud_no, 0x06)
-#define TB_stPlay              EventID(EventLevelOp,     TBAud_no, 0x07)
-#define TB_audPause            EventID(EventLevelAPI,    TBAud_no, 0x08)
-#define TB_audResume           EventID(EventLevelAPI,    TBAud_no, 0x09)
-#define TB_audSetWPos          EventID(EventLevelOp,     TBAud_no, 0x0a)
+<typedefs>
+    <typedef name="4BY"                           info="USB Device 32-bit parameter structure" size="4">
+      <member name="DB0"                          type="uint16_t"               offset="0"/>
+      <member name="B0"                           type="uint8_t"                offset="0"/>
+      <member name="B1"                           type="uint8_t"                offset="1"/>
+      <member name="DB1"                          type="uint16_t"               offset="2"/>
+      <member name="B2"                           type="uint8_t"                offset="2"/>
+      <member name="B3"                           type="uint8_t"                offset="3"/>
+    </typedef>
+    <typedef name="suPkt"       info="USB Device Setup Packet (word 0)"    size="4">
+	  <member name="ReqTyp"		type="uint32_t"		offset="0">
+        <enum name="GetDevStat"         value="0x00000080"			info="Setup Ept0"  />
+        <enum name="GetItfStat"         value="0x00000081"			info="Setup Ept0"  />
+        <enum name="GetEpStat"          value="0x00000082"			info="Setup Ept0"  />
+        <enum name="ClrDevFeat0"        value="0x00000100"			info="Setup Ept0"  />
+        <enum name="ClrDevFeat1"        value="0x00010100"			info="Setup Ept0"  />
+        <enum name="ClrDevFeat2"        value="0x00020100"			info="Setup Ept0"  />
+        <enum name="ClrItfFeat0"        value="0x00000101"			info="Setup Ept0"  />
+        <enum name="ClrItfFeat1"        value="0x00010101"			info="Setup Ept0"  />
+        <enum name="ClrItfFeat2"        value="0x00020101"			info="Setup Ept0"  />
+        <enum name="ClrEpFeat0"         value="0x00000102"			info="Setup Ept0"  />
+        <enum name="ClrEpFeat1"         value="0x00010102"			info="Setup Ept0"  />
+        <enum name="ClrEpFeat2"         value="0x00020102"			info="Setup Ept0"  />
+        <enum name="SetDevFeat0"        value="0x00000300"			info="Setup Ept0"  />
+        <enum name="SetDevFeat1"        value="0x00010300"			info="Setup Ept0"  />
+        <enum name="SetDevFeat2"        value="0x00020300"			info="Setup Ept0"  />
+        <enum name="SetItfFeat0"        value="0x00000301"			info="Setup Ept0"  />
+        <enum name="SetItfFeat1"        value="0x00010301"			info="Setup Ept0"  />
+        <enum name="SetItfFeat2"        value="0x00020301"			info="Setup Ept0"  />
+        <enum name="SetEpFeat0"         value="0x00000302"			info="Setup Ept0"  />
+        <enum name="SetEpFeat1"         value="0x00010302"			info="Setup Ept0"  />
+        <enum name="SetEpFeat2"         value="0x00020302"			info="Setup Ept0"  />
+		<enum name="SetDevAddr1"        value="0x00010500"			info="Setup Ept0"  />
+		<enum name="SetDevAddr2"        value="0x00020500"			info="Setup Ept0"  />
+		<enum name="SetDevAddr3"        value="0x00030500"			info="Setup Ept0"  />
+        <enum name="GetDescr0"          value="0x00000680"			info="Setup Ept0"  />
+        <enum name="GetDescr1"          value="0x01000680"			info="Setup Ept0"  />
+		<enum name="GetDescr2"          value="0x02000680"			info="Setup Ept0"  />
+		<enum name="GetDescr3"          value="0x03000680"			info="Setup Ept0"  />
+		<enum name="GetDevDescr0"       value="0x00010680"			info="Setup Ept0"  />
+		<enum name="GetDevDescr1"       value="0x01010680"			info="Setup Ept0"  />
+		<enum name="GetDevDescr2"       value="0x02010680"			info="Setup Ept0"  />
+		<enum name="GetDevDescr3"       value="0x03010680"			info="Setup Ept0"  />
+		<enum name="GetCfgDescr0"       value="0x00020680"			info="Setup Ept0"  />
+		<enum name="GetCfgDescr1"       value="0x01020680"			info="Setup Ept0"  />
+		<enum name="GetCfgDescr2"       value="0x02020680"			info="Setup Ept0"  />
+ 		<enum name="GetCfgDescr3"       value="0x03020680"			info="Setup Ept0"  />
+        <enum name="SetDescr"           value="0x00000780"			info="Setup Ept0"  />
+        <enum name="GetConfig"          value="0x00000880"			info="Setup Ept0"  />
+        <enum name="SetConfig0"         value="0x00000900"			info="Setup Ept0"  />
+        <enum name="SetConfig1"         value="0x00010900"			info="Setup Ept0"  />
+        <enum name="GetStrManuftr"      value="0x00030680"			info="Setup Ept0"  />
+        <enum name="GetStrDescr1"       value="0x01030680"			info="Setup Ept0"  />
+        <enum name="GetStrProduct"      value="0x02030680"			info="Setup Ept0"  />
+        <enum name="GetStrSerialNum"    value="0x03030680"			info="Setup Ept0"  />
+        <enum name="GetStrDescr4"       value="0x04030680"			info="Setup Ept0"  />
+        <enum name="GetItfDescr"        value="0x00040680"			info="Setup Ept0"  />
+        <enum name="GetEptDescr"        value="0x00050680"			info="Setup Ept0"  />
 
-#define TBsai_no               (0x03)
-#define TB_saiEvt              EventID(EventLevelDetail, TBsai_no, 0x04)
-#define TB_saiCtrl             EventID(EventLevelOp,     TBsai_no, 0x05)
-#define TB_saiInit             EventID(EventLevelAPI,    TBsai_no, 0x06)
-#define TB_saiPower            EventID(EventLevelAPI,    TBsai_no, 0x07)
-#define TB_saiSend             EventID(EventLevelDetail, TBsai_no, 0x08)
-#define TB_akInit              EventID(EventLevelOp,     TBsai_no, 0x09)
-#define TB_akPwrDn             EventID(EventLevelOp,     TBsai_no, 0x0a)
-#define TB_akSetVol            EventID(EventLevelAPI,    TBsai_no, 0x0b)
-#define TB_akSetMute           EventID(EventLevelAPI,    TBsai_no, 0x0c)
-#define TB_akWrReg             EventID(EventLevelDetail, TBsai_no, 0x0d)
-#define TB_mediaEvt            EventID(EventLevelDetail, TBsai_no, 0x0e)
-#define TB_saiTXDN             EventID(EventLevelDetail, TBsai_no, 0x0f)
-#define TB_saiPLYDN            EventID(EventLevelDetail, TBsai_no, 0x10)
-#define TB_akSpkEn             EventID(EventLevelOp,     TBsai_no, 0x11)
+		<enum name="VendItf_FE"         value="0x0000FEA1"			info="Setup Ept0"  />
+      </member>
+    </typedef>
+	<typedef name="usbISR"              info="F103 USB Interrupt Status Register"    size="4">
+	  <member name="SR"						type="uint32_t"                offset="0">
+		<enum name="CorrXfr"              	value="0x00008000"				info="USB ISR Correct Transfer"  />
+		<enum name="OvrUndrun"            	value="0x00004000"				info="USB ISR Packet Memory Aerea Over/underrun"  />
+		<enum name="Error"                	value="0x00002000"				info="USB ISR Error"  />
+ 		<enum name="Wake"              		value="0x00001000"				info="USB ISR Wake-up"  />
+  		<enum name="Suspend"              	value="0x00000800"				info="USB ISR Suspend Mode"  />
+ 		<enum name="Reset"                	value="0x00000400"				info="USB ISR Reset"  />
+ 		<enum name="SOF"                	value="0x00000200"				info="USB ISR Start of Frame"  />
+ 		<enum name="ESOF"                	value="0x00000100"				info="USB ISR Expected Start of Frame"  />
+ 		<enum name="DIR"                	value="0x00000010"				info="USB ISR Direction"  />
+ 		<enum name="EP0"                	value="0x00000000"				info="USB ISR EndPt0"  />
+ 		<enum name="EP1"                	value="0x00000001"				info="USB ISR EndPt1"  />
+ 		<enum name="EP2"                	value="0x00000002"				info="USB ISR EndPt2"  />
+ 		<enum name="EP3"                	value="0x00000003"				info="USB ISR EndPt3"  />
+ 		<enum name="EP4"                	value="0x00000004"				info="USB ISR EndPt4"  />
+ 		<enum name="EP5"                	value="0x00000005"				info="USB ISR EndPt5"  />
+		
+ 		<enum name="ResetSOF"               value="0x00000600"				info="USB ISR ResetSOF"  />
+ 		<enum name="SuspESOF"               value="0x00000900"				info="USB ISR SuspESOF"  />
+ 		<enum name="Xmt0"                	value="0x00008200"				info="USB ISR Xmt0"  />
+ 		<enum name="Rcv0"                	value="0x00008210"				info="USB ISR Rcv0"  />
+ 		<enum name="Xmt1"                	value="0x00008201"				info="USB ISR Xmt1"  />
+ 		<enum name="Rcv1"                	value="0x00008211"				info="USB ISR Rcv1"  />
+      </member>
+    </typedef>
+<!--
+	<typedef name="otgISR"              info="F412 USB_FS_OTG Interrupt Status Register"    size="4">
+	  <member name="OSR"						type="uint32_t"                offset="0">
+		<enum name="CMOD"                	value="0x00000001"				info="OTG_FS_GINTSTS Host mode"  />   
+		<enum name="MMIS"                	value="0x00000002"				info="OTG_FS_GINTSTS Mode mismatch"  />   
+		<enum name="OTGINT"              	value="0x00000004"				info="OTG_FS_GINTSTS OTG protocol event"  />   
 
-#define TBCSM_no               (0x04)
-#define TB_csmChSt			   EventID(EventLevelOp,     TBCSM_no, 0x00)
-#define TB_csmDoAct			   EventID(EventLevelOp,     TBCSM_no, 0x01)
+		<enum name="RXFLVL"              	value="0x00000010"				info="OTG_FS_GINTSTS Rcv Fifo non-empty"  />   
+		<enum name="NPTXFE"              	value="0x00000020"				info="OTG_FS_GINTSTS Non Periodic TX empty"  />   
+		<enum name="GINAKEFF"            	value="0x00000040"				info="OTG_FS_GINTSTS Glob in nak effective"  />   
+		<enum name="GONAKEFF"            	value="0x00000080"				info="OTG_FS_GINTSTS Glob out nak effective"  />   
+		<enum name="ESUSP"               	value="0x00000400"				info="OTG_FS_GINTSTS Early suspend"  />   
+
+
+
+		<enum name="ISOODRP"             	value="0x00004000"				info="OTG_FS_GINTSTS ISOODRP"  />   
+		<enum name="EOPF"                	value="0x00008000"				info="OTG_FS_GINTSTS End Of Periodic Frame"  />   
+		<enum name="IEPINT"              	value="0x00040000"				info="OTG_FS_GINTSTS In EP int"  />        
+		<enum name="OEPINT"              	value="0x00080000"				info="OTG_FS_GINTSTS Out EP int"  />        
+		<enum name="IISOIXFR"            	value="0x00100000"				info="OTG_FS_GINTSTS incomplete isochronous xfr"  />      
+		<enum name="IPXFR"               	value="0x00200000"				info="OTG_FS_GINTSTS incomplete periodic xfr"  />         
+		<enum name="PerTxE"               	value="0x04000000"				info="OTG_FS_GINTSTS periodic xmt empty"  />         
+		<enum name="Lpm_Int"            	value="0x10000000"				info="OTG_FS_GINTSTS LPM interrupt"  />       
+		<enum name="Cid_Chg"            	value="0x10000000"				info="OTG_FS_GINTSTS connector id change"  />       
+		<enum name="DiscInt"             	value="0x20000000"				info="OTG_FS_GINTSTS disconnect"  />       
+		<enum name="SrqInt"              	value="0x40000000"				info="OTG_FS_GINTSTS session request"  />        
+		<enum name="SOF"                 	value="0x00000008"				info="OTG_FS_GINTSTS Start of Frame"  />   
+		<enum name="SUSP"        		    value="0x00000800"				info="OTG_FS_GINTSTS USB Suspend"  />   
+		<enum name="USBRST"              	value="0x00001000"				info="OTG_FS_GINTSTS USB Reset"  />   
+		<enum name="ENUMDNE"             	value="0x00002000"				info="OTG_FS_GINTSTS Enumeration Done"  />   
+		<enum name="WKUPINT"            	value="0x80000000"				info="OTG_FS_GINTSTS resume_remote wakeup"  />
+      </member>
+    </typedef>
 -->
-    <group name="TBook EventsGroup">
-         <component name="TBgen"      brief="TB"    	no="0x01" prefix="TB_"       info="Talking Book"/>
-         <component name="TBaudio"    brief="TBaud"    	no="0x02" prefix="TBaud_"    info="TBook audio"/>
-         <component name="TBcsm"      brief="TBcsm"    	no="0x03" prefix="TBcsm_"    info="TBook control state machine"/>
-     </group>  
+	<typedef name="usbEpAddr"            info="USB Endpoint addr"    size="1">
+	  <member name="EpA"					type="uint8_t"                offset="0">
+		<enum name="Out 0"      value="0x00"				info="epCfg addr Dir Ep#"  />
+		<enum name="In  0"      value="0x80"				info="epCfg addr Dir Ep#"  />
+		<enum name="Out 1"      value="0x01"				info="epCfg addr Dir Ep#"  />
+		<enum name="In  1"      value="0x81"				info="epCfg addr Dir Ep#"  />
+		<enum name="Out 2"      value="0x02"				info="epCfg addr Dir Ep#"  />
+		<enum name="In  2"      value="0x82"				info="epCfg addr Dir Ep#"  />
+		<enum name="Out 3"      value="0x03"				info="epCfg addr Dir Ep#"  />
+		<enum name="In  3"      value="0x83"				info="epCfg addr Dir Ep#"  />
+      </member>
+    </typedef>
+	<typedef name="usbEpType"            info="USB Endpoint type"    size="1">
+	  <member name="EpT"					type="uint8_t"                offset="0">
+		<enum name="Ctl"      	value="0x00"				info="epTyp Control"  />
+		<enum name="Iso"    	value="0x01"				info="epTyp Isochronous"  />
+		<enum name="Blk"      	value="0x02"				info="epTyp Bulk"  />
+		<enum name="Int"      	value="0x03"				info="epTyp Interrupt"  />
+      </member>
+    </typedef>
+</typedefs>
 
-    <events>
+<events>
+    <group name="TalkingBook">
+         <component name="TBgen"      brief="TB"    	no="0x01" prefix="TB_"       info="TBook general"/>
+         <component name="TBaudio"    brief="TBaud"    	no="0x02" prefix="TBaud_"    info="TBook audio"/>
+         <component name="TBsai"      brief="TBsai"    	no="0x03" prefix="TBsai_"    info="TBook SAI on I2S and I2C"/>
+         <component name="TBcsm"      brief="TBcsm"    	no="0x04" prefix="TBcsm_"    info="TBook control state machine"/>
+         <component name="TBusb"      brief="TBusb"    	no="0x05" prefix="TBusb_"    info="TBook USB"/>
+         <component name="UsbDrv"     brief="UsbDrv"   	no="0x06" prefix="usbdr_"    info="TBook USB Driver"/>
+    </group>  
+
+<!-- TBgen -->
       <event id="0x0100" level="Op"  		property="dbgPlay"   	value="dbg=%x[val1]"     											info="debugLoop Play"  />
       <event id="0x0101" level="Error"   	property="TBErr"   		value="%t[val1]"     												info="TB Error"  />
       <event id="0x0102" level="Error"   	property="Fault"   		value="vAct=%x[val1] cfsr=%x[val2]"     							info="Hard Fault"  />
       <event id="0x0103" level="Detail"   	property="tbAlloc"    	value="nB=%d[val1] mem=%x[val2]"     								info="tbAlloc"  />
       <event id="0x0104" level="Op"  		property="bootCnt"   	value="bootCnt=%d[val1]"     										info="reboot count"  />
-
+<!-- TBaudio -->
 	  <event id="0x0200" level="Detail"		property="loadBuff"   	value="nSamp=%d[val1] ferr=%d[val2] buffN=%d[val3]"     			info="loadBuff fread()"  />
       <event id="0x0201" level="Detail"   	property="DMACompl"   	value="cnt=%d[val1] ferr=%d[val2]"     								info="SAIComplete fread"  />
 	  <event id="0x0202" level="API"   		property="PlayWv"     	value="%t[val1]"     												info="audio PlayWv"  />
@@ -67,6 +175,7 @@
 	  <event id="0x0208" level="API"   		property="audPause"     value="audPause"     												info="audio pause"  />
 	  <event id="0x0209" level="API"   		property="audResume"    value="msPos=%d[val1]"     											info="audio resume"  />
 
+<!-- TBsai -->
 	  <event id="0x0304" level="Detail"		property="saiEvent"   	value="evt=%x[val1]"     											info="saiEvent"  />
       <event id="0x0305" level="Op"   		property="saiControl" 	value="ctrl=%x[val1] a1=%x[val2] a2=%x[val3]"     					info="saiControl"  />
       <event id="0x0306" level="API"   		property="saiInit"    	value="Init"     													info="saiInit"  />
@@ -82,8 +191,80 @@
       <event id="0x0310" level="Detail"   	property="saiPLYDN"  	value="saiPLYDN"     												info="SAI file done"  />
       <event id="0x0311" level="Op"   		property="akSpkEn"    	value="spkrEn=%d[val1]"     										info="akSpeaker enable"  />
 
+<!-- TBusb -->
 	  <event id="0x0400" level="Op"   		property="chgState"   	value="%t[val1]"     												info="CSM change state"  />
 	  <event id="0x0401" level="Op"   		property="doAct"      	value="act=%d[val1], a[0]=%d[val2],a[1]=%d[val3],iarg=%d[val4]"     info="CSM doAction"  />
-<!--  -->
+
+      <event id="0x0500" level="Detail"   	property="usbInit"  	value=""     			info="USBD_Device0_Initialize"  />
+      <event id="0x0501" level="Detail"   	property="usbUninit"  	value=""				info="USBD_Device0_Uninitialize"  />
+      <event id="0x0502" level="Detail"   	property="usbVbchg"  	value="level=%x[val1]"				info="USBD_Device0_VbusChanged"  />
+      <event id="0x0503" level="Detail"   	property="usbReset"  	value=""				info="USBD_Device0_Reset"  />
+      <event id="0x0504" level="Detail"   	property="usbHSAct"  	value=""				info="USBD_Device0_HighSpeedActivated"  />
+      <event id="0x0505" level="Detail"   	property="usbSusp"  	value=""				info="USBD_Device0_Suspended"  />
+      <event id="0x0506" level="Detail"   	property="usbResum"  	value=""				info="USBD_Device0_Resumed"  />
+      <event id="0x0507" level="Detail"   	property="usbCfgCh"  	value="cfg=%x[val1]"	info="USBD_Device0_ConfigurationChanged"  />
+      <event id="0x0508" level="Detail"   	property="usbRmtWkup"  	value=""				info="USBD_Device0_EnableRemoteWakeup"  />
+      <event id="0x0509" level="Detail"   	property="usbDisRemWk"  value=""				info="USBD_Device0_DisableRemoteWakeup"  />
+<!--  
+	  <event id="0x050a" level="Detail"   	property="usbSetup"  	value="%x[val1] wVal=%x[val2] wIdx=%d[val3] wLen=%d[val4]"		info="USBD_Device0_Endpoint0_SetupPacketReceived"  />
+-->
+	  <event id="0x050a" level="Op"   	val1="suPkt" 	property="usbSetup"  value="%E[val1.ReqTyp,suPkt:ReqTyp]==%x[val2] wIdx=%d[val3] wLen=%d[val4]"	info="USBD_Device0_Endpoint0_SetupPacketReceived"  />
+      <event id="0x050b" level="Detail"   	property="usbSuPrLn"  	value="len=%x[val1]"	info="USBD_Device0_Endpoint0_SetupPacketProcessed"  />
+      <event id="0x050c" level="Detail"   	property="usbSuProc"  	value="%x[val1] %x[val2] %x[val3] %x[val4]"				info="USBD_Device0_Endpoint0_SetupPacketProcessed"  />
+      <event id="0x050d" level="Detail"   	property="usbEpOut"  	value="len=%d[val1]"				info="USBD_Device0_Endpoint0_OutDataReceived"  />
+      <event id="0x050e" level="Detail"   	property="usbEpIn"  	value="len=%d[val1]"				info="USBD_Device0_Endpoint0_InDataSent"  />
+      <event id="0x0510" level="Detail"   	property="usbLnInit"  	value="lun%d[val1] stat=%x[val2]"	info="initLUN finit"  />
+      <event id="0x0511" level="Detail"   	property="usbLnUnm"  	value="lun%d[val1] stat=%x[val2]"	info="initLUN funmount"  />
+      <event id="0x0512" level="Detail"   	property="usbDrvId"  	value="lun%d[val1] drv_id=%x[val2]"	info="initLUN fs_ioc_get_id"  />
+      <event id="0x0513" level="Detail"   	property="usbLnIMed"  	value="lun%d[val1] stat=%x[val2]"	info="initLUN fs_ioc_device_ctrl"  />
+      <event id="0x0514" level="Detail"   	property="usbLnOk"  	value="lun%d[val1]"				info="initLUN finished ok"  />
+      <event id="0x0515" level="Detail"   	property="usbLnUninit"  value="lun%d[val1]"				info="uninitLUN"  />
+      <event id="0x0516" level="Detail"   	property="usbEnMSC"  	value="nLUNs=%d[val1]"									info="Usb Enable MSC"  />
+      <event id="0x0517" level="Detail"   	property="usbConn"  	value=""												info="Usb_Connect"  />
+      <event id="0x0518" level="Detail"   	property="usbDisMSC"  	value=""												info="Usb_Disconnect"  />
+      <event id="0x0519" level="Detail"   	property="usbChInfo"  	value="lun%d[val1] stat=%x[val2] buff=%x[val3] size=%x[val4]"	info="Usb getCacheInfoLUN"  />
+      <event id="0x051a" level="Detail"   	property="usbM0Init"  	value=""												info="USBD_MSC0_Initialize cb"  />
+      <event id="0x051b" level="Detail"   	property="usbM0Uninit"  value=""												info="USBD_MSC0_Uninitialize cb"  />
+      <event id="0x051c" level="Detail"   	property="usbM0getMaxL" value="maxLUN=%d[val1]"									info="USBD_MSC0_GetMaxLUN"  />
+      <event id="0x051d" level="Detail"   	property="usbM0getCap" 	value="lun%d[val1] stat=%x[val2] blks=%d[val3] size=%x[val4]"	info="USBD_MSC0_LUN_GetMediaCapacity"  />
+      <event id="0x051e" level="Detail"   	property="usbM0read"  	value="lun%d[val1] stat=%x[val2] lba=%d[val3] cnt=%d[val4]"		info="USBD_MSC0_LUN_Read"  />
+      <event id="0x051f" level="Detail"   	property="usbM0write"  	value="lun%d[val1] stat=%x[val2] lba=%d[val3] cnt=%d[val4]"		info="USBD_MSC0_LUN_Write"  />
+      <event id="0x0520" level="Detail"   	property="usbM0chkMed" 	value="lun%d[val1] stat=%x[val2] fsStat=%x[val3]"				info="USBD_MSC0_LUN_CheckMedia"  />
+      <event id="0x0521" level="Op"   		property="usbDescr" 	value="%t[val1]"				info="USBD_Device0_Endpoint0_SetupPacketReceived string descriptor"  />
+
+<!-- UsbDrv Keil driver annotations  -->
+
+	 <event id="0x0600" level="Detail"   	property="usbIRQ" 		  value="%x[val1]"	info="F412 USBD_IRQHandler"  />
+<!--
+      <event id="0x0600" level="Detail"   	property="usbIRQ" 		val1="otgISR"   value="%E[val1.OSR,otgISR:OSR]==%x[val1]"	info="F412 USBD_IRQHandler"  />
+	  <event id="0x0600" level="Detail"   	property="usbIRQ" 		value="%x[val1]"	info="F412 USBD_IRQHandler"  />
+      <event id="0x0600" level="Detail"   	property="usbIRQ" 		val1="usbISR"   value="%E[val1.SR,usbISR:SR]==%x[val1]"	info="F103 USB_LP_CAN1_RX0_IRQHandler"  />
+-->
+      <event id="0x0601" level="Op"   	property="usbEpCfg" 	val1="usbEpAddr" val2="usbEpType" value="%E[val1.EpA,usbEpAddr:EpA] %E[val2.EpT,usbEpType:EpT] mxsz=%d[val3]"				info="USBD_EndpointConfigure"  />
+<!--
+	  <event id="0x0601" level="Op"   	property="usbEpCfg" 	value="ep=%d[val1] typ=%x[val2] mxsz=%d[val3]"				info="USBD_EndpointConfigure"  />
+-->
+      <event id="0x0602" level="Op"   	property="usbRdSetup" 	val1="suPkt"  value="%E[val1.ReqTyp,suPkt:ReqTyp]==%x[val2] wIdx=%d[val3] wLen=%d[val4]"	info="USBD_ReadSetupPacket"  />
+      <event id="0x0603" level="Op"   	property="usbSetAddr" 	value="addr %d[val1]==%x[val1]"								info="USBD_DeviceSetAddress"  />
+      <event id="0x0604" level="Op"   	property="usbPwrCtrl" 	value="st=%x[val1]"											info="USBD_PowerControl"  />
+      <event id="0x0605" level="Op"   	property="usbConn" 		value=""													info="USBD_DeviceConnect"  />
+      <event id="0x0606" level="Op"   	property="usbReset" 	value=""													info="USBD_Reset"  />
+      <event id="0x0607" level="Op"   	property="usbStall" 	value="ep=%x[val1] stall=%x[val2]"							info="USBD_EndpointStall"  />
+      <event id="0x0608" level="Op"   	property="usbXfrAbort" 	value="ep=%x[val1]"											info="USBD_EndpointTransferAbort"  />
+      <event id="0x0609" level="Op"   	property="usbRcvE" 	    value="ep=%x[val1] cnt=0"				info="USBD_EP_HW_Read(0)"  />
+      <event id="0x060A" level="Op"   	property="usbXmtE" 	    value="ep=%x[val1] num=0"				info="USBD_EndpointTransfer(0)"  />
+
+      <event id="0x060B" level="Op"   	property="usbEnumFS" 	value="FS"				info="USBD_FS_IRQ ENUMDNE"  />
+      <event id="0x060C" level="Op"   	property="usbXfrCnt" 	value="ep=%x[val1] tot=%d[val2]"		info="USBD_EndpointTransferGetResult"  />
+      <event id="0x060D" level="Op"   	property="usbRcvEnab" 	value="ep=%x[val1]"				info="USBD_EndpointReadSet"  />
+
+      <event id="0x0610" level="Op"   	property="usbRcv0" 	    value="cnt=%d[val1] %x[val2] %x[val3] %x[val4]"				info="USBD_EP_HW_Read(0)"  />
+      <event id="0x0620" level="Op"   	property="usbXmt0" 	    value="num=%d[val1] %x[val2] %x[val3] %x[val4]"				info="USBD_EndpointTransfer(0)"  />
+      <event id="0x0611" level="Op"   	property="usbRcv1" 	    value="cnt=%d[val1] %x[val2] %x[val3] %x[val4]"				info="USBD_EP_HW_Read(1)"  />
+      <event id="0x0621" level="Op"   	property="usbXmt1" 	    value="num=%d[val1] %x[val2] %x[val3] %x[val4]"				info="USBD_EndpointTransfer(1)"  />
+      <event id="0x0612" level="Op"   	property="usbRcv2" 	    value="cnt=%d[val1] %x[val2] %x[val3] %x[val4]"				info="USBD_EP_HW_Read(2)"  />
+      <event id="0x0622" level="Op"   	property="usbXmt2" 	    value="num=%d[val1] %x[val2] %x[val3] %x[val4]"				info="USBD_EndpointTransfer(2)"  />
+      <event id="0x0613" level="Op"   	property="usbRcv3" 	    value="cnt=%d[val1] %x[val2] %x[val3] %x[val4]"				info="USBD_EP_HW_Read(3)"  />
+      <event id="0x0623" level="Op"   	property="usbXmt3" 	    value="num=%d[val1] %x[val2] %x[val3] %x[val4]"				info="USBD_EndpointTransfer(3)"  />
      </events>
  </component_viewer>

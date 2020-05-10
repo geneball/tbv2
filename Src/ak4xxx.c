@@ -473,8 +473,8 @@ dbgEvt( TB_akSetVol, Volume,0,0,0);
 }
 
 void		 				ak_SetMute( bool muted ){																	// true => enable mute on codec  (audio)
-dbgEvt( TB_akSetMute, muted,0,0,0);
 	if ( akMuted==muted ) return;
+	dbgEvt( TB_akSetMute, muted,0,0,0);
 	akMuted = muted;
 	
 	akR.R.MdCtr3.SMUTE = (muted? 1 : 0);
