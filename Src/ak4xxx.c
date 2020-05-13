@@ -80,6 +80,8 @@ static int											eCnt = 0;
 
 static int 											reinitCnt = 0;	
 
+static int 											LastVolume 	= DEFAULT_VOLUME;			// retain last setting, so audio restarts at last volume
+
 void 						Codec_WrReg( uint8_t Reg, uint8_t Value);		// FORWARD
 
 #ifdef VERIFY_WRITTENDATA	
@@ -384,7 +386,7 @@ if (PlayDBG & 0x10) return;		//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x1
 		akR.R.MdCtr3.DIF1_0 		= 3;							// DIF1_0 = 3   ( audio format = Philips )
 	#endif
 
-	ak_SetVolume( DEFAULT_VOLUME );						// set to default volume  TODO: don't reset between inits
+	ak_SetVolume( LastVolume );						// set to LastVolume used--  DEFAULT_VOLUME first time
 
 	// Extra Configuration (of the ALC)  
 	#if defined( AK4343 )
@@ -450,18 +452,26 @@ dbgEvt( TB_akPwrDn, 0,0,0,0);
 	gSet( gEN1V8, 0 );			  // OUT: 1 to supply 1.8 to codec  TLV74118 EN		
 }
 
-int dbgVolCnt = 0;
-void dbgSetVolume( int vol ){
-  akFmtVolume = VOLUME_CONVERT( vol );
-	#if defined( AK4637 )
-		akR.R.DigVolCtr.DVOL7_0 = akFmtVolume;
-		Codec_WrReg( 0x10, akR.reg[ 0x10 ] );
-	dbgVolCnt++;
-	#endif
-}
+
+static uint8_t testVol = 0x19;
+
 void		 				ak_SetVolume( uint8_t Volume ){														// sets volume 0..100%  ( mediaplayer )
-dbgEvt( TB_akSetVol, Volume,0,0,0);
-  akFmtVolume = VOLUME_CONVERT( Volume );
+	const uint8_t akMUTEVOL = 0xCC, akMAXVOL = 0x18, akVOLRNG = akMUTEVOL-akMAXVOL;		// ak4637 digital volume range to use
+	uint8_t v = Volume>100? 100 : Volume; 
+
+	LastVolume = v;
+	// Conversion of volume from user scale [0:100] to audio codec AK4343 scale  [akMUTEVOL..akMAXVOL] == 0xCC..0x18 
+  //   values >= 0xCC force mute on AK4637
+  //   limit max volume to 0x18 == 0dB (to avoid increasing digital level-- causing resets?)
+//#define VOLUME_CONVERT( v ) ( ((v) >= MAX_VOLUME) ? AKMAX : ((uint8_t)(AKMUTE - ((AKMUTE-AKMAX)*(v))/100))))
+	
+  akFmtVolume = akMUTEVOL - ( v * akVOLRNG )/100; 
+	
+//DEBUG
+	
+	if (v==99){ akFmtVolume = testVol; 	testVol--; }	// test if vol>akMAXVOL causes problems
+	dbgEvt( TB_akSetVol, Volume, akFmtVolume,0,0);
+	dbgLog( "akSetVol v=%d akV=%x \n", v, akFmtVolume );
 	#if defined( AK4343 )
 		Codec_WrReg( AK_Lch_Digital_Volume_Control, akFmtVolume );  // Left Channel Digital Volume control
 		Codec_WrReg( AK_Rch_Digital_Volume_Control, akFmtVolume );  // Right Channel Digital Volume control
