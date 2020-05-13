@@ -102,6 +102,7 @@ MediaState 					audGetState( void ){													// => Ready or Playing or Recor
 int32_t 						audPlayPct( void ){														// => current playback pct of file
 	uint32_t now = tbTimeStamp();	
 	if ( pSt.state == pbDone ) return 100;	// completed
+	if ( pSt.state == pbIdle ) return 0;
 	
 	uint32_t played = pSt.msPlayed + (now - pSt.tsResume);	// elapsed since last Play
 	uint32_t totmsec = pSt.nSamples * 1000 / pSt.samplesPerSec;
@@ -274,7 +275,6 @@ void 								startPlayback( void ){												// preload buffers & start playba
 }
 void								setWavPos( int msec ){
 	if ( pSt.state!=pbPaused ) tbErr("setPos not paused");
-	dbgEvt( TB_audSetWPos, msec, pSt.msecLength, 0,0);
 	freeBuffs();					// release any allocated buffers
 	if ( msec < 0 ) msec = 0;
 	int stSample = msec * pSt.samplesPerSec / 1000;					// sample to start at
@@ -286,6 +286,7 @@ void								setWavPos( int msec ){
 	
 	int fpos = WaveHdrBytes + pSt.bytesPerSample * stSample;
 	fseek( pSt.audF, fpos, SEEK_SET );			// seek wav file to byte pos of stSample
+	dbgEvt( TB_audSetWPos, msec, pSt.msecLength, pSt.nLoaded, stSample);
 	
 	pSt.nLoaded = stSample;		// so loadBuff() will know where it's at
 	pSt.msPos = msec;

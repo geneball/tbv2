@@ -267,7 +267,7 @@ static int 							tbAllocTotal = 0;																// track total heap allocatio
 void *									tbAlloc( int nbytes, const char *msg ){					// malloc() & check for error
 	tbAllocTotal += nbytes;
 	void *mem = (void *) malloc( nbytes );
-	dbgEvt( TB_Alloc, nbytes, (int)mem, 0, 0 );
+	dbgEvt( TB_Alloc, nbytes, (int)mem, tbAllocTotal, 0 );
 	if ( mem==NULL ){
 		  errLog( "out of heap %s: tbAllocTotal=%d \n", msg, tbAllocTotal );
 			tbErr("out of heap");

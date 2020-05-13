@@ -5,6 +5,7 @@
 #include "main.h"
 #include "inputMgr.h"
 #include "log.h"		// logEvt
+#include "tb_evr.h"
 
 const int					KEYPAD_EVT 		=	1;
 const int					TB_EVT_QSIZE	=	4;
@@ -60,6 +61,7 @@ void 					enableInputs( bool fromThread ){							// check for any unprocessed In
 			char *sig = keydef[k].signal; 
 			dbgLog( "%s K%d %s dn%d \n", fromThread?"*":"I", k, sig, keydef[k].down );
 			int pendR = EXTI->PR, iw = keydef[k].intq >> 5UL, irq = NVIC->ICPR[iw];
+			dbgEvt(TBkeyMismatch, k, (fromThread<<8) + kdn, pendR, irq );
 			if (irq != 0 || pendR!= 0) 
 				dbgLog( "pR%04x ICPR[%d]%04x \n", pendR, iw, irq );
 			handleInterrupt( true );		// re-invoke, to process missed transition
@@ -77,12 +79,15 @@ bool 					updateKeyState( KEY k ){		// read keypad pin, update keydef[k] if chan
 		keydef[k].down = keydown;
 		if ( keydown ){		// keyDown transition -- remember starttime
 			keydef[k].tstamp = tbTimeStamp(); 
+			dbgEvt( TB_keyDn, k, keydef[k].tstamp, 0, 0 );
 		} else { 
 			if ( k==kSTAR && KSt.starAltUsed ){	// no event for Star UP, if it was used for <star-X>
 				KSt.starAltUsed = false;
+				dbgEvt( TB_keyStUp, k,0, 0, 0 );
 				return false;
 			}
 			keydef[k].dntime = tbTimeStamp() - keydef[k].tstamp; 
+			dbgEvt( TB_keyUp, k, keydef[k].dntime, 0, 0 );
 			if ( KSt.detectedUpKey == kINVALID ){		// no event detected yet
 				KSt.detectedUpKey = k; 
 				osEventFlagsSet( osFlag_InpThr, KEYPAD_EVT );		// wakeup for inputThread
@@ -104,6 +109,7 @@ void 					handleInterrupt( bool fromThread ){					// called for external interru
 	KSt.eventTS = tbTimeStamp();								// record TStamp of this interrupt
 	KSt.msecSince = KSt.eventTS - KSt.lastTS;		// msec between prev & this
 	KSt.lastTS 	= KSt.eventTS; 									// for next one
+	dbgEvt( TB_keyIRQ, KSt.msecSince, fromThread, 0, 0 );
 	
 	for ( k = kHOME; k < kINVALID; k++ ){		// process key transitions
 		if ( (EXTI->PR & keydef[ k ].extiBit) != 0 ){  // pending bit for this key set?
@@ -114,14 +120,14 @@ void 					handleInterrupt( bool fromThread ){					// called for external interru
 			return; 		// if UP transition sent Event-- return without clearing other interrupts or re-enabling	
 	}
 	
-	// TABLE TREE -- hardware forces reset
+	// TABLE TREE 		-- hardware forces reset
 	// TABLE TREE POT -- reset with Boot0 => DFU
 		
 	// POT HOME -- start keytest
 	// POT TABLE -- software DFU?
 	if ( keydef[kPOT].down ){	// detect keytest sequence
-		KSt.keytestKeysDown = keydef[kHOME].down;  // POT HOME => keytest
-		KSt.DFUkeysDown = keydef[kTABLE].down;	// POT TABLE => reboot
+		KSt.keytestKeysDown = keydef[kHOME].down;  		// POT HOME => keytest
+		KSt.DFUkeysDown = keydef[kTABLE].down;				// POT TABLE => reboot
 		if ( KSt.keytestKeysDown || KSt.DFUkeysDown ){
 			osEventFlagsSet( osFlag_InpThr, KEYPAD_EVT );		// wakeup for inputThread
 			return;
@@ -232,27 +238,34 @@ void 					resetKeypadTest(){
 }
 void					startKeypadTest(){
 	resetKeypadTest();
+	dbgEvt( TB_keyTest, 0, 0, 0, 0 );
 	dbgLog( "Start Keypad Test \n" );
 	KTest.Active = true;
 	ledFg( keyTestReset ); // start a new test
 }
+
 void 					keypadTestKey( KEY evt, int dntime ) {		// verify function of keypad   
 	bool longPress = dntime > TB_Config.minLongPressMS;
 	if ( longPress ){
+		dbgEvt( TB_ktReset, evt, dntime, 0, 0 );
 		dbgLog("Kpad RESET %dms \n", dntime );
 		startKeypadTest();
 	} else if ( KTest.Status[ evt ]=='_' ){  // first click of this key
 		KTest.Status[ evt ] = keyNm[ evt ];
 		KTest.Count++;
+		dbgEvt( TB_ktFirst, evt, dntime, 0, 0 );
 		dbgLog("T: %d %s %d\n", KTest.Count, KTest.Status, dntime );
 		if ( KTest.Count == NUM_KEYPADS ){
+			dbgEvt( TB_ktDone, evt, dntime, 0, 0 );
 			dbgLog("Keypad test ok! \n" );
 			ledFg( keyTestSuccess ); 
 			KTest.Active = false;			// test complete
 		} else 
 			ledFg( keyTestGood ); 
-	} else
+	} else {
+		dbgEvt( TB_ktRepeat, evt, dntime, 0, 0 );
 		ledFg( keyTestBad );
+	}
 }
 // 
 // inputManager-- manager thread
@@ -260,31 +273,30 @@ void 					inputThread( void *argument ){			// converts signals from keypad ISR's
 	Event eTyp;
 	while (true){
 		uint32_t wkup = osEventFlagsWait( osFlag_InpThr, KEYPAD_EVT, osFlagsWaitAny, osWaitForever );
+		dbgEvt( TB_keyWk, wkup, 0, 0, 0 );
 		if ( wkup == KEYPAD_EVT ){  
 			if ( KSt.keytestKeysDown && !KTest.Active) // start a new test
 				startKeypadTest();	
 	
-			if ( KSt.DFUkeysDown ) 
+			if ( KSt.DFUkeysDown ){
+				dbgEvt( TB_keyDFU, 0, 0, 0, 0 );
 				sendEvent( FirmwareUpdate, 0 );
+			}
 			
 			if ( KSt.detectedUpKey != kINVALID ){		// keyUp transition on detectedUpKey
 				int dntime = keydef[ KSt.detectedUpKey ].dntime;
 				if ( dntime < TB_Config.minShortPressMS ){	// ignore (de-bounce) if down less than this 
-					//dbgLog( " ^%c %d \n", keyNm[detectedUpKey], dntime );
+					dbgEvt( TB_keyBnc, KSt.detectedUpKey, dntime, 0, 0 );
 				} else {
 					if ( KSt.starDown && KSt.detectedUpKey!=kSTAR ){  //  <STAR-x> xUp transition (ignore duration)
 						KSt.starAltUsed = true;			// prevent LONG_PRESS for Star used as Alt
-						
-//						if ( KSt.detectedUpKey == kTABLE ) // STAR-TABLE -- start keypadTest
-//							startKeypadTest();
-						
-						dbgLog( " '%c' star- %dms \n", keyNm[KSt.detectedUpKey], dntime );
+						dbgEvt( TB_keyStar, KSt.detectedUpKey, dntime, 0, 0 );
 						eTyp = toStarEvt( KSt.detectedUpKey );
 					} else if ( dntime > TB_Config.minLongPressMS ){	// LONGPRESS if down more longer than this
-						//dbgLog( " '%c' Long %dms \n", keyNm[detectedUpKey], dntime );
+						dbgEvt( TB_keyLong, KSt.detectedUpKey, dntime, 0, 0 );
 						eTyp = toLongEvt( KSt.detectedUpKey );
 					} else { // short press
-						//dbgLog( " '%c' %dms \n", keyNm[detectedUpKey], dntime );
+						dbgEvt( TB_keyShort, KSt.detectedUpKey, dntime, 0, 0 );
 						eTyp = toShortEvt( KSt.detectedUpKey );
 					}
 					if ( KTest.Active ){
@@ -335,11 +347,11 @@ void 					sendEvent( Event key, int32_t arg ){	// log & send TB_Event to CSM
 	if ( key==eNull || key==anyKey || key==eUNDEF || (int)key<0 || (int)key>(int)eUNDEF )
 		tbErr( "bad event" );
 	if (TBEvent_pool==NULL) return; //DEBUG
+	dbgEvt( TB_keyEvt, key, arg, 0, 0 );
 	
 	TB_Event *evt = (TB_Event *)osMemoryPoolAlloc( TBEvent_pool, osWaitForever );
 	evt->typ = key;
 	evt->arg = arg;
-//	logEvtNI("KeyEvent", "Event", key );
 	if ( osMessageQueuePut( osMsg_TBEvents, &evt, 0, 0 ) != osOK )	// Priority 0, no wait
 		tbErr( "failed to enQ tbEvent" );
 }

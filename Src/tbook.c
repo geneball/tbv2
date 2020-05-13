@@ -77,7 +77,7 @@ fsStatus fsMount( char *drv ){		// try to finit() & mount()  drv:   finit() code
 			//dbgLog( "finit( %s ) got %d \n", drv, stat );
 			return stat;
 		}
-	EventRecorderEnable( evrEAOD, 	 EvtFsCore_No, EvtFsMcSPI_No );  	//FS:  Error 
+		EventRecorderDisable( evrAOD, 	 EvtFsCore_No, EvtFsMcSPI_No );  	//FS:  only Error 
 		stat = fmount( drv );
 		if ( stat==fsOK ) return stat;
 
@@ -202,15 +202,16 @@ void debugLoop( ){
 void talking_book( void *argument ) {
 	
 	EventRecorderInitialize( EventRecordNone, 1 );  // start EventRecorder
-	EventRecorderEnable( evrEAOD, 	 EvtFsCore_No, EvtFsMcSPI_No );  	//FS:  Error 
-	EventRecorderEnable( evrE, 	 EvtUsbdCore_No, EvtUsbdEnd_No ); //USB:  Error 
+	EventRecorderEnable( evrE, 			EvtFsCore_No, EvtFsMcSPI_No );  	//FileSys library 
+	EventRecorderEnable( evrE, 	 		EvtUsbdCore_No, EvtUsbdEnd_No ); 	//USB library 
 
-	EventRecorderEnable( evrEA,  TB_no, TB_no );  								//TB:  Error  API
-	EventRecorderEnable( evrE, TBAud_no, TBAud_no );   					//Aud: Error  API Op
-	EventRecorderEnable( evrE, TBsai_no, TBsai_no ); 	 					//SAI: Error  API Op
-	EventRecorderEnable( evrEA, TBCSM_no, TBCSM_no );   					//CSM: Error  API Op
-	EventRecorderEnable( evrE, TBUSB_no, TBUSB_no );   					//USB: Error  API Op
-	EventRecorderEnable( evrE, TBUSBDrv_no, TBUSBDrv_no );   		//USBDriver: Error
+	EventRecorderEnable( evrEA,  		TB_no, TB_no );  									//TB:  	Faults, Alloc, DebugLoop
+	EventRecorderEnable( evrE, 			TBAud_no, TBAud_no );   					//Aud: 	audio play/record
+	EventRecorderEnable( evrE, 			TBsai_no, TBsai_no ); 	 					//SAI: 	codec & I2S drivers
+	EventRecorderEnable( evrEA, 		TBCSM_no, TBCSM_no );   					//CSM: 	control state machine
+	EventRecorderEnable( evrE, 			TBUSB_no, TBUSB_no );   					//TBUSB: 	usb user callbacks
+	EventRecorderEnable( evrE, 			TBUSBDrv_no, TBUSBDrv_no );   		//USBDriver: 	usb driver
+	EventRecorderEnable( evrE, 			TBkey_no, TBkey_no );   					//Key: 	keypad input
 	
 	initPowerMgr();			// set up GPIO signals for controlling & monitoring power -- enables MemCard
 	

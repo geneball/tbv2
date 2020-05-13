@@ -69,17 +69,20 @@ int						playPosition( void ){								// => current playback position in sec
 	return audPlayPct();
 }
 void 					adjPlayPosition( int sec ){					// skip playback forward/back 'sec' seconds
+	dbgEvt( TB_audAdjPos, sec, 0, 0,0);
 	audAdjPlayPos( sec );
 }
 void 					adjVolume( int adj ){								// adjust playback volume by 'adj'
 	audioVolume += adj;
 	if ( audioVolume > MAX_VOLUME ) audioVolume = MAX_VOLUME;
 	if ( audioVolume < MIN_VOLUME ) audioVolume = MIN_VOLUME;
+	dbgEvt( TB_audAdjVol, adj, audioVolume, 0,0);
 	ak_SetVolume( audioVolume );
 	dbgLog( "SetVol:%d  [%d]", audioVolume, audPlayPct() );
 }
 void 					adjSpeed( int adj ){								// adjust playback speed by 'adj'
 	audAdjPlaySpeed( adj );
+	dbgEvt( TB_audAdjSpd, adj, 0, 0,0);
 }
 MediaState		getStatus( void ){									// => Ready / Playing / Recording
 	return audGetState();
