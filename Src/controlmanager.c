@@ -370,6 +370,24 @@ void dbgTgl( char * enm,  int i ){
 }
 
 
+static void 	eventTest(  ){					// report Events until DFU (pot table)
+	TB_Event *evt;
+	osStatus_t status;
+
+	dbgLog( "EvtTst pot_tab\n" );
+	while (true) {
+	  status = osMessageQueueGet( osMsg_TBEvents, &evt, NULL, osWaitForever );  // wait for next TB_Event
+		if (status != osOK) 
+			tbErr(" EvtQGet error");
+
+	  TBook.lastEventName = eventNm( evt->typ );
+		dbgLog( " %s \n", eventNm( evt->typ ));
+		dbgEvt( TB_csmEvt, evt->typ, tbTimeStamp(), 0, 0);
+		
+		if ( evt->typ == FirmwareUpdate ) return;
+	}
+}
+
 static void 	controlTest(  ){					// CSM test procedure
 	TB_Event *evt;
 	osStatus_t status;
@@ -387,7 +405,7 @@ static void 	controlTest(  ){					// CSM test procedure
 		
 	  TBook.lastEventName = eventNm( evt->typ );
 		//dbgLog( " %s ", eventNm( evt->typ ));
-		
+		dbgEvt( TB_csmEvt, evt->typ, 0, 0, 0);
 		if (isMassStorageEnabled()){		// if USB MassStorage running: ignore events
 			if ( evt->typ==starHome || evt->typ==starCircle )
 				USBmode( false );
@@ -409,11 +427,11 @@ static void 	controlTest(  ){					// CSM test procedure
 					if ( TBook.iMsg >= tbS->NMsgs ) TBook.iMsg = 0;
 					break; 
 				case Plus:
-					adjVolume( 10 );
+					adjVolume( 5 );
 					logEvt( "Louder" );
 					break;
 				case Minus:
-					adjVolume( -10 );
+					adjVolume( -5 );
 					logEvt( "Softer" );
 					break;
 				case Lhand:
@@ -424,6 +442,9 @@ static void 	controlTest(  ){					// CSM test procedure
 					adjPlayPosition( 2 );
 					logEvt( "JumpFwd2" );
 					break;
+				case starRhand:
+					break;
+				
 				case Circle:
 					showSig("Pwr", 2 );
 					break;
@@ -451,18 +472,23 @@ static void 	controlTest(  ){					// CSM test procedure
 					break;
 				
 				case starCircle:
+					__breakpoint(0);
+				  break;
+				
 				case starHome:
 					dbgLog( "going to USB mass-storage mode \n");
 					USBmode( true );
 					break;
 					
 				case starMinus: 
-					executeCSM();
+					ak_SetVolume(99);		//Debug test +db volume settings
+					//executeCSM();
 					break;
 				case starTable:
+					eventTest(  );
 					break;
 				
-				case FirmwareUpdate:
+				case FirmwareUpdate:   // pot table
 					dbgLog( "rebooting to system bootloader for DFU... \n" );
 					ledFg( "R5_5 R5_3 R5_1 R5_1"); 
 					break;
@@ -630,6 +656,10 @@ void 					initControlManager( void ){				// initialize control manager
 	TB_Config.systemAudio = "M0:/system/aud/";			// path to system audio files
 	TB_Config.minShortPressMS = 30;				// used by inputmanager.c
 	TB_Config.minLongPressMS = 900;				// used by inputmanager.c
+
+	EventRecorderEnable(  evrEA, 	  		TB_no, TBsai_no ); 	// TB, TBaud, TBsai  
+	EventRecorderDisable( evrAOD, 			EvtFsCore_No,   EvtFsMcSPI_No );  //FileSys library 
+	EventRecorderDisable( evrAOD, 	 		EvtUsbdCore_No, EvtUsbdEnd_No ); 	//USB library 
 	
 	initTknTable();
 	if ( TBDataOK ) {

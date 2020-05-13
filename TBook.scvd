@@ -155,13 +155,14 @@
          <component name="TBcsm"      brief="TBcsm"    	no="0x04" prefix="TBcsm_"    info="TBook control state machine"/>
          <component name="TBusb"      brief="TBusb"    	no="0x05" prefix="TBusb_"    info="TBook USB"/>
          <component name="UsbDrv"     brief="UsbDrv"   	no="0x06" prefix="usbdr_"    info="TBook USB Driver"/>
+         <component name="TBkey"      brief="TBkey"   	no="0x07" prefix="usbky_"    info="TBook Keypad"/>
     </group>  
 
 <!-- TBgen -->
       <event id="0x0100" level="Op"  		property="dbgPlay"   	value="dbg=%x[val1]"     											info="debugLoop Play"  />
       <event id="0x0101" level="Error"   	property="TBErr"   		value="%t[val1]"     												info="TB Error"  />
       <event id="0x0102" level="Error"   	property="Fault"   		value="vAct=%x[val1] cfsr=%x[val2]"     							info="Hard Fault"  />
-      <event id="0x0103" level="Detail"   	property="tbAlloc"    	value="nB=%d[val1] mem=%x[val2]"     								info="tbAlloc"  />
+      <event id="0x0103" level="Op"   		property="tbAlloc"    	value="nB=%d[val1] mem=%x[val2] tot=%d[val3]"     					info="tbAlloc"  />
       <event id="0x0104" level="Op"  		property="bootCnt"   	value="bootCnt=%d[val1]"     										info="reboot count"  />
 <!-- TBaudio -->
 	  <event id="0x0200" level="Detail"		property="loadBuff"   	value="nSamp=%d[val1] ferr=%d[val2] buffN=%d[val3]"     			info="loadBuff fread()"  />
@@ -174,6 +175,11 @@
       <event id="0x0207" level="Op"   		property="stPlay"   	value="nLoaded=%d[val1]"		        							info="start audio play"  />
 	  <event id="0x0208" level="API"   		property="audPause"     value="audPause"     												info="audio pause"  />
 	  <event id="0x0209" level="API"   		property="audResume"    value="msPos=%d[val1]"     											info="audio resume"  />
+	  <event id="0x020a" level="API"   		property="audSetWPos"   value="to %d[val1]ms of %d[val2], %d[val3] => %d[val4]" 	  		info="audio resume"  />
+	  <event id="0x020b" level="API"   		property="audAdjVol"    value="by %d[val1] to %d[val2]"     								info="audio adj volume"  />
+	  <event id="0x020c" level="API"   		property="audAdjPos"    value="by %d[val1]sec"     							 				info="audio adj position"  />
+	  <event id="0x020d" level="API"   		property="audAdjSpd"    value="by %d[val1]"     							 				info="audio adj speed"  />
+
 
 <!-- TBsai -->
 	  <event id="0x0304" level="Detail"		property="saiEvent"   	value="evt=%x[val1]"     											info="saiEvent"  />
@@ -183,7 +189,7 @@
       <event id="0x0308" level="Detail"		property="saiSend "   	value="nBytes=%d[val1]"     										info="saiSend"  />
       <event id="0x0309" level="Op"   		property="akInit"     	value="akInit"     													info="akInit"  />
       <event id="0x030a" level="Op"   		property="akPwrDn"    	value="akPwrDn"     												info="akPwrDn"  />
-      <event id="0x030b" level="API"  		property="akSetVol"   	value="vol=%d[val1]"     											info="akSetVol"  />
+      <event id="0x030b" level="API"  		property="akSetVol"   	value="vol=%d[val1] = %x[val2]"     								info="akSetVol"  />
       <event id="0x030c" level="API"   		property="akSetMute"  	value="enab=%d[val1]"     											info="akSetMute"  />
       <event id="0x030d" level="Detail"   	property="akWrReg"  	value="R%d[val1] &lt;= %x[val2]"									info="akWrReg"  />
       <event id="0x030e" level="Detail"   	property="mediaEvt"  	value="evt=%x[val1]"     											info="mediaThread event"  />
@@ -191,10 +197,12 @@
       <event id="0x0310" level="Detail"   	property="saiPLYDN"  	value="saiPLYDN"     												info="SAI file done"  />
       <event id="0x0311" level="Op"   		property="akSpkEn"    	value="spkrEn=%d[val1]"     										info="akSpeaker enable"  />
 
-<!-- TBusb -->
+<!-- TBcsm -->
 	  <event id="0x0400" level="Op"   		property="chgState"   	value="%t[val1]"     												info="CSM change state"  />
 	  <event id="0x0401" level="Op"   		property="doAct"      	value="act=%d[val1], a[0]=%d[val2],a[1]=%d[val3],iarg=%d[val4]"     info="CSM doAction"  />
+      <event id="0x0402" level="Detail"   	property="csmEvt"    	value="typ=%d[val1]"     											info="CSM event"  />
 
+<!-- TBusb -->
       <event id="0x0500" level="Detail"   	property="usbInit"  	value=""     			info="USBD_Device0_Initialize"  />
       <event id="0x0501" level="Detail"   	property="usbUninit"  	value=""				info="USBD_Device0_Uninitialize"  />
       <event id="0x0502" level="Detail"   	property="usbVbchg"  	value="level=%x[val1]"				info="USBD_Device0_VbusChanged"  />
@@ -266,5 +274,25 @@
       <event id="0x0622" level="Op"   	property="usbXmt2" 	    value="num=%d[val1] %x[val2] %x[val3] %x[val4]"				info="USBD_EndpointTransfer(2)"  />
       <event id="0x0613" level="Op"   	property="usbRcv3" 	    value="cnt=%d[val1] %x[val2] %x[val3] %x[val4]"				info="USBD_EP_HW_Read(3)"  />
       <event id="0x0623" level="Op"   	property="usbXmt3" 	    value="num=%d[val1] %x[val2] %x[val3] %x[val4]"				info="USBD_EndpointTransfer(3)"  />
+	  
+<!-- TBkey -->	  
+	 <event id="0x0700" level="API"   	property="keyEvt" 		value="%d[val1] %d[val2]ms"			info="Key SendEvent"  />
+	 <event id="0x0701" level="Detail"  property="keyBounce" 	value="%d[val1] %d[val2]ms"			info="Key key Bounce"  />
+	 <event id="0x0702" level="Op"   	property="keyStar" 		value="star_%d[val1] %d[val2]ms"	info="Key Star_key"  />
+	 <event id="0x0703" level="Op"   	property="keyLong" 		value="long_%d[val1] %d[val2]ms"	info="Key Long_key"  />
+	 <event id="0x0704" level="Op"   	property="keyShort" 	value="short_%d[val1] %d[val2]ms"	info="Key Short_key"  />
+	 <event id="0x0705" level="API"   	property="keyTest" 		value="keyTest"						info="KeyTest start"  />
+	 <event id="0x0706" level="Op"   	property="keyTstReset"  value="%d[val1] %d[val2]ms"			info="KeyTest reset"  />
+	 <event id="0x0707" level="Op"   	property="keyTstFirst"  value="%d[val1] %d[val2]ms"			info="KeyTest first press of key"  />
+	 <event id="0x0708" level="Op"   	property="keyTstDone" 	value="%d[val1] %d[val2]ms"			info="KeyTest all keys done"  />
+	 <event id="0x0709" level="Op"   	property="keyTstRepeat" value="%d[val1] %d[val2]ms"			info="KeyTest duplicate key"  />
+	 <event id="0x070a" level="API"   	property="keyDFU" 		value="keyDFU"						info="Key DFU pot table"  />
+	 <event id="0x070b" level="Detail"  property="keyIRQ" 		value="since=%d[val1]ms fromThread=%d[val2]"	info="Key IRQ"  />
+	 <event id="0x070c" level="Detail"  property="keyDn" 		value="k=%d[val1] tm=%d[val2]"		info="Key went down"  />
+	 <event id="0x070d" level="Detail"  property="keyStUp" 		value="k=%d[val1]"					info="Key Star went up after star_k"  />
+	 <event id="0x070e" level="Detail"  property="keyUp" 		value="k=%d[val1] dntm=%d[val2]"	info="Key went up"  />
+ 	 <event id="0x070f" level="Detail"  property="keyWk" 		value="ev=%x[val1]"					info="Key thread woken"  />
+ 	 <event id="0x0710" level="Error"   property="keyMismatch" 	value="k=%d[val1] frThr|kdn=%x[val2] exti.pr=%x[val3] nvic.icpr=%x[val4]"		info="Key missed transition"  />
+
      </events>
  </component_viewer>

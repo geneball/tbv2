@@ -657,12 +657,9 @@ typedef  union {
 	#define   AK_Digital_Filter_Mode_RST		0x03
 #endif
 
-/* Conversion of volume from user scale [0:100] to audio codec AK4343 scale [255:0] */
-#define VOLUME_CONVERT( v ) (((v) > 100) ? 255 : ((uint8_t)(255 - ((255*(v))/100))))
+#define MAX_VOLUME   100
 #define MIN_VOLUME   0
-//#define DEFAULT_VOLUME   70
-#define DEFAULT_VOLUME   90
-#define MAX_VOLUME   99
+#define DEFAULT_VOLUME   80
 
 // audio codec functions --  ak4343 or ak4637
 void 						ak_Init( void );											// init I2C & codec
