@@ -1949,7 +1949,7 @@
   #error "Invalid SD_DAT0 Pin Configuration!"
 #endif
 //     <e> SDIO_D[1 .. 3]
-#define   RTE_SDIO_BUS_WIDTH_4          0
+#define   RTE_SDIO_BUS_WIDTH_4          1
 //       <o> SDIO_D1 Pin <0=>PC9 <1=>PA8
 #define   RTE_SDIO_D1_PORT_ID           1
 #if      (RTE_SDIO_D1_PORT_ID == 0)

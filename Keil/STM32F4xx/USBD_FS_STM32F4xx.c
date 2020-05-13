@@ -173,6 +173,7 @@ Configuration tab
 
 #include "OTG_FS_STM32F4xx.h"
 
+
 #ifndef USBD0_MAX_ENDPOINT_NUM
 #define USBD0_MAX_ENDPOINT_NUM         (3U)
 #endif
@@ -273,9 +274,7 @@ static volatile ENDPOINT_t ep[(USBD0_MAX_ENDPOINT_NUM + 1U) * 2U];
 // Function prototypes
 static uint16_t USBD_GetFrameNumber (void);
 
-
 // Auxiliary functions
-
 /**
   \fn          void USBD_FlushInEpFifo (uint8_t FIFO_num)
   \brief       Flush IN Endpoint FIFO
@@ -731,7 +730,14 @@ dbgEVR(TBd_usbPwrCtrl, state, 0, 0,0 );
 #ifdef MX_USB_OTG_FS_VBUS_Pin
       OTG->GCCFG    |=  OTG_FS_GCCFG_VBUSBSEN;          // Enable  VBUS sensing device "B"
 #else
-      OTG->GCCFG    |=  OTG_FS_GCCFG_NOVBUSSENS;        //JEB -- GCCFG.bit21==VBDEN==0 to Disable VBUS sensing
+		// use code from stm32f4xx_ll_usb.c -- for STM32F412G-Discovery board
+    // Deactivate VBUS Sensing B 
+    OTG->GCCFG &= ~USB_OTG_GCCFG_VBDEN;			// bit 21
+
+    // B-peripheral session valid override enable 
+    OTG->GOTGCTL |= USB_OTG_GOTGCTL_BVALOEN;
+    OTG->GOTGCTL |= USB_OTG_GOTGCTL_BVALOVAL;
+//      OTG->GCCFG    |=  OTG_FS_GCCFG_NOVBUSSENS;        //JEB -- used wrong definition of GCCFG.bit 21 -- changed in F412
 #endif
 
       OTG->DCFG     |=  OTG_FS_DCFG_DSPD_MSK;           // Full Speed
@@ -774,8 +780,8 @@ static int32_t USBD_DeviceConnect (void) {
   if (hw_powered == false) { return ARM_DRIVER_ERROR; }
 dbgEVR(TBd_usbConn, 0, 0, 0,0 );
 
-  OTG->DCTL  &= ~OTG_FS_DCTL_SDIS;      // Soft disconnect disabled
   OTG->GCCFG |=  OTG_FS_GCCFG_PWRDWN;   // Power up on-chip PHY
+  OTG->DCTL  &= ~OTG_FS_DCTL_SDIS;      // Soft disconnect disabled
 
   return ARM_DRIVER_OK;
 }
@@ -1263,18 +1269,18 @@ static uint16_t USBD_GetFrameNumber (void) {
 void USBD_FS_IRQ (uint32_t gintsts) {
   volatile ENDPOINT_t *ptr_ep, *ptr_ep_in;
   uint32_t             val, msk, ep_int;
-#ifdef MX_USB_OTG_FS_VBUS_Pin
+//#ifdef MX_USB_OTG_FS_VBUS_Pin
   uint32_t             gotgint;
-#endif
+//#endif
   uint16_t             num;
   uint8_t              ep_num, i;
   static uint32_t      IsoInIncomplete = 0U;
-dbgEVR(TBd_usbIRQ, gintsts,0,0,0 );
-
+	dbgEVR(TBd_usbIRQ, gintsts,0,0,0 );
+	
   if ((gintsts & OTG_FS_GINTSTS_USBRST) != 0U) {        // Reset interrupt
     OTG->GINTSTS  =  OTG_FS_GINTSTS_USBRST;
     OTG->GINTMSK |=  OTG_FS_GINTMSK_SOFM;               // Unmask SOF interrupts (to detect initial SOF)
-dbgEVR(TBd_usbReset, 0, 0, 0,0 );
+		dbgEVR(TBd_usbReset, 0, 0, 0,0 );
     USBD_Reset();
     usbd_state.active = 0U;
     SignalDeviceEvent(ARM_USBD_EVENT_RESET);
@@ -1297,7 +1303,7 @@ dbgEVR(TBd_usbReset, 0, 0, 0,0 );
   if ((gintsts & OTG_FS_GINTSTS_ENUMDNE) != 0U) {       // Speed enumeration completed
     OTG->GINTSTS  = OTG_FS_GINTSTS_ENUMDNE;
     usbd_state.speed  = ARM_USB_SPEED_FULL;
-dbgEVR(TBd_usbEnumFS, 0, 0, 0,0 );
+		dbgEVR(TBd_usbEnumFS, 0, 0, 0,0 );
     OTG->DCTL    |= OTG_FS_DCTL_CGINAK;                 // Clear global IN NAK
     OTG->DCTL    |= OTG_FS_DCTL_CGONAK;                 // Clear global OUT NAK
   }
@@ -1309,8 +1315,8 @@ dbgEVR(TBd_usbEnumFS, 0, 0, 0,0 );
     usbd_state.active = 1U;
     SignalDeviceEvent(ARM_USBD_EVENT_RESUME);
   }
-uint16_t *suPkt = (uint16_t *) setup_packet;
-uint32_t suWd0 = ((uint32_t *) setup_packet)[0];
+	uint16_t *suPkt = (uint16_t *) setup_packet;
+	uint32_t suWd0 = ((uint32_t *) setup_packet)[0];
 
   if ((gintsts & OTG_FS_GINTSTS_RXFLVL) != 0U) {        // Receive FIFO interrupt
     val    =  OTG->GRXSTSP;
@@ -1322,7 +1328,7 @@ uint32_t suWd0 = ((uint32_t *) setup_packet)[0];
         setup_packet[0] = OTG_RX_FIFO;
         setup_packet[1] = OTG_RX_FIFO;
 
-dbgEVR(TBd_usbRdSetup, suWd0, suWd0, suPkt[2], suPkt[3] );
+				dbgEVR(TBd_usbRdSetup, suWd0, suWd0, suPkt[2], suPkt[3] );
         // Analyze Setup packet for SetAddress
         if ((setup_packet[0] & 0xFFFFU) == 0x0500U) {
           USBD_DeviceSetAddress((setup_packet[0] >> 16) & 0xFFU);
@@ -1503,7 +1509,7 @@ dbgEVR(TBd_usbRdSetup, suWd0, suWd0, suPkt[2], suPkt[3] );
       }
     }
   }
-#ifdef MX_USB_OTG_FS_VBUS_Pin
+//#ifdef MX_USB_OTG_FS_VBUS_Pin
   if ((gintsts & OTG_FS_GINTSTS_SRQINT) != 0U) {
     OTG->GINTSTS = OTG_FS_GINTSTS_SRQINT;
     usbd_state.vbus = 1U;
@@ -1520,7 +1526,7 @@ dbgEVR(TBd_usbRdSetup, suWd0, suWd0, suPkt[2], suPkt[3] );
       SignalDeviceEvent(ARM_USBD_EVENT_VBUS_OFF);
     }
   }
-#endif
+//#endif
 }
 
 ARM_DRIVER_USBD Driver_USBD0 = {
