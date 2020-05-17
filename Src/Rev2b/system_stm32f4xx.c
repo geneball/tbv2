@@ -103,6 +103,8 @@ const uint8_t APBPrescTable[8]  = {0, 0, 0, 0, 1, 2, 3, 4};
   static void SystemInit_ExtMemCtl(void); 
 #endif /* DATA_IN_ExtSRAM || DATA_IN_ExtSDRAM */
 
+uint16_t									readPVD( void );		// DEBUG -- from pwrManager.c
+void 										dbgLog( const char * fmt, ... );  // DEBUG from tbUtil.c
 
 // SystemInit -- called by reset handler before main()
 void SystemInit(void)			// Setup MPU:  FPU setting, vector table loc & External mem config
@@ -123,6 +125,9 @@ void SystemInit(void)			// Setup MPU:  FPU setting, vector table loc & External 
 	
 	// turn on HSE since were going to use it as PLL src
 	RCC->CR |= RCC_CR_HSEON;
+	int hsecnt=0;
+	while ( (RCC->CR & RCC_CR_HSERDY) == 0 ) 
+		hsecnt++;		// wait till ready 
 
 	//  RCC_PLLCFGR configuration register:
 	// 		PLLR  	2..7  		( << 28)
@@ -165,9 +170,21 @@ void SystemInit(void)			// Setup MPU:  FPU setting, vector table loc & External 
 	// 0x24401804  0010 0100 0100 0000 0001 1000 0000 0100 R=2 Q=4 S=1 P=0 N=0x60 M=4
 
 
-  RCC->CR &= (uint32_t)0xFFFBFFFF; 		// /* Reset HSEBYP bit */
+  RCC->CR &= (uint32_t)0xFFFBFFFF; 							//  Reset HSEBYP bit 
+	
+	// per RM0402 45.4.1 set PWR->CR.VOS = 3 for SysClock > 84MHz
+	int pvdMV = readPVD();		// PLL off, so should reflect VOS=1 == Scale 3 mode for SysClk <=65MHz
+	
+	RCC->APB1ENR |= ( RCC_APB1ENR_PWREN | RCC_APB1ENR_RTCAPBEN );				// start clocking power control & RTC_APB
+	int VoltScale = 2;   // reset value: VOS=2 == Scale 2 mode for <= 84 MHz
+//	int VoltScale = 3;   // high speed: VOS=3 == Scale 1 mode for <= 100 MHz
+	PWR->CR = (PWR->CR & ~PWR_CR_VOS_Msk) | (VoltScale << PWR_CR_VOS_Pos);
 
-	RCC->CR |= RCC_CR_PLLON;						// JEB Mar2020:  turn on PLL  (based on HSE)
+	RCC->CR |= RCC_CR_PLLON;				// JEB Mar2020:  turn on PLL  (based on HSE)
+	int pllcnt=0;
+	while ( (RCC->CR & RCC_CR_PLLRDY) == 0 ) pllcnt++;		// wait till ready 
+	
+	pvdMV = readPVD();		// PLL ON, so should reflect VOS = VoltScale
 
 	/* Configure RCC->CFGR to set SYSCLK, AHB, APB2, & APB1 clock speeds
 	//  SYSCLK = PLL 								(CFGR.SW  System clock switch)
@@ -182,16 +199,17 @@ void SystemInit(void)			// Setup MPU:  FPU setting, vector table loc & External 
   cfg |=  RCC_CFGR_PPRE2_DIV1;		// HCLK not divided    	=> APB2 = AHB			(APB2 prescaler)	APB2 = 24MHz
   cfg |=  RCC_CFGR_PPRE1_DIV2;    // HCLK divided by 2 		=> APB1 = AHB	/2	(APB1 prescaler)	APB1 = 12MHz
 	SystemCoreClock = 96000000;			// = 96MHz
+	
 
 	/* DEBUG -- send SYSCLK/4 to PC9
 	//     PC9 shoud be configured as ModeAF, AF=0
-	*/
 	cfg |=  0;																				// MCO = SYSCLK  	(MCO2 configuration)	
 	cfg |= (RCC_CFGR_MCO2PRE_1 | RCC_CFGR_MCO2PRE_2); // PC9 = MCO / 4	(MCO2 prescaler)			
 	// DEBUG  */
 	
 	RCC->CFGR = cfg;			// Src=PLL HPRE=4 PPRE2=0 PPRE1=2  => SYSCLK=96MHz, AHB=24MHz, APB2=24MHz, APB1=12MHz,  PC9=24MHz
 //	RCC->CFGR = cfg;			// Src=PLL HPRE=0 PPRE2=0 PPRE1=2  => SYSCLK=96MHz, AHB=96MHz, APB2=96MHz, APB1=24MHz,  PC9=24MHz
+
 
 	/* Disable all interrupts */
   RCC->CIR = 0x00000000;
