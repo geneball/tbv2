@@ -49,8 +49,9 @@ static GPIO_Signal gpioSignals[] = {  	// GPIO signal definitions
 	{	gRED,					"PE1"				}, 	// OUT: 1 to turn Red LED ON		 	configured by ledmanager.c
 	{ gGREEN, 			"PE0"				}, 	// OUT: 1 to turn Green LED ON		configured by ledmanager.c
 	
-	{ gADC_LI_ION, 	"PA2"				},	// IN:  analog rechargable battery voltage level 	(powermanager.c)
-	{ gADC_PRIMARY,	"PA3"				},	// IN:  analog disposable battery voltage level	 	(powermanager.c)
+	{ gADC_LI_ION, 	"PA2"				},	// IN:  analog rechargable battery voltage level: ADC1_channel2 	(powermanager.c)
+	{ gADC_PRIMARY,	"PA3"				},	// IN:  analog disposable battery voltage level:	ADC1_channel3 	(powermanager.c)
+	{ gADC_THERM,	  "PC2"				},	// IN:  analog 
 	{ gPWR_FAIL_N, 	"PD0_"			},	// IN:  0 => power fail signal 										(powermanager.c)
 	{ gADC_ENABLE, 	"PE15"			},	// OUT: 1 to enable battery voltage measurement 	(powermanager.c)
 	{ gSC_ENABLE, 	"PD1"				},	// OUT: 1 to enable SuperCap			 								(powermanager.c)

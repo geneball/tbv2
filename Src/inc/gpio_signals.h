@@ -75,6 +75,7 @@ typedef enum {			// GPIO_ID -- gpio signal IDs
 	gBAT_PG_N,			// TBV2B: 	PD10
 	gBAT_CE,				// TBV2B: 	PD11
 	gBAT_TE_N,			// TBV2B: 	PD12	
+	gADC_THERM,			// TBV2B:   PC2
   
 } GPIO_ID;
 

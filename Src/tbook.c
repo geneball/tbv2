@@ -6,7 +6,7 @@
 #include "mediaPlyr.h"			// thread to watch audio status
 #include "fs_evr.h"					// FileSys components
 
-const char * 	TBV2_Version 				= "V2.04 of 3-Apr-2020";
+const char * 	TBV2_Version 				= "V2.05 of 16-May-2020";
 
 //
 // Thread stack sizes
