@@ -1389,13 +1389,13 @@
       <component Cbundle="MDK-Plus" Cclass="File System" Cgroup="Drive" Csub="NAND" Cvendor="Keil" Cversion="6.13.0" condition="File System and NAND Driver" maxInstances="2">
         <package name="MDK-Middleware" schemaVersion="1.4" url="http://www.keil.com/pack/" vendor="Keil" version="7.10.0"/>
         <targetInfos>
-          <targetInfo excluded="1" name="TBv2b"/>
+          <targetInfo excluded="1" name="TBv2b" versionMatchMode=""/>
         </targetInfos>
       </component>
       <component Cbundle="MDK-Plus" Cclass="File System" Cgroup="Drive" Csub="NOR" Cvendor="Keil" Cversion="6.13.0" condition="File System and Flash Driver" maxInstances="2">
         <package name="MDK-Middleware" schemaVersion="1.4" url="http://www.keil.com/pack/" vendor="Keil" version="7.10.0"/>
         <targetInfos>
-          <targetInfo excluded="1" name="TBv2b"/>
+          <targetInfo excluded="1" name="TBv2b" versionMatchMode=""/>
         </targetInfos>
       </component>
       <component Cbundle="MDK-Plus" Cclass="USB" Cgroup="CORE" Cvariant="Debug" Cvendor="Keil" Cversion="6.13.7" condition="USB Core and Event Recorder">
@@ -1456,6 +1456,12 @@
           <targetInfo excluded="1" name="TBv2b" versionMatchMode=""/>
         </targetInfos>
       </component>
+      <component Cclass="Device" Cgroup="STM32Cube HAL" Csub="ADC" Cvendor="Keil" Cversion="1.7.4" condition="STM32F4 HAL DMA">
+        <package name="STM32F4xx_DFP" schemaVersion="1.3" url="http://www.keil.com/pack" vendor="Keil" version="2.13.0"/>
+        <targetInfos>
+          <targetInfo excluded="1" name="TBv2b"/>
+        </targetInfos>
+      </component>
       <component Cclass="Device" Cgroup="STM32Cube HAL" Csub="Common" Cvendor="Keil" Cversion="1.7.4" condition="STM32F4 HAL Common">
         <package name="STM32F4xx_DFP" schemaVersion="1.3" url="http://www.keil.com/pack" vendor="Keil" version="2.13.0"/>
         <targetInfos>
@@ -1474,6 +1480,12 @@
           <targetInfo excluded="1" name="TBv2b" versionMatchMode=""/>
         </targetInfos>
       </component>
+      <component Cclass="Device" Cgroup="STM32Cube HAL" Csub="Flash" Cvendor="Keil" Cversion="1.7.4" condition="STM32F4 HAL">
+        <package name="STM32F4xx_DFP" schemaVersion="1.3" url="http://www.keil.com/pack" vendor="Keil" version="2.13.0"/>
+        <targetInfos>
+          <targetInfo excluded="1" name="TBv2b"/>
+        </targetInfos>
+      </component>
       <component Cclass="Device" Cgroup="STM32Cube HAL" Csub="GPIO" Cvendor="Keil" Cversion="1.7.4" condition="STM32F4 HAL">
         <package name="STM32F4xx_DFP" schemaVersion="1.3" url="http://www.keil.com/pack" vendor="Keil" version="2.13.0"/>
         <targetInfos>
@@ -1484,6 +1496,18 @@
         <package name="STM32F4xx_DFP" schemaVersion="1.3" url="http://www.keil.com/pack" vendor="Keil" version="2.13.0"/>
         <targetInfos>
           <targetInfo excluded="1" name="TBv2b" versionMatchMode=""/>
+        </targetInfos>
+      </component>
+      <component Cclass="Device" Cgroup="STM32Cube HAL" Csub="NAND" Cvendor="Keil" Cversion="1.7.4" condition="STM32F40_41_412_42_43_44_46_47x HAL">
+        <package name="STM32F4xx_DFP" schemaVersion="1.3" url="http://www.keil.com/pack" vendor="Keil" version="2.13.0"/>
+        <targetInfos>
+          <targetInfo excluded="1" name="TBv2b"/>
+        </targetInfos>
+      </component>
+      <component Cclass="Device" Cgroup="STM32Cube HAL" Csub="NOR" Cvendor="Keil" Cversion="1.7.4" condition="STM32F40_41_412_42_43_44_46_47x_4x3 HAL">
+        <package name="STM32F4xx_DFP" schemaVersion="1.3" url="http://www.keil.com/pack" vendor="Keil" version="2.13.0"/>
+        <targetInfos>
+          <targetInfo excluded="1" name="TBv2b"/>
         </targetInfos>
       </component>
       <component Cclass="Device" Cgroup="STM32Cube HAL" Csub="PWR" Cvendor="Keil" Cversion="1.7.4" condition="STM32F4 HAL">

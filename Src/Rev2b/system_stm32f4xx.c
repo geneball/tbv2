@@ -176,8 +176,8 @@ void SystemInit(void)			// Setup MPU:  FPU setting, vector table loc & External 
 	int pvdMV = readPVD();		// PLL off, so should reflect VOS=1 == Scale 3 mode for SysClk <=65MHz
 	
 	RCC->APB1ENR |= ( RCC_APB1ENR_PWREN | RCC_APB1ENR_RTCAPBEN );				// start clocking power control & RTC_APB
-	int VoltScale = 2;   // reset value: VOS=2 == Scale 2 mode for <= 84 MHz
-//	int VoltScale = 3;   // high speed: VOS=3 == Scale 1 mode for <= 100 MHz
+//	int VoltScale = 2;   // reset value: VOS=2 == Scale 2 mode for <= 84 MHz
+	int VoltScale = 3;   // high speed: VOS=3 == Scale 1 mode for <= 100 MHz
 	PWR->CR = (PWR->CR & ~PWR_CR_VOS_Msk) | (VoltScale << PWR_CR_VOS_Pos);
 
 	RCC->CR |= RCC_CR_PLLON;				// JEB Mar2020:  turn on PLL  (based on HSE)
