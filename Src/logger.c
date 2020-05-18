@@ -7,6 +7,10 @@
 static FILE *		logF = NULL;			// file ptr for open log file
 static char			statFileNm[60];		// local storage for computing .stat filepaths
 
+// used by PowerManager
+fsTime					RTC_initTime;					// time from status.txt 
+bool						firstBoot = false;		// true if 1st run after data loaded
+
 // const int 			MAX_STATS_CACHED = 10;   // avoid warning:  #3170-D: use of a const variable in a constant expression is nonstandard in C
 #define					MAX_STATS_CACHED 10
 static int 			nRefs = 0;
@@ -63,24 +67,29 @@ void						logPowerUp( void ){																// re-init logger after USB or slee
 			char dt[30];
 			fsTime tm = fAttr.time;
 			sprintf( dt, "%d-%d-%d %d:%d", tm.year, tm.mon, tm.day, tm.hr, tm.min );
-			logEvtNS( "TB_Install", "date", dt );
+			logEvtNS( "TB_Load", "date", dt );
 			FILE *stF = fopen( TBP[ pSTATUS ], "rb" );
 			char * status = fgets( line, 200, stF );
 			if ( status!=NULL ){ 
 				char *pRet = strchr( status, '\r' );
 				if ( pRet!=NULL ) *pRet = 0;
-				logEvtNS( "TB_Status", "txt", status );
+				logEvtNS( "TB_Stat", "txt", status );
 			}
 			fclose( stF );
 			
 			stF = fopen( TBP[ pBOOTCNT ], "rb" );		// read or init bootcnt.txt
 			int bootcnt;
 			if ( stF==NULL || fscanf( stF, " %d", &bootcnt )!=1 )
-				bootcnt = 1;
-		  else {
-				bootcnt++;
-				fclose( stF );
+				bootcnt = 0;  
+
+			if ( bootcnt==0 ){  // FirstBoot after install
+				RTC_initTime = tm;
+				firstBoot = true;		// 1st PowerCheck will init RTC if VBAT is present
 			}
+				
+			bootcnt++;
+			fclose( stF );
+
 			stF = fopen( TBP[ pBOOTCNT ], "wb" );		// write updated bootcnt.txt
 			if ( stF!=NULL ){
 				fprintf( stF, " %d", bootcnt );
