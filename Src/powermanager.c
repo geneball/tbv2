@@ -16,6 +16,8 @@ extern bool						firstBoot;						// true if 1st run after data loaded
 #define 									PM_ADCDONE  4										// id for osEvent signaling period power check interrupt
 #define 									PWR_TIME_OUT 30000							// 30sec periodic power check
 
+enum PwrStat { TEMPFAULT=0, xxx=1, CHARGING=2, LOWBATT=3, CHARGED=4, xxy=5, NOLITH=6, NOUSBPWR=7 };
+
 static osTimerId_t				pwrCheckTimer = NULL;
 static osEventFlagsId_t 	pwrEvents = NULL;
 static osThreadAttr_t 		pm_thread_attr;
@@ -25,9 +27,6 @@ static osThreadAttr_t 		pm_thread_attr;
 static volatile uint32_t				adcVoltage;											// set by ADC ISR
 static ADC_TypeDef *						Adc = (ADC_TypeDef *) ADC1_BASE;
 static ADC_Common_TypeDef *			AdcC = (ADC_Common_TypeDef *) ADC1_COMMON_BASE;
-
-static uint16_t									rawVREFINT;
-static uint16_t									calibrated_VREF = 0;
 
 // ADC channels
 const int ADC_LI_ION_chan 			= 2;   			// PA2 = ADC1_2		(STM32F412xE/G datasheet pg. 52)
@@ -101,7 +100,9 @@ void 											initPwrSignals( void ){					// configure power GPIO pins, & EXTI
 	gConfigIn( gBAT_STAT2,  false );  // MCP73871 STAT2  IN:  open collector with pullup
 
 	gConfigOut( gBAT_CE );  	// OUT: 1 to enable charging 			MCP73871 CE 	  (powermanager.c)
+	gSet( gBAT_CE, 1 );				// always enable?
 	gConfigOut( gBAT_TE_N );  // OUT: 0 to enable safety timer 	MCP73871 TE_	  (powermanager.c)
+	gSet( gBAT_TE_N, 0 );			// disable?
 	
 	// power controls to memory devices
 	gConfigOut( gEMMC_RSTN );		// 0 to reset? eMMC
@@ -140,7 +141,10 @@ void											startADC( int chan ){						// set up ADC for single conversion on
 	Adc->CR1 |= ADC_CR1_EOCIE;									// Enable end of conversion interrupt for regular group 
   Adc->CR2 |= ADC_CR2_SWSTART; 								// Start ADC software conversion for regular group 
 }
-short											readADC( int chan ){						// readADC channel 'chan' value & return calibrated voltage
+short											readADC( int chan, int enableBit ){	// readADC channel 'chan' value 
+	if ( enableBit!=0 ) 
+		AdcC->CCR |= enableBit;										// enable this channel
+
   startADC( chan );
 
 	// wait for signal from ADC_IRQ on EOC interrupt
@@ -150,10 +154,11 @@ short											readADC( int chan ){						// readADC channel 'chan' value & retu
 	Adc->CR1 &= ~ADC_CR1_EOCIE;  								// Disable ADC end of conversion interrupt for regular group 
 	
 	uint32_t adcRaw = Adc->DR;  								// read converted value (also clears SR.EOC)
-	if ( calibrated_VREF==0 ) return adcRaw;
 	
-	adcVoltage = 3300 * adcRaw/calibrated_VREF;			// convert to actual voltage, using internal reference calibration
-	return adcVoltage;
+	if ( enableBit != 0 )
+		AdcC->CCR &= ~enableBit;									// disable channel again
+		
+	return adcRaw;
 } 
 
 static void								EnableADC( bool enable ){				// power up & enable ADC interrupts
@@ -163,15 +168,7 @@ static void								EnableADC( bool enable ){				// power up & enable ADC interru
 		RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;			// enable clock for ADC
 		Adc->CR2 |= ADC_CR2_ADON; 							// power up ADC
 		tbDelay_ms( 1 );
-		
-		if ( calibrated_VREF==0 ){		// first time-- read value that corresponds to VREF = 1.2V
-			AdcC->CCR |= ADC_CCR_TSVREFE;											// enable RefInt on channel 17 -- typically 1.21V (1.18..1.24V)
-			rawVREFINT = readADC( ADC_VREFINT_chan );		// got 05D5  on TBookRev2
-			AdcC->CCR &= ~ADC_CCR_TSVREFE;					// disable RefInt channel
-			logEvtNI( "PwrCheck","rawVRefInt",		rawVREFINT ); 
-		}
-
-	} else {
+		} else {
 		gSet( gADC_ENABLE, 0 );
 		NVIC_DisableIRQ( ADC_IRQn );
 		RCC->APB2ENR &= ~RCC_APB2ENR_ADC1EN;			// disable clock for ADC
@@ -199,7 +196,7 @@ uint16_t									readPVD( void ){								// read PVD level
 		if ( (PWR->CSR & PWR_CSR_PVDO) != 0 ) break;
 		pvdMV = 2200 + i*100;
 	}
-93	return pvdMV;
+	return pvdMV;
 }
 void											setupRTC( void ){								// init RTC on first boot after data Load
 	int cnt = 0;
@@ -253,10 +250,32 @@ void											setupRTC( void ){								// init RTC on first boot after data Loa
 void											checkPowerTimer( void *arg ){		// timer to signal periodic power status check
 	osEventFlagsSet( pwrEvents, PM_PWRCHK );						// wakeup powerThread for power status check
 }
+char 											RngChar( int lo, int hi, int val ){   // => '-', '0', ... '9', '!' 
+	if (val < lo) return '-';
+	if (val > hi) return '!';
+	int stp = (hi-lo)/10;
+	return ( (val-lo)/stp + '0' );
+}
+
+bool HaveUsbPower = false, HaveLithium = false, HavePrimary = false, HaveBackup = false, firstCheck = true;
+enum PwrStat oldState;
+
+void checkPowerChange( char *nm, int newVal, bool *pSvVal ){
+	if ( !firstCheck ){
+		if ( newVal == *pSvVal ) return;  // no change
+		if ( newVal )
+			dbgLog( " Gained %s\n", nm);
+		else
+			dbgLog( " Lost %s\n", nm);
+	}	
+	*pSvVal = newVal; 
+}
 void 											checkPower( ){				// check and report power status
 	//  check gPWR_FAIL_N & MCP73871: gBAT_PG_N, gBAT_STAT1, gBAT_STAT2
 	bool PwrFail 			= gGet( gPWR_FAIL_N );	// PD0 -- input power fail signal
-
+  if ( PwrFail && false ) 
+		powerDownTBook();
+	
 	//  check MCP73871: gBAT_PG_N, gBAT_STAT1, gBAT_STAT2
 	bool PwrGood_N 	  = gGet( gBAT_PG_N );	 // MCP73871 PG_:  0 => power is good   			MCP73871 PG_    (powermanager.c)
 	bool BatStat1 		= gGet( gBAT_STAT1 );  // MCP73871 STAT1
@@ -272,41 +291,73 @@ void 											checkPower( ){				// check and report power status
 	//		L			H			L		2-- charging
 	// 		L			L			L		0-- temperature (or timer) fault
 
-	enum PwrStat { TEMPFAULT=0, xxx=1, CHARGING=2, LOWBATT=3, CHARGED=4, xxy=5, NOLITH=6, NOUSBPWR=7 };
 	enum PwrStat pstat = (enum PwrStat) ((BatStat1? 4:0) + (BatStat2? 2:0) + (PwrGood_N? 1:0));
-	dbgLog( "PCk: F%d Bat:%d \n", PwrFail, pstat );
+  if ( firstCheck )	
+		oldState = pstat;
+	
+	bool hvUsb = (pstat != NOUSBPWR);
+	bool hvLith = (pstat!=NOLITH);
 	
 	EnableADC( true );			// enable AnalogEN power & ADC clock & power, & ADC INTQ 
+
+	int VRefMV = readADC( ADC_VREFINT_chan, ADC_CCR_TSVREFE );	// enable RefInt on channel 17 -- typically 1.21V (1.18..1.24V)
 	
-	AdcC->CCR |= ADC_CCR_TSVREFE;							// enable Temperature on channel 18
-	int TempMV = readADC( ADC_TEMP_chan );   	// ADC_CHANNEL_TEMPSENSOR in hal_adc_ex.h = 16, but RM0402 says ADC_IN18
-	AdcC->CCR &= ~ADC_CCR_TSVREFE;						// disable Temp channel
-		
-	AdcC->CCR |= ADC_CCR_VBATE;								// enable VBAT on channel 18
-	int VBatMV = readADC( ADC_VBAT_chan ); 		// got 249 (TBook with no CR2032)
-	AdcC->CCR &= ~ADC_CCR_VBATE;							// disable VBAT on channel 18
-	
-	const int VBAT_PRESENT	= 2000;						// ~2V is where end-of-life drop-off occurs
-	if ( (VBatMV > VBAT_PRESENT) && firstBoot )
+	int MpuTempMV = readADC( ADC_TEMP_chan, ADC_CCR_TSVREFE ); // ADC_CHANNEL_TEMPSENSOR in ADC_IN18 
+
+	int VBatMV = readADC( ADC_VBAT_chan, ADC_CCR_VBATE ); 		// enable VBAT on channel 18
+
+	bool hvBack = VBatMV > 2000;							// ~2V is where end-of-life drop-off occurs
+	if ( firstBoot && hvBack )							  // first boot after data load, with backup battery == set RTC 
 		setupRTC();
 
-	int LiThermMV = readADC( gADC_THERM_chan );		// 0..3.3V ==> 0..4.2V  -- probably doesn't mean much
+	int LiThermMV = readADC( gADC_THERM_chan, 0 );		// 0..3.3V ==> 0..4.2V  -- probably doesn't mean much
 	
-	int LiMV = readADC( ADC_LI_ION_chan );		// 0..3.3V ==> 0..4.2V  -- probably doesn't mean much
+	int LiMV = readADC( ADC_LI_ION_chan, 0 );		// 0..3.3V ==> 0..4.2V  -- probably doesn't mean much
 
-//	LiMV = -0.011 + LiMV*0.021;   // best fit: V = 0.021 * LiMV - 0.011
+	int PrimaryMV = readADC( ADC_PRIMARY_chan, 0 );		// 0..3.3V
+	bool hvPri = PrimaryMV > 1200;
 	
-	int PrimaryMV = readADC( ADC_PRIMARY_chan );		// 0..3.3V
-	// TBrev2b got 02 wo Primary
 	EnableADC( false );		// turn ADC off
 	
-	logEvtNI( "PwrCheck","Status",		pstat ); 
-	logEvtNI( "PwrCheck","TempMV",  	TempMV );
-	logEvtNI( "PwrCheck","VBatMV",  	VBatMV );
-	logEvtNI( "PwrCheck","LiThermMV",	LiThermMV );
-	logEvtNI( "PwrCheck","LiMV",	  	LiMV );
-	logEvtNI( "PwrCheck","PrimaryMV", PrimaryMV );
+	char sUsb = pstat==NOUSBPWR? 'u' : 'U';
+	char sLi = RngChar( 600, 2500, LiMV ); 
+	char sPr = RngChar( 800, 1800, PrimaryMV ); 
+	char sBk = RngChar( 100, 1100, VBatMV ); 
+	char sMt = RngChar(   0, 1000, MpuTempMV ); 
+	char sLt = RngChar(   0, 1000, LiThermMV ); 
+	char sCh = ' ';
+	if (pstat==CHARGING) 	sCh = 'c';
+	if (pstat==CHARGED) 	sCh = 'C';
+	if (pstat==TEMPFAULT) sCh = 'X';
+
+	char pwrStat[10];
+	sprintf(pwrStat, "%c L%c%c%c P%c B%c T%c", sUsb, sLi,sCh,sLt, sPr, sBk, sMt); 
+	logEvtNS( "PwrCheck","Stat",	pwrStat ); 
+
+	// report changes & update state
+	checkPowerChange( "USB", 		 	hvUsb, 	&HaveUsbPower );
+	checkPowerChange( "Lithium", 	hvLith, &HaveLithium );
+	checkPowerChange( "Primary", 	hvPri, 	&HavePrimary );
+	checkPowerChange( "Backup", 	hvBack, &HaveBackup );
+	firstCheck = false;
 	
+  dbgLog( "srTB: %d %4d %3d %4d\n", pstat, VRefMV, MpuTempMV, VBatMV );
+	dbgLog( "LtLP: %3d %4d %4d\n", LiThermMV, LiMV, PrimaryMV );
+	if ( MpuTempMV > 1000 ) sendEvent( MpuHot, MpuTempMV );
+	if ( LiThermMV > 1000 ) sendEvent( LithiumHot, LiThermMV );
+	
+	if ( pstat != oldState ){
+		switch ( pstat ){
+			case CHARGED:				sendEvent( BattCharged, 0 ); 			break; 		// CHARGING complete
+			case CHARGING: 			sendEvent( BattCharging, LiMV );	break;		// started charging
+			case TEMPFAULT:			sendEvent( ChargeFault,  LiMV );	break;		// LiIon charging fault (temp?)
+			case LOWBATT:				sendEvent( LowBattery,  LiMV );		break;		// LiIon is low  (no USB)
+			default: break;
+		}
+	}
+	
+
+/* old
 //	const int BATT_DROPPING_VOLTAGE	= 2200;			// https://www.powerstream.com/AA-tests.htm discharge graph for AA cells
 	const int LOW_BATT_VOLTAGE	= 2000;				// ~2V is where end-of-life drop-off occurs
 //	bool shouldChargeCap = 0;  
@@ -332,6 +383,7 @@ void 											checkPower( ){				// check and report power status
 			break;
 	}
 //	gSet( gSC_ENABLE, shouldChargeCap );
+*/
 }
 /*   // *************  Handler for PowerFail interrupt
 void 											EXTI4_IRQHandler(void){  				// NOPWR ISR

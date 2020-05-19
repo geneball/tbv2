@@ -43,9 +43,6 @@
 #define RTE_USB_Device_0                /* USB Device 0 */
 
 
-/*  Keil::Device:STM32Cube HAL:ADC:1.7.4 */
-#define RTE_DEVICE_HAL_ADC
-
 /*  Keil.MDK-Plus::USB:Device:MSC:6.13.7 */
 #define RTE_USB_Device_MSC_0            /* USB Device MSC instance 0 */
 
@@ -72,8 +69,6 @@
 #define RTE_DEVICE_HAL_COMMON
 /*  Keil::Device:STM32Cube HAL:Cortex:1.7.4 */
 #define RTE_DEVICE_HAL_CORTEX
-/*  Keil::Device:STM32Cube HAL:ADC:1.7.4 */
-#define RTE_DEVICE_HAL_ADC
 
 /*  Keil::Device:STM32Cube HAL:DMA:1.7.4 */
 #define RTE_DEVICE_HAL_DMA

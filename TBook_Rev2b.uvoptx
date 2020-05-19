@@ -159,7 +159,7 @@
           <Type>0</Type>
           <LineNumber>784</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134261170</Address>
+          <Address>134261110</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -175,7 +175,7 @@
           <Type>0</Type>
           <LineNumber>415</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134331150</Address>
+          <Address>134331530</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -191,7 +191,7 @@
           <Type>0</Type>
           <LineNumber>381</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134253088</Address>
+          <Address>134252988</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -207,7 +207,7 @@
           <Type>0</Type>
           <LineNumber>99</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134290408</Address>
+          <Address>134290704</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -223,7 +223,7 @@
           <Type>0</Type>
           <LineNumber>630</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134250214</Address>
+          <Address>134250114</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -239,7 +239,7 @@
           <Type>0</Type>
           <LineNumber>317</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134340256</Address>
+          <Address>134340636</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -255,7 +255,7 @@
           <Type>0</Type>
           <LineNumber>1172</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134238520</Address>
+          <Address>134238420</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -271,7 +271,7 @@
           <Type>0</Type>
           <LineNumber>414</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134331130</Address>
+          <Address>134331510</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -287,7 +287,7 @@
           <Type>0</Type>
           <LineNumber>708</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134251552</Address>
+          <Address>134251452</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -303,7 +303,7 @@
           <Type>0</Type>
           <LineNumber>356</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134331500</Address>
+          <Address>134331880</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -319,7 +319,7 @@
           <Type>0</Type>
           <LineNumber>160</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134286136</Address>
+          <Address>134286092</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -329,22 +329,6 @@
           <Filename>&lt;2&gt;.\Src\audio.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression>\\TBookRev2b\Src/audio.c\160</Expression>
-        </Bp>
-        <Bp>
-          <Number>11</Number>
-          <Type>0</Type>
-          <LineNumber>202</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>0</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>0</BreakIfRCount>
-          <Filename>&lt;2&gt;.\Src\powermanager.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression></Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -446,7 +430,7 @@
         <Ww>
           <count>19</count>
           <WinNumber>1</WinNumber>
-          <ItemText>\\TBookRev2b\Src/main.c\Dbg.TBookLog[0][89]</ItemText>
+          <ItemText>pvdMV,0x0A</ItemText>
         </Ww>
       </WatchWindow1>
       <MemoryWindow1>
@@ -669,7 +653,7 @@
       <GroupNumber>1</GroupNumber>
       <FileNumber>11</FileNumber>
       <FileType>1</FileType>
-      <tvExp>1</tvExp>
+      <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>.\Src\powermanager.c</PathWithFileName>
