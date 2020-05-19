@@ -396,7 +396,9 @@ static void 	controlTest(  ){					// CSM test procedure
 	TBook.iCurrSt = stIdx( TB_Config.initState );
 	TBook.cSt = TBookCSM[ TBook.iCurrSt ];
 	TBook.currStateName = TBook.cSt->nm;	//DEBUG -- update currSt string
-
+  bool playforever = false;
+	
+	
 	dbgLog( "CTest: \n" );
 	while (true) {
 	  status = osMessageQueueGet( osMsg_TBEvents, &evt, NULL, osWaitForever );  // wait for next TB_Event
@@ -419,7 +421,12 @@ static void 	controlTest(  ){					// CSM test procedure
 					dbgLog( "PlaySys welcome...\n" );
 					logEvtNS( "Play", "file", "welcome" );
 					break; 
+				case AudioDone:
+				case starPot: 
 				case Pot:
+					if ( evt->typ==AudioDone && !playforever ) break;
+					if ( evt->typ==starPot ) playforever = true;
+				
 					dbgLog( "Playing msg...\n" );
 					playSubjAudio( "msg" );
 					logEvt( "PlaySubj" );

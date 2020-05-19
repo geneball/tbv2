@@ -12,7 +12,8 @@ typedef enum { 	// Event -- TBook event types
 			Home, 		Circle,		Plus, 		Minus, 		Tree, 		Lhand, 		Rhand, 		Pot,	 Star,		Table,
 			Home__, 	Circle__, 	Plus__, 	Minus__, 	Tree__, 	Lhand__, 	Rhand__, 	Pot__, 	 Star__,	Table__,
 			starHome,	starCircle, starPlus, 	starMinus, 	starTree, 	starLhand, 	starRhand, 	starPot, starStar,	starTable,
-			AudioDone,	ShortIdle,	LongIdle,	LowBattery,	BattCharging, BattCharged,	FirmwareUpdate, Timer, anyKey, eUNDEF
+			AudioDone,	ShortIdle,	LongIdle,	LowBattery,	BattCharging, BattCharged,	FirmwareUpdate, Timer, 
+		  ChargeFault, LithiumHot, MpuHot, anyKey, eUNDEF
 }	Event;
 
 typedef enum { 	// Punct -- JSONish punctuation tokens

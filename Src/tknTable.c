@@ -70,7 +70,7 @@ static short			nxtLstID = 0;											// ID for next Lst or Obj
 static short			lstFirstNd[ N_LISTS ];  					// index of 1st list node for each TknList
 static TknID			NULL_TknID;
 
-static void				addGroup( char *grpNm, char *vals1, char *vals2, char *vals3, char *vals4  ); 	// forward
+static void				addGroup( char *grpNm, char *vals1, char *vals2, char *vals3, char *vals4, char *vals5  ); 	// forward
 // token & list operations
 void 							showTknTable(){										// display stats for tknTable
 	struct StorageStats * ss = &TB_StorageStats;
@@ -128,13 +128,13 @@ void 							initTknTable(){										// initialize tknTable-- (self inits on fir
 	toTkn( "gNull" );		// 'gNull' == <g1:0>
 	toTkn( "gGroup" );		// 'gGroup' == <g1:1>
 	addGroup( "gGroup", 		// Groups:  grp: 1, val: gNull=0,gGroup..gTkn=NGRPS-1  matches enum GrpID
-		"gNull gGroup gPunct gEvent gAction gTkn gLst gObj", "", "", "" );
+		"gNull gGroup gPunct gEvent gAction gTkn gLst gObj", "", "", "", "" );
 	verifyEnum( "gNull", gObj );
 	if ( gObj >= NGRPS ) 
 		tbErr( "NGRPS too small" );
 	
 	addGroup( "gPunct", 		// predefine Punct:  grp: 2, val: Comma=0..DQuote  -- matches enum Punct
-		"pNull , ; : { } [ ] ( ) ", "", "", "" );
+		"pNull , ; : { } [ ] ( ) ", "", "", "", "" );
 	toTkn( "\"" );  // special case to tokenize " and add to gPunct without trying to scan string
 	verifyEnum( "pNull", DQuote );
 	
@@ -146,8 +146,10 @@ void 							initTknTable(){										// initialize tknTable-- (self inits on fir
 //			Home__, 	Circle__, 	Plus__, 	Minus__, 	Tree__, 	Lhand__, 	Rhand__, 	Pot__, 	 Star__,	Table__,
 		"starHome starCircle starPlus starMinus starTree starLhand starRhand starPot starStar starTable", 
 //			starHome,	starCircle, starPlus, 	starMinus, 	starTree, 	starLhand, 	starRhand, 	starPot, starStar,	starTable,
-		"AudioDone ShortIdle LongIdle LowBattery BattCharging BattCharged FirmwareUpdate Timer anyKey eUNDEF" );
-//			AudioDone,	ShortIdle,	LongIdle,	LowBattery,	BattCharging, BattCharged,	FirmwareUpdate, Timer, anyKey, eUNDEF
+		"AudioDone ShortIdle LongIdle LowBattery BattCharging BattCharged FirmwareUpdate Timer", 
+//			AudioDone,	ShortIdle,	LongIdle,	LowBattery,	BattCharging, BattCharged,	FirmwareUpdate, Timer, 
+		" ChargeFault, LithiumHot, MpuHot, anyKey, eUNDEF" );
+//	anyKey, eUNDEF
 	verifyEnum( "eNull", eUNDEF );
 	
 	addGroup( "gAction", 		// predefine Actions:  grp: 3, val: prevSubj=0..next  -- matches enum Actions
@@ -159,11 +161,11 @@ void 							initTknTable(){										// initialize tknTable-- (self inits on fir
 		"goPrevSt saveSt goSavedSt subjAdj msgAdj setTimer showCharge",
 //				goPrevSt,	saveSt,		goSavedSt,
 //				subjAdj, 	msgAdj,		setTimer,	showCharge,
-		"startUSB endUSB powerDown sysBoot" );
+		"startUSB endUSB powerDown sysBoot", "" );
 //				startUSB,	endUSB,		powerDown,	sysBoot
 	verifyEnum( "aNull", sysBoot );
 
-	addGroup( "gTkn", "tNull", "","","" );	// predefine one value in group gTkns: subsequent non-predefined strings get allocated as gTkns
+	addGroup( "gTkn", "tNull", "","","","" );	// predefine one value in group gTkns: subsequent non-predefined strings get allocated as gTkns
 }
 
 static short			hashFn( const char *s ){					// INTERNAL: => hash value of tolower(s)
@@ -411,7 +413,7 @@ short							tokenize( TknID *tkns, short tsiz, char *line ){	// tokenizes 'line'
 
 
 
-static void				addGroup( char *grpNm, char *vals1, char *vals2, char *vals3, char *vals4  ){ 	// INTERNAL: predefine token group 'grpNm' with values from 'grpVals'
+static void				addGroup( char *grpNm, char *vals1, char *vals2, char *vals3, char *vals4, char *vals5  ){ 	// INTERNAL: predefine token group 'grpNm' with values from 'grpVals'
 	short grpID = tknVal( toTkn( grpNm ));	// grp:1, val: 0..NGRPS-1 
 	
 	currGrpID = grpID;				// now start allocating IDs in that group
@@ -429,6 +431,7 @@ static void				addGroup( char *grpNm, char *vals1, char *vals2, char *vals3, cha
 	cnt += tokenize( tkns, MAX_TKNS_PER_LN, vals2 );		// allocate tokenIDs for values
 	cnt += tokenize( tkns, MAX_TKNS_PER_LN, vals3 );		// allocate tokenIDs for values
 	cnt += tokenize( tkns, MAX_TKNS_PER_LN, vals4 );		// allocate tokenIDs for values
+	cnt += tokenize( tkns, MAX_TKNS_PER_LN, vals5 );		// allocate tokenIDs for values
 }
 
 TknID							getLstNm( TknID listObj, short idx ){				// => nm of listObj[idx] as TknID
