@@ -157,12 +157,22 @@ void SystemInit(void)			// Setup MPU:  FPU setting, vector table loc & External 
 	//  USB/SDIO  = VCO_out / Q = 48MHz
 	// 	I2S_clk 	= VCO_out / R = 96MHz
 	*/
+	
+	// P determines SystemClock speed
+	uint8_t P =  0;   
+								// 	96Mhz, 	48Mhz, 	32MHz, 	24MHz )
+	int Pdiv[] = 		{ 		2, 		 	4, 			6, 			8 };
+						// 		<=100MHz  <=84MHz  <=64MHz  <=64MHz 
+	int VOSval[] = 	{ 		3, 			2, 			1,			1 };
+	int vos = VOSval[P];  
+	SystemCoreClock = 192000000 / Pdiv[P];			// 0=> 96MHz
+
 	uint32_t cfg = 0;
 //	( 2 << 28 ) | ( 4 << 24 ) | ( 1 << 22 ) | ( 0 << 16 ) | ( 0x60 << 6 ) | 4;
 	cfg |=  	RCC_PLLCFGR_PLLSRC_HSE;							// input to PLL is HSE
 	cfg |=  ( 96 << RCC_PLLCFGR_PLLN_Pos );				// N = 96
 	cfg |=  (  4 << RCC_PLLCFGR_PLLM_Pos );				// M = 4
-	cfg |=  (  0 << RCC_PLLCFGR_PLLP_Pos );				// PLLP=0 => P = 2
+	cfg |=  (  P << RCC_PLLCFGR_PLLP_Pos );				// PLLP= 0=> /2, (1=> /4), (2=> /6), (3=> /8)
 	cfg |=  (  4 << RCC_PLLCFGR_PLLQ_Pos );				// Q = 4
 	cfg |=  (  2 << RCC_PLLCFGR_PLLR_Pos );				// R = 2
 	RCC->PLLCFGR = cfg; 		// R=2 Q=4 SRC=1 P=0 N=96 M=4
@@ -172,13 +182,11 @@ void SystemInit(void)			// Setup MPU:  FPU setting, vector table loc & External 
 
   RCC->CR &= (uint32_t)0xFFFBFFFF; 							//  Reset HSEBYP bit 
 	
-	// per RM0402 45.4.1 set PWR->CR.VOS = 3 for SysClock > 84MHz
 	int pvdMV = readPVD();		// PLL off, so should reflect VOS=1 == Scale 3 mode for SysClk <=65MHz
 	
+	// per RM0402 45.4.1 set PWR->CR.VOS = 3 for SysClock > 84MHz
 	RCC->APB1ENR |= ( RCC_APB1ENR_PWREN | RCC_APB1ENR_RTCAPBEN );				// start clocking power control & RTC_APB
-//	int VoltScale = 2;   // reset value: VOS=2 == Scale 2 mode for <= 84 MHz
-	int VoltScale = 3;   // high speed: VOS=3 == Scale 1 mode for <= 100 MHz
-	PWR->CR = (PWR->CR & ~PWR_CR_VOS_Msk) | (VoltScale << PWR_CR_VOS_Pos);
+	PWR->CR = (PWR->CR & ~PWR_CR_VOS_Msk) | (vos << PWR_CR_VOS_Pos);		// set voltage scaling according to clock speed
 
 	RCC->CR |= RCC_CR_PLLON;				// JEB Mar2020:  turn on PLL  (based on HSE)
 	int pllcnt=0;
@@ -198,8 +206,7 @@ void SystemInit(void)			// Setup MPU:  FPU setting, vector table loc & External 
   cfg |=  RCC_CFGR_HPRE_DIV4;     // SYSCLK divided by 4 	=> AHB = PLL / 4	(AHB prescaler)  	AHB  = 24MHz
   cfg |=  RCC_CFGR_PPRE2_DIV1;		// HCLK not divided    	=> APB2 = AHB			(APB2 prescaler)	APB2 = 24MHz
   cfg |=  RCC_CFGR_PPRE1_DIV2;    // HCLK divided by 2 		=> APB1 = AHB	/2	(APB1 prescaler)	APB1 = 12MHz
-	SystemCoreClock = 96000000;			// = 96MHz
-	
+
 
 	/* DEBUG -- send SYSCLK/4 to PC9
 	//     PC9 shoud be configured as ModeAF, AF=0
