@@ -63,6 +63,7 @@ extern void 			LED_Init( GPIO_ID led );												// ledManager-- for debugging
 extern bool 			ledMgrActive;
 
 extern void 			talking_book ( void *argument );
+extern void 			showRTC( void );
 extern uint32_t 	tbTimeStamp( void );
 extern void 			tbDelay_ms( int ms ); 					//  Delay execution for a specified number of milliseconds
 extern void *			tbAlloc( int nbytes, const char *msg );
