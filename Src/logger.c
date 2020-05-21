@@ -7,9 +7,11 @@
 static FILE *		logF = NULL;			// file ptr for open log file
 static char			statFileNm[60];		// local storage for computing .stat filepaths
 
-// used by PowerManager
-fsTime					RTC_initTime;					// time from status.txt 
-bool						firstBoot = false;		// true if 1st run after data loaded
+
+void						setupRTC( fsTime time );	// from PowerManager
+
+//fsTime					RTC_initTime;					// time from status.txt 
+//bool						firstBoot = false;		// true if 1st run after data loaded
 
 // const int 			MAX_STATS_CACHED = 10;   // avoid warning:  #3170-D: use of a const variable in a constant expression is nonstandard in C
 #define					MAX_STATS_CACHED 10
@@ -83,8 +85,9 @@ void						logPowerUp( void ){																// re-init logger after USB or slee
 				bootcnt = 0;  
 
 			if ( bootcnt==0 ){  // FirstBoot after install
-				RTC_initTime = tm;
-				firstBoot = true;		// 1st PowerCheck will init RTC if VBAT is present
+				setupRTC( tm );			// init RTC and set to date/time from status.txt
+			} else {	// read & report RTC value
+				showRTC();
 			}
 				
 			bootcnt++;
@@ -128,7 +131,7 @@ static char *		statFNm( const char * nm, short iS, short iM ){		// INTERNAL: fil
 char *					logMsgName( char *path, const char * sNm, short iSubj, short iMsg, const char *ext ){			// build & => file path for next msg for Msg_<sNm>_S<iS>_M<iM>.<ext>
 	fsFileInfo fAttr;
 	char fnPatt[ MAX_PATH ]; 
-	sprintf( fnPatt, "%sMsg_%s_S%d_M%d_*.%s", TBP[ pMSGS_PATH ], sNm, iSubj, iMsg, ext );	// e.g. "M0:/messages/Msg_Health_S2_M3_*.txt"
+	sprintf( fnPatt, "%sMsg_%s_S%d_M%d_*%s", TBP[ pMSGS_PATH ], sNm, iSubj, iMsg, ext );	// e.g. "M0:/messages/Msg_Health_S2_M3_*.txt"
 	short cnt = 0;
 	fAttr.fileID = 0;
 	while ( ffind( fnPatt, &fAttr ) == fsOK ){
@@ -140,7 +143,7 @@ char *					logMsgName( char *path, const char * sNm, short iSubj, short iMsg, co
 		}
 		if ( v >= cnt ) cnt = v+1;
 	}
-	sprintf( path, "%sMsg_%s_S%d_M%d_%d.%s", TBP[ pMSGS_PATH ], sNm, iSubj, iMsg, cnt, ext );
+	sprintf( path, "%sMsg_%s_S%d_M%d_%d%s", TBP[ pMSGS_PATH ], sNm, iSubj, iMsg, cnt, ext );
 	return path;
 }
 void 						saveStats( MsgStats *st ){ 												// save statistics block to file
