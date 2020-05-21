@@ -231,6 +231,32 @@ void 										initIDs(){																		// initialize CPU_ID & TB_ID strings
 	sprintf( TB_ID, "%04x.%04x.%x.%s", stmID.x, stmID.y, stmID.wafer, stmID.lot );
 }
 
+void showRTC( ){
+	int pDt=0,Dt=1, pTm=0,Tm=1;
+	while (pDt != Dt || pTm != Tm){
+		pDt = Dt;
+		pTm = Tm;
+		Dt = RTC->DR;
+		Tm = RTC->TR;
+	}
+	
+	uint8_t yr, mon, date, day, hr, min, sec;
+	yr =  ((Dt>>20) & 0xF)*10 + ((Dt>>16) & 0xF);
+	day = ((Dt>>13) & 0x7);
+	mon = ((Dt>>12) & 0x1)*10 + ((Dt>>8) & 0xF);
+	date =((Dt>> 4) & 0x3)*10 + (Dt & 0xF);
+	
+	hr =  ((Tm>>20) & 0x3)*10 + ((Tm>>16) & 0xF);
+	min = ((Tm>>12) & 0x7)*10 + ((Tm>>8) & 0xF);
+	sec = ((Tm>> 4) & 0x7)*10 + (Tm & 0xF);
+	
+	char * wkdy[] = { "", "Mon","Tue","Wed","Thu","Fri","Sat","Sun" };
+	char * month[] = { "", "Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec" };
+	char dttm[50];
+	sprintf(dttm, "%s %d-%s-%d %d:%d:%d", wkdy[day], date, month[mon], yr, hr,min,sec );
+	logEvtNS( "RTC", "DtTm", dttm );
+  dbgLog("RTC: %s \n", dttm );
+}
 
 static uint32_t lastTmStmp = 0;
 static uint32_t lastHalTick = 0, HalSameCnt = 0;
