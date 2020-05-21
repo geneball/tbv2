@@ -198,44 +198,52 @@ uint16_t									readPVD( void ){								// read PVD level
 	}
 	return pvdMV;
 }
-void											setupRTC( void ){								// init RTC on first boot after data Load
+void											setupRTC( fsTime time ){				// init RTC & set based on fsTime
 	int cnt = 0;
 	RCC->APB1ENR |= ( RCC_APB1ENR_PWREN | RCC_APB1ENR_RTCAPBEN );				// start clocking power control & RTC_APB
 	PWR->CSR 	|= PWR_CSR_BRE;											// enable backup power regulator
-	while ( (RCC->CSR & PWR_CSR_BRR)==0 ) cnt++;  //  & wait till ready
+	while ( (PWR->CSR & PWR_CSR_BRR)==0 && (cnt < 1000)) cnt++;  //  & wait till ready
 
+	RCC->BDCR |= RCC_BDCR_BDRST;   				// backup domain reset
+	RCC->BDCR &= ~RCC_BDCR_BDRST;   			// & release
+
+	RTC->WPR = 0xCA;
+	RTC->WPR = 0x53;		// un write-protect the RTC
+	
 	PWR->CR 	|= PWR_CR_DBP;			// enable access to Backup Domain to configure RTC
 	
 	RCC->BDCR |= RCC_BDCR_LSEON;												// enable 32KHz LSE clock
-	while ( (RCC->BDCR & RCC_BDCR_LSERDY)==0 ) cnt++; 	// & wait till ready
+	cnt = 0;
+	while ( (RCC->BDCR & RCC_BDCR_LSERDY)==0 && (cnt < 1000) ) cnt++; 	// & wait till ready
 
 	// configure RTC  (per RM0402 22.3.5)
-	// RCC->BDCR |= RCC_BDCR_PDRST;   				// do backup domain reset first?
 	RCC->BDCR |= RCC_BDCR_RTCSEL_0;					// select LSE as RTC source
-	RTC->WPR = 0xCA;
-	RTC->WPR = 0x53;		// un write-protect the RTC
 
 	RTC->ISR |= RTC_ISR_INIT;													// set init mode
-	while ( (RTC->ISR & RTC_ISR_INITF)==0 ) cnt++;		// & wait till ready
+	cnt = 0;
+	while ( (RTC->ISR & RTC_ISR_INITF)==0 && (cnt < 1000)) cnt++;		// & wait till ready
 	
 	RTC->PRER  = (256 << RTC_PRER_PREDIV_S_Pos);				// Synchronous prescaler = 256  MUST BE FIRST
 	RTC->PRER |= (127 << RTC_PRER_PREDIV_A_Pos);				// THEN asynchronous = 127 for 32768Hz => 1Hz
 	
-	uint8_t hr = RTC_initTime.hr,   min = RTC_initTime.min, sec = RTC_initTime.sec;
+	uint8_t hr = time.hr,   min = time.min, sec = time.sec;
 	uint8_t ht = hr/10, hu = hr%10, mnt = min/10, mnu = min%10, st = sec/10, su = sec%10;
 	RTC->TR   =  0;			// reset & 24hr format
 	RTC->TR 	|= (ht << RTC_TR_HT_Pos) 	| (hu << RTC_TR_HU_Pos);
 	RTC->TR 	|= (mnt << RTC_TR_MNT_Pos)| (mnu << RTC_TR_MNU_Pos);
 	RTC->TR 	|= (st << RTC_TR_ST_Pos) 	| (su << RTC_TR_SU_Pos);
 
-	uint8_t day = RTC_initTime.day, mon = RTC_initTime.mon, yr = RTC_initTime.year;
+	uint8_t day = time.day, mon = time.mon, yr = time.year;
 	uint8_t dt = day/10, du = day%10, mt = mon/10, mu = mon%10, yt = yr/10, yu = yr%10;
 	
-	uint8_t anchors[] = { 3, 2, 0, 5 };	// for 19, 20, 21, 22
-	uint8_t cen = yr/100, y = yr%100, s4 = anchors[cen-19];
-	uint8_t s1 = y/12, s2 = y - s1*12, s3 = s2/4;
-	uint8_t wkday = (s1+s2+s3+s4) % 7;
-	if (wkday==0) wkday += 7;
+	uint8_t cenCd[] = { 6, 4, 2 };	// for 20, 21, 22
+	uint8_t monCd[] = { 0, 3, 3, 6, 1, 4, 6, 2, 5, 0, 3, 5 };
+	uint8_t cen = yr/100, yy = yr%100, cCd = cenCd[cen-19];
+	uint8_t yCd = (yy/4 + yy) % 7;
+	uint8_t mCd = monCd[ day ];
+	bool leap = (yr%400==0) || (yr%4==0 && yr%100!=0);
+	uint8_t wkday = (yCd+mCd+day+cCd - (leap && mon<3? 1 : 0)) % 7;
+	if (wkday==0) wkday = 7;
 	
 	RTC->DR   =  wkday << RTC_DR_WDU_Pos;			// set day of week
 	RTC->DR 	|= (dt << RTC_DR_DT_Pos) | (du << RTC_DR_DU_Pos);
@@ -246,6 +254,7 @@ void											setupRTC( void ){								// init RTC on first boot after data Loa
 	RTC->ISR 	&= ~RTC_ISR_INIT;												// leave RTC init mode
 	
 	PWR->CR 	&= ~PWR_CR_DBP;													// disable access to Backup Domain 
+
 }
 void											checkPowerTimer( void *arg ){		// timer to signal periodic power status check
 	osEventFlagsSet( pwrEvents, PM_PWRCHK );						// wakeup powerThread for power status check
@@ -295,36 +304,42 @@ void 											checkPower( ){				// check and report power status
   if ( firstCheck )	
 		oldState = pstat;
 	
-	bool hvUsb = (pstat != NOUSBPWR);
+	bool hvUsb = PwrGood_N==0;
 	bool hvLith = (pstat!=NOLITH);
 	
 	EnableADC( true );			// enable AnalogEN power & ADC clock & power, & ADC INTQ 
 
-	int VRefMV = readADC( ADC_VREFINT_chan, ADC_CCR_TSVREFE );	// enable RefInt on channel 17 -- typically 1.21V (1.18..1.24V)
+	const int MAXCNT 	= 4096;		// max 12-bit ADC count
+	const int VREF 		= 3300;		// mV of VREF input pin
 	
-	int MpuTempMV = readADC( ADC_TEMP_chan, ADC_CCR_TSVREFE ); // ADC_CHANNEL_TEMPSENSOR in ADC_IN18 
-
-	int VBatMV = readADC( ADC_VBAT_chan, ADC_CCR_VBATE ); 		// enable VBAT on channel 18
-
-	bool hvBack = VBatMV > 2000;							// ~2V is where end-of-life drop-off occurs
-	if ( firstBoot && hvBack )							  // first boot after data load, with backup battery == set RTC 
-		setupRTC();
-
-	int LiThermMV = readADC( gADC_THERM_chan, 0 );		// 0..3.3V ==> 0..4.2V  -- probably doesn't mean much
+	int VRefIntCnt = readADC( ADC_VREFINT_chan, ADC_CCR_TSVREFE );	// enable RefInt on channel 17 -- typically 1.21V (1.18..1.24V)
+  int VRefMV = VRefIntCnt * VREF/MAXCNT;			// should be 1200
 	
-	int LiMV = readADC( ADC_LI_ION_chan, 0 );		// 0..3.3V ==> 0..4.2V  -- probably doesn't mean much
+	int MpuTempCnt = readADC( ADC_TEMP_chan, ADC_CCR_TSVREFE ); // ADC_CHANNEL_TEMPSENSOR in ADC_IN18 
+  int MpuTempMV = MpuTempCnt * VREF/MAXCNT;			
 
-	int PrimaryMV = readADC( ADC_PRIMARY_chan, 0 );		// 0..3.3V
-	bool hvPri = PrimaryMV > 1200;
+	int VBatCnt = readADC( ADC_VBAT_chan, ADC_CCR_VBATE ); 		// enable VBAT on channel 18
+  int VBatMV = VBatCnt * 4 * VREF/MAXCNT;		
+	bool hvBack = VBatMV > 2000;														  // ~2V is where end-of-life drop-off occurs
+
+	int LiThermCnt = readADC( gADC_THERM_chan, 0 );	
+  int LiThermMV = LiThermCnt * VREF/MAXCNT;		
+	
+	int LiCnt = readADC( ADC_LI_ION_chan, 0 );	
+  int LiMV = LiCnt * 2 * VREF/MAXCNT;			
+
+	int PrimaryCnt = readADC( ADC_PRIMARY_chan, 0 );
+  int PrimaryMV = PrimaryCnt * 2 * VREF/MAXCNT;	
+	bool hvPri = PrimaryMV > 1600;
 	
 	EnableADC( false );		// turn ADC off
 	
 	char sUsb = pstat==NOUSBPWR? 'u' : 'U';
-	char sLi = RngChar( 600, 2500, LiMV ); 
-	char sPr = RngChar( 800, 1800, PrimaryMV ); 
-	char sBk = RngChar( 100, 1100, VBatMV ); 
-	char sMt = RngChar(   0, 1000, MpuTempMV ); 
-	char sLt = RngChar(   0, 1000, LiThermMV ); 
+	char sLi = RngChar( 3400, 4200, LiMV ); 				// range from charge=0 to charge=9
+	char sPr = RngChar( 2000, 3000, PrimaryMV ); 
+	char sBk = RngChar( 2400, 3100, VBatMV ); 
+	char sMt = RngChar(  200, 1200, MpuTempMV ); 
+	char sLt = RngChar(  200, 1200, LiThermMV ); 
 	char sCh = ' ';
 	if (pstat==CHARGING) 	sCh = 'c';
 	if (pstat==CHARGED) 	sCh = 'C';
