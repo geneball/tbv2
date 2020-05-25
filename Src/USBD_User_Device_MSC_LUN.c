@@ -41,6 +41,7 @@ __WEAK  uint32_t  USBD_MSC0_LUN_CheckMedia                (uint8_t lun)         
 #include "tb_evr.h"			// EVR codes for tbook
 #include "rl_fs.h"
 #include "rl_usb.h"
+#include "tbook.h"
 
 //static char  ser_no_string_desc[32];  // String Descriptor: LEN TYP + 4 + 3*8
 //const int maxLUNs = 4;
@@ -126,19 +127,9 @@ bool		enableMassStorage( char *drv0, char *drv1, char *drv2, char *drv3 ){	// in
 	usbIsInitialized = (stat == usbOK); 
 	if ( !usbIsInitialized ) 			return false;			// USB failed to initialize
 	
-//EventRecorderEnable( evrED, EvtUsbdCore_No, EvtUsbdEnd_No );  	//USBD:  all 
-//EventRecorderEnable( evrEAOD, TBUSB_no, 			TBUSB_no );  				//TB_USB: all 
-
 	dbgEvt( TB_usbConn, 0,0,0,0);
+	ledFg( "O5o5!" );	
 	stat = USBD_Connect(0);													// signal connection to Host, so Host will enumerate & discover configured drives
-	
-	// wait until USB driver calls checkMedia
-//	if ( !usbSignalRequestAndWait() ) return false;		  // timeout => failed
-//		if ( USBD_MSC0_SetMediaOwnerUSB() == USBD_MSC0_OK ){		
-//			//TODO? USBD_SetSerialNumber( 0, "TBook SN#" );
-//			ledFg( "O2o2!" );	
-//			usbConnected = true;			
-//		}
 	return usbProvidingMassStorage;
 }
 bool		disableMassStorage( void ){								// disable USB MSC & return devices to File System
@@ -153,7 +144,7 @@ bool		disableMassStorage( void ){								// disable USB MSC & return devices to 
 		usbIsInitialized = false;
 		usbProvidingMassStorage = false;
 	}
-//	ledFg( "_" );	// ledOn(LED_ORANGE);		
+	ledFg( "_" );
 	return usbProvidingMassStorage;
 }
 //
