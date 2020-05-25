@@ -79,8 +79,7 @@ static struct ErrInfo 					errs[200];
 static int											eCnt = 0;
 
 static int 											reinitCnt = 0;	
-
-static int 											LastVolume 	= DEFAULT_VOLUME;			// retain last setting, so audio restarts at last volume
+static int 											LastVolume 	= 0;			// retain last setting, so audio restarts at last volume
 
 void 						Codec_WrReg( uint8_t Reg, uint8_t Value);		// FORWARD
 
@@ -174,7 +173,7 @@ void						I2C_Reinit(int lev ){			// lev&1 SWRST, &2 => RCC reset, &4 => device 
 	}
 	if ( lev & 2 ){
 		RCC->APB1RSTR |= RCC_APB1RSTR_I2C1RST;		// set device reset bit for I2C1
-		tbDelay_ms( 1 );
+		tbDelay_ms( 3 ); //DEBUG  1 );
 		RCC->APB1RSTR = 0;		// TURN OFF device reset bit for I2C1
 /* reset sequence in PowerControl( ARM_POWER_FULL )
         __HAL_RCC_I2C1_FORCE_RESET();
@@ -185,7 +184,7 @@ void						I2C_Reinit(int lev ){			// lev&1 SWRST, &2 => RCC reset, &4 => device 
 	if ( lev & 1 ){
 		uint32_t cr1 = I2C1->CR1;
 		I2C1->CR1 = I2C_CR1_SWRST;			// set Software Reset bit
-		tbDelay_ms(1);
+		tbDelay_ms( 3 ); //DEBUG 1);
 		I2C1->CR1 = cr1;			// reset to previous
 	}
 }
@@ -221,7 +220,6 @@ uint8_t 				Codec_RdReg( uint8_t Reg ){																	// return value of codec
 #endif
 
 void 						Codec_WrReg( uint8_t Reg, uint8_t Value){										// write codec register Reg with Value
-if (PlayDBG & 0x10) return;		//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20 -- if STAR, no I2C
 dbgEvt( TB_akWrReg, Reg,Value,0,0);
 
 	uint32_t status;
@@ -286,6 +284,64 @@ void 						ak_CheckRegs(){																							// Debug -- read main AK4343 re
 		ak_ReportErrors();
 	#endif
 }
+void						ak_RecordEnable( bool enable ){
+#if defined( AK4637 )
+	if ( enable ){
+		// from AK4637 datasheet:
+		//ENABLE
+		// done by ak_SetMasterFreq()			//   1)  Clock set up & sampling frequency  FS3_0
+		akR.R.SigSel1.MGAIN2_0 = 0x6;			//   2)  setup mic Amp & Power  0x02: 
+		akR.R.SigSel2.MDIF = 1;						//   3)  input signal -- Differential from Electret mic	
+																			//   4)  FRN, FRATT, ADRST1_0  0x09: TimSel
+		akR.R.TimSel.FRN = 0;								//   4)  TimSel.FRN
+		akR.R.TimSel.RFATT = 0;							//   4)  TimSel.RFATT
+		akR.R.TimSel.ADRST1_0 = 0x0;				//   4)  TimSel.ADRST1_0
+																			//   5)  ALC mode   0x0A, 0x0B: AlcTimSel, AlcMdCtr1
+		akR.R.AlcTimSel.RFST1_0 = 0x0;			//   5)  AlcTimSel.RFST1_0
+		akR.R.AlcTimSel.WTM1_0 = 0x0;				//   5)  AlcTimSel.ADRST1_0
+		akR.R.AlcTimSel.EQFC1_0 = 0x2;			//   5)  AlcTimSel.EQFC1_0
+		akR.R.AlcTimSel.IVTM = 1;						//   5)  AlcTimSel.IVTM
+		akR.R.AlcMdCtr1.LMTH1_0 = 0x0;			//   5)  AlcMdCtr1.LMTH1_0
+		akR.R.AlcMdCtr1.RGAIN2_0 = 0x0;			//   5)  AlcMdCtr1.RGAIN2_0					
+		akR.R.AlcMdCtr1.LMTH2 = 0;					//   5)  AlcMdCtr1.LMTH2	
+		akR.R.AlcMdCtr1.ALCEQN = 0;					//   5)  AlcMdCtr1.ALCEQN	
+		akR.R.AlcMdCtr1.ALC = 1;						//   5)  AlcMdCtr1.ALC
+		akR.R.AlcMdCtr2.REF7_0 = 0xE1;		//   6)  REF value  0x0C: AlcMdCtr2
+		akR.R.InVolCtr.IVOL7_0 = 0xE1;		//   7)  IVOL value  0x0D: InVolCtr
+																			//   8)  ProgFilter on/off  0x016,17,21: DigFilSel1, DigFilSel2, DigFilSel3
+		akR.R.DigFilSel1.HPFAD = 1;					//   8) DigFilSel1.HPFAD
+		akR.R.DigFilSel1.HPFC1_0 = 0x0;			//   8) DigFilSel1.HPFC1_0
+		akR.R.DigFilSel2.HPF = 0;						//   8) DigFilSel2.HPF
+		akR.R.DigFilSel2.LPF = 0;						//   8) DigFilSel2.LPF
+		akR.R.DigFilSel3.EQ5_1 = 0x0;				//   8) DigFilSel3.EQ5_1
+																			//   9)  ProgFilter path  0x18: DigFilMd
+		akR.R.DigFilMd.PFDAC1_0 = 0x0;			//   9)  DigFilMd.PFDAC1_0
+		akR.R.DigFilMd.PFVOL1_0 = 0x0;			//   9)  DigFilMd.PFVOL1_0
+																			//	10)	 CoefFilter:  0x19..20, 0x22..3F: HpfC0..3, LpfC0..3 E1C0..5 E2C0..5 E3C0..5 E4C0..5 E5C0..5
+		akR.R.HpfC0.F1A7_0 	= 0xB0;					//	10)	 Hpf.F1A13_0 low
+		akR.R.HpfC1.F1A13_8 = 0x1F;					//	10)	 Hpf.F1A13_0 high
+		akR.R.HpfC2.F1B7_0 	= 0x9F;					//	10)	 Hpf.F1B13_0 low
+		akR.R.HpfC3.F1B13_8 = 0x02;					//	10)	 Hpf.F1B13_0 high
+		akR.R.LpfC0.F2A7_0 	= 0x0;					//	10)	 Lpf.F2A13_0 low
+		akR.R.LpfC1.F2A13_8 = 0x0;					//	10)	 Lpf.F2A13_0 high
+		akR.R.LpfC2.F2B7_0 	= 0x0;					//	10)	 Lpf.F2B13_0 low
+		akR.R.LpfC3.F2B13_8 = 0x0;					//	10)	 Lpf.F2B13_0 high
+																			//  11)  power up MicAmp, ADC, ProgFilter: 
+		akR.R.SigSel1.PMMP = 1;							//  11)  MicAmp 
+		akR.R.PwrMgmt1.PMADC = 1;						//  11)  ADC
+		akR.R.PwrMgmt1.PMPFIL = 1;					//  11)  ProgFilter 
+		akUpd();
+	} else {
+		//DISABLE	
+		//  12)  power down MicAmp, ADC, ProgFilter:  SigSel1.PMMP, PwrMgmt1.PMADC, .PMPFIL
+		akR.R.SigSel1.PMMP = 0;						//  12)  MicAmp 
+		akR.R.PwrMgmt1.PMADC = 0;						//  12)  ADC
+		akR.R.PwrMgmt1.PMPFIL = 0;					//  12)  ProgFilter 
+		akR.R.AlcMdCtr1.ALC = 0;						//  13)  ALC disable
+		akUpd();
+	}
+#endif
+}
 void 						ak_SpeakerEnable( bool enable ){														// enable/disable speaker -- using mute to minimize pop
 	if ( akSpeakerOn==enable )   // no change?
 		return;
@@ -319,7 +375,7 @@ void 						ak_SpeakerEnable( bool enable ){														// enable/disable speak
 			akR.R.PwrMgmt1.PMDAC = 1;							// 6) Power up DAC
 		  akR.R.PwrMgmt2.PMSL = 1;							// 7) set spkr power ON
 			akUpd();															// UPDATE all settings
-			tbDelay_ms( 30 );											// 7) wait up to 300ms   // MARC 11)
+			tbDelay_ms( 300 ); //DEBUG 30 );											// 7) wait up to 300ms   // MARC 11)
 			akR.R.SigSel1.SLPSN = 1;							// 8) exit power-save (mute) mode (==1)
 			akUpd();		
 		#endif
@@ -349,20 +405,19 @@ void						ak_PowerUp( void ){
 	gSet( gBOOT1_PDN, 1 );  // OUT: set power_down ACTIVE to so codec doesn't try to PowerUP
 	gSet( gEN_5V, 1 );			// OUT: 1 to supply 5V to codec		AP6714 EN		
 	gSet( gEN1V8, 1 );		  // OUT: 1 to supply 1.8 to codec  TLV74118 EN		
-	tbDelay_ms( 20 ); 		 	// wait for voltage regulators
+	tbDelay_ms( 40 ); //DEBUG 20 ); 		 	// wait for voltage regulators
 	
 	gSet( gBOOT1_PDN, 0 );  //  set power_down INACTIVE to Power on the codec 
-	tbDelay_ms(5); 		 			//  wait for it to start up
+	tbDelay_ms( 10 ); //DEBUG 5); 		 			//  wait for it to start up
 }
 // external interface functions
 void 						ak_Init( ){ 																								// Init codec & I2C (i2s_stm32f4xx.c)
-dbgEvt( TB_akInit, 0,0,0,0);
+	dbgEvt( TB_akInit, 0,0,0,0);
 
 	akFmtVolume 	= 0;			// reset static state
 	akSpeakerOn 	= false;
 	akMuted			 	= false;
 
-if (PlayDBG & 0x10) return;		//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x10 TREE=x20 -- if STAR, no I2C
 	ak_PowerUp(); 		// power-up codec
   I2C_Init();  			// powerup & Initialize the Control interface of the Audio Codec
 
@@ -386,7 +441,9 @@ if (PlayDBG & 0x10) return;		//PlayDBG: TABLE=x1 POT=x2 PLUS=x4 MINUS=x8 STAR=x1
 		akR.R.MdCtr3.DIF1_0 		= 3;							// DIF1_0 = 3   ( audio format = Philips )
 	#endif
 
-	ak_SetVolume( LastVolume );						// set to LastVolume used--  DEFAULT_VOLUME first time
+	if ( LastVolume == 0 ) // first time-- set to default_volume
+		LastVolume = TB_Config.default_volume;
+	ak_SetVolume( LastVolume );						// set to LastVolume used
 
 	// Extra Configuration (of the ALC)  
 	#if defined( AK4343 )
@@ -455,21 +512,20 @@ dbgEvt( TB_akPwrDn, 0,0,0,0);
 
 static uint8_t testVol = 0x19;
 
-void		 				ak_SetVolume( uint8_t Volume ){														// sets volume 0..100%  ( mediaplayer )
+void		 				ak_SetVolume( uint8_t Volume ){														// sets volume 0..10  ( mediaplayer )
 	const uint8_t akMUTEVOL = 0xCC, akMAXVOL = 0x18, akVOLRNG = akMUTEVOL-akMAXVOL;		// ak4637 digital volume range to use
-	uint8_t v = Volume>100? 100 : Volume; 
+	uint8_t v = Volume>10? 10 : Volume; 
 
 	LastVolume = v;
-	// Conversion of volume from user scale [0:100] to audio codec AK4343 scale  [akMUTEVOL..akMAXVOL] == 0xCC..0x18 
+	// Conversion of volume from user scale [0:10] to audio codec AK4343 scale  [akMUTEVOL..akMAXVOL] == 0xCC..0x18 
   //   values >= 0xCC force mute on AK4637
   //   limit max volume to 0x18 == 0dB (to avoid increasing digital level-- causing resets?)
-//#define VOLUME_CONVERT( v ) ( ((v) >= MAX_VOLUME) ? AKMAX : ((uint8_t)(AKMUTE - ((AKMUTE-AKMAX)*(v))/100))))
+  akFmtVolume = akMUTEVOL - ( v * akVOLRNG )/10; 
 	
-  akFmtVolume = akMUTEVOL - ( v * akVOLRNG )/100; 
+
+	if (Volume==99)	//DEBUG
+	{ akFmtVolume = testVol; 	testVol--; }	// test if vol>akMAXVOL causes problems
 	
-//DEBUG
-	
-	if (v==99){ akFmtVolume = testVol; 	testVol--; }	// test if vol>akMAXVOL causes problems
 	dbgEvt( TB_akSetVol, Volume, akFmtVolume,0,0);
 	dbgLog( "akSetVol v=%d akV=%x \n", v, akFmtVolume );
 	#if defined( AK4343 )
@@ -516,10 +572,10 @@ void						ak_SetMasterFreq( int freq ){															// set AK4637 to MasterMod
 		akR.R.PwrMgmt2.M_S 			= 1;					// M/S = 1   WS CLOCK WILL START HERE!
 		akR.R.PwrMgmt1.PMVCM 		= 1;					// set VCOM bit first, then individual blocks (at SpeakerEnable)
 		akUpd();															// update power & M/S
-		tbDelay_ms( 2 );											// 2ms for power regulator to stabilize
+		tbDelay_ms( 4 ); //DEBUG 2 );											// 2ms for power regulator to stabilize
 		akR.R.PwrMgmt2.PMPLL 		= 1;					// enable PLL 
 		akUpd();															// start PLL 
-		tbDelay_ms( 5 );											// 5ms for clocks to stabilize
+		tbDelay_ms( 10 ); //DEBUG 5 );											// 5ms for clocks to stabilize
 	#endif
 }
 
