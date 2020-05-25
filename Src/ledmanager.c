@@ -49,9 +49,7 @@ static osThreadAttr_t 	thread_attr;
 
 void 								LED_Init( GPIO_ID led ){		// configure GPIO for output PUSH_PULL slow
 	gConfigOut( led );
-	gSet( led, 1 ); // GPIO_PinWrite( gpio_def[led].port, gpio_def[led].pin, 1 );		// on then off
-	tbDelay_ms( 200 );
-  gSet( led, 0 );  //GPIO_PinWrite( gpio_def[led].port, gpio_def[led].pin, 0 );
+	gSet( led, 0 ); 
 }
 
 ledShade						asShade( char c ){						// R r G g O o Y y __ => ledShade 
@@ -192,9 +190,9 @@ void								ledThread( void *arg ){
 void 								ledFg( const char *def ){						// install 'def' as foreground pattern
 	if ( def[0]==0 ){  	// "" => switch to background pattern
 		currSeq = bgSeq;
-		logEvtNS( "LED", "fg", "off" );
+		dbgLog( "ledFg: off \n", def );
 	} else {
-		logEvtNS( "LED", "fg", def );
+		dbgLog( "ledFg: %s \n", def );
 		convertSeq( prepSeq, def );	// convert into prep
 		ledSeq *sv = fgSeq;			// swap prep with fg
 		fgSeq = prepSeq;
@@ -204,7 +202,7 @@ void 								ledFg( const char *def ){						// install 'def' as foreground patte
 	}
 }
 void								ledBg( const char *def ){						// install 'def' as background pattern
-	logEvtNS( "LED", "bg", def );
+	dbgLog( "ledBg: %s \n", def );
 	convertSeq( prepSeq, def );		// convert into prep
 	prepSeq->repeat = true;
 	
