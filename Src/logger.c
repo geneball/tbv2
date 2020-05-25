@@ -5,13 +5,10 @@
 #include "log.h"
 
 static FILE *		logF = NULL;			// file ptr for open log file
+static int			totLogCh = 0;
 static char			statFileNm[60];		// local storage for computing .stat filepaths
 
-
 void						setupRTC( fsTime time );	// from PowerManager
-
-//fsTime					RTC_initTime;					// time from status.txt 
-//bool						firstBoot = false;		// true if 1st run after data loaded
 
 // const int 			MAX_STATS_CACHED = 10;   // avoid warning:  #3170-D: use of a const variable in a constant expression is nonstandard in C
 #define					MAX_STATS_CACHED 10
@@ -21,9 +18,7 @@ static short		touched[ MAX_STATS_CACHED ];
 static MsgStats	sStats[ MAX_STATS_CACHED ];
 const int				STAT_SIZ = sizeof( MsgStats );
 
-//#define 				MAX_TB_HIST 50
-//typedef char *	TBH_arr[ MAX_TB_HIST*2 ];
-TBH_arr 					TBH;
+TBH_arr 				TBH;	//DEBUG -- accessible log history
 
 const int				MAX_EVT_LEN1 = 32, MAX_EVT_LEN2 = 64;
 static void			initTBHistory(){
@@ -35,7 +30,7 @@ static void			initTBHistory(){
 	}
 	Dbg.TBookLog = &TBH;
 }
-static void			addHist( const char * s1, const char * s2 ){			// INTERNAL:  prepend evtMsg to TBHist[] for DEBUG
+static void			addHist( const char * s1, const char * s2 ){			// DEBUG:  prepend evtMsg to TBHist[] for DEBUG
 	if ( TBH[0]==NULL ) 
 		initTBHistory();
 	
@@ -50,74 +45,98 @@ static void			addHist( const char * s1, const char * s2 ){			// INTERNAL:  prepe
 	strcpy( old1, s1 );
 	strcpy( old2, s2 );
 }
-void						logPowerUp( void ){																// re-init logger after USB or sleeping
+
+char *					loadLine( char * line, char * fpath, fsTime *tm ){		// => 1st line of 'fpath'
+	FILE *stF = fopen( fpath, "rb" );
+	char * txt = fgets( line, 200, stF );
+	if ( txt==NULL ) return NULL;
+	 
+	char *pRet = strchr( txt, '\r' );
+	if ( pRet!=NULL ) *pRet = 0;
+	fclose( stF );
+	
+	fsFileInfo fAttr;
+	fAttr.fileID = 0;
+	fsStatus fStat = ffind( fpath, &fAttr );
+	if ( fStat != fsOK ){
+		dbgLog( "FFind => %d for %s", fStat, TBP[ pCSM_VERS ] );
+		return txt;
+	}
+	if (tm!=NULL) 
+		*tm = fAttr.time;
+	return txt;
+}
+void 						writeLine( char * line, char * fpath ){
+	FILE *stF = fopen( fpath, "wb" );
+	if ( stF!=NULL ){
+		int nch = fprintf( stF, "%s\n", line );
+		int err = fclose( stF );
+	  dbgEvt( TB_wrLnFile, nch, err, 0, 0 );
+	}
+}
+void						logPowerUp( bool reboot ){											// re-init logger after reboot, USB or sleeping
 	char line[200];
 	logF = fopen( TBP[ pLOG_TXT ], "a" );		// open file for appending
+	totLogCh = 0;
 	if ( logF==NULL ){
 		TBDataOK = false;
 		errLog( "Log file failed to open: %s", TBP[ pLOG_TXT ] );
-	} else {
-		logEvt( "\n\n------------" );
-		logEvtNS( "TB_V2", "firmware", TBV2_Version );
+		return;
+	} 
+	
+	if ( reboot ){
+		totLogCh = 0;			// tot chars appended
+		logEvt( "\n\n--------" );
+		logEvtNS( "TB_V2", "Firmware", TBV2_Version );
 		logEvtS( "CPU",  CPU_ID );
 		logEvtS( "TB_ID",  TB_ID );
-		
-		fsFileInfo fAttr;
-		fAttr.fileID = 0;
-		fsStatus fStat = ffind( TBP[ pSTATUS ], &fAttr );
-		if ( fStat==fsOK ){		// status.txt marker file exists-- when created?
-			char dt[30];
-			fsTime tm = fAttr.time;
-			sprintf( dt, "%d-%d-%d %d:%d", tm.year, tm.mon, tm.day, tm.hr, tm.min );
-			logEvtNS( "TB_Load", "date", dt );
-			FILE *stF = fopen( TBP[ pSTATUS ], "rb" );
-			char * status = fgets( line, 200, stF );
-			if ( status!=NULL ){ 
-				char *pRet = strchr( status, '\r' );
-				if ( pRet!=NULL ) *pRet = 0;
-				logEvtNS( "TB_Stat", "txt", status );
-			}
-			fclose( stF );
-			
-			stF = fopen( TBP[ pBOOTCNT ], "rb" );		// read or init bootcnt.txt
-			int bootcnt;
-			if ( stF==NULL || fscanf( stF, " %d", &bootcnt )!=1 )
-				bootcnt = 0;  
-
-			if ( bootcnt==0 ){  // FirstBoot after install
-				setupRTC( tm );			// init RTC and set to date/time from status.txt
-			} else {	// read & report RTC value
-				showRTC();
-			}
-				
-			bootcnt++;
-			fclose( stF );
-
-			stF = fopen( TBP[ pBOOTCNT ], "wb" );		// write updated bootcnt.txt
-			if ( stF!=NULL ){
-				fprintf( stF, " %d", bootcnt );
-				fclose( stF );
-		  }
-			logEvtNI( "BootCnt", "#", bootcnt );
-			dbgEvt( TB_bootCnt, bootcnt, 0,0,0);
-			
-		} else {
-			logEvtNS( "FileError", "missing", TBP[ pSTATUS ] );
-		}
 	}
+	
+	fsFileInfo fAttr;
+	fAttr.fileID = 0;
+	fsStatus fStat = ffind( TBP[ pCSM_VERS ], &fAttr );
+	if ( fStat != fsOK ){
+		logEvtNS( "FileError", "missing", TBP[ pCSM_VERS ] );
+		return;
+	}
+		
+	fsTime tm;
+	char * status = loadLine( line, TBP[ pCSM_VERS ], &tm );
+	// version.txt marker file exists-- when created?
+	char dt[30];
+	sprintf( dt, "%d-%d-%d %d:%d", tm.year, tm.mon, tm.day, tm.hr, tm.min );
+	logEvtNSNS( "TB_CSM", "dt", dt, "ver", status );
+	
+	char * boot = loadLine( line, TBP[ pBOOTCNT ], &tm ); 
+	int bootcnt = 0;
+	if ( boot!=NULL ) sscanf( boot, " %d", &bootcnt );
+	bootcnt++;
+	sprintf( line, " %d", bootcnt );
+	writeLine( line,  TBP[ pBOOTCNT ] );
+
+	sprintf( dt, "%d-%d-%d %d:%d", tm.year, tm.mon, tm.day, tm.hr, tm.min );
+	logEvtNSNI( "BOOT", "dt", dt, "cnt", bootcnt );
+	dbgEvt( TB_bootCnt, bootcnt, 0,0,0);
+		
+	if ( bootcnt==1 ){  // FirstBoot after install
+		logEvtNS( "setRTC", "DtTm", dt );
+		setupRTC( tm );			// init RTC and set to date/time from status.txt
+	} else 	// read & report RTC value
+		showRTC();
 }
 void						logPowerDown( void ){															// save & shut down logger for USB or sleeping
 	flushStats();	
 	if ( logF==NULL ) return;
-	logEvt( "PwrDown" );
+	logEvtNI( "WrLog", "nCh", totLogCh );
 #ifdef USE_FILESYS
-	fflush( logF );
-	fclose( logF );
+	int err = fflush( logF );
+	int err2 = fclose( logF );
+	dbgEvt( TB_wrLogFile, totLogCh, err,err2,0);
 #endif
 	logF = NULL;
 }
 void						initLogger( void ){																// init tbLog file on bootup
-	logPowerUp();
+	logPowerUp( true );
 	
 	//registerPowerEventHandler( handlePowerEvent );
 	memset( lastRef, 0, (sizeof lastRef));
@@ -149,8 +168,9 @@ char *					logMsgName( char *path, const char * sNm, short iSubj, short iMsg, co
 void 						saveStats( MsgStats *st ){ 												// save statistics block to file
 	char * fnm = statFNm( st->SubjNm, st->iSubj, st->iMsg );
 	FILE *stF = fopen( fnm, "wb" );
-	fwrite( st, STAT_SIZ, 1, stF );
-	fclose( stF );
+	int cnt = fwrite( st, STAT_SIZ, 1, stF );
+	int err = fclose( stF );
+	dbgEvt(TB_wrStatFile, st->iSubj, st->iMsg, cnt,err);
 }
 void						flushStats(){																			// save all cached stats files
 	short cnt = 0;
@@ -161,7 +181,7 @@ void						flushStats(){																			// save all cached stats files
 			cnt++;
 		}
 	}
-	logEvtNI( "StatsSaved", "cnt", cnt );
+	logEvtNI( "SvStats", "cnt", cnt );
 }
 MsgStats *			loadStats( const char *subjNm, short iSubj, short iMsg ){		// load statistics snapshot for Subj/Msg
 	int oldestIdx = 0;  // becomes idx of block with lowest lastRef
@@ -173,24 +193,31 @@ MsgStats *			loadStats( const char *subjNm, short iSubj, short iMsg ){		// load 
 			return &sStats[ i ];
 		} else if ( lastRef[ i ] < lastRef[ oldestIdx ] )			
 			oldestIdx = i;
-	}	
-	MsgStats * st = &sStats[ oldestIdx ];		// not loaded -- load into LRU block	
+	}
+	// not loaded -- load into LRU block	
+	MsgStats * st = &sStats[ oldestIdx ];	
 	if ( touched[ oldestIdx ] != 0 ) {
 		saveStats( &sStats[ oldestIdx ] );		// save it, if occupied
 		touched[ oldestIdx ] = 0; 
 	}
-	short newStatIdx = oldestIdx;
 	
+	short newStatIdx = oldestIdx;
 	char * fnm = statFNm( subjNm, iSubj, iMsg );
 	FILE *stF = fopen( fnm, "rb" );
-	if ( stF==NULL || fread( st, STAT_SIZ, 1, stF ) != STAT_SIZ ){  // file not defined
+	if ( stF == NULL || fread( st, STAT_SIZ, 1, stF ) != 1 ){  // file not defined
+		if ( stF!=NULL ){ 
+			dbgLog("stats S%d, M%d size wrong \n", iSubj, iMsg ); 
+			fclose( stF );
+		}
 		memset( st, 0, STAT_SIZ );		// initialize new block
 		st->iSubj = iSubj;
 		st->iMsg = iMsg;
 		strncpy( st->SubjNm, subjNm, MAX_SUBJ_NM );
 	} 
-	else 
-		fclose( stF );
+	else { // success--
+		dbgEvt( TB_LdStatFile, iSubj,iMsg, 0,0);
+		fclose( stF );		
+	}
 	lastRef[ newStatIdx ] = nRefs;
 	touched[ newStatIdx ] = 1;
 	return st;
@@ -201,14 +228,21 @@ void						logEvt( const char *evtID ){											// write log entry: 'EVENT, at:
 void						logEvtS( const char *evtID, const char *args ){		// write log entry: 'EVENT, at:    d.ddd, ARGS'
 	int 		ts = tbTimeStamp();
 	char 		evtBuff[ MAX_EVT_LEN1 ];
-	
-	sprintf( evtBuff,  "%8s, at:%5d.%03d", evtID, ts/1000, ts%1000 );
+	int tsec = ts/100, sec = tsec/10, min = sec/60, hr = min/60;
+	sprintf( evtBuff,  "%8s: %d_%02d_%02d.%d", evtID, hr, min %60, sec % 60, tsec % 10 );
 	addHist( evtBuff, args );
-	if ( logF==NULL ) return;
 	dbgLog( "%s %s\n", evtBuff, args );
 #ifdef USE_FILESYS
-	fprintf( logF, "%s %s\n", evtBuff, args );
-	fflush( logF );
+	if ( logF==NULL ) return;
+	int nch = fprintf( logF, "%s, %s\n", evtBuff, args );
+	if (nch < 0) 
+		dbgLog("LogErr: %d", nch );
+	else
+		totLogCh += nch;
+	int err = fflush( logF );
+	dbgEvt( TB_flshLog, nch, totLogCh, err,0);
+	if ( err<0 ) 
+		dbgLog("Log flush err %d \n", err );
 #endif
 }
 void						logEvtNS( const char *evtID, const char *nm, const char *val ){	// write log entry: "EVENT, at:    d.ddd, NM: 'VAL' "
@@ -226,9 +260,14 @@ void						logEvtNSNSNS( const char *evtID, const char *nm, const char *val, cons
 	sprintf( args, "%s: '%s', %s: '%s', %s: '%s'", nm, val, nm2, val2, nm3, val3 );
 	logEvtS( evtID, args );
 }
-void						logEvtNSNI( const char *evtID, const char *nm, const char *val, const char *nm2, short val2 ){	// write log entry
+void						logEvtNSNI( const char *evtID, const char *nm, const char *val, const char *nm2, int val2 ){	// write log entry
 	char args[300];
 	sprintf( args, "%s: '%s', %s: %d", nm, val, nm2, val2 );
+	logEvtS( evtID, args );
+}
+void						logEvtNINI( const char *evtID, const char *nm, int val, const char *nm2, int val2 ){	// write log entry
+	char args[300];
+	sprintf( args, "%s: %d, %s: %d", nm, val, nm2, val2 );
 	logEvtS( evtID, args );
 }
 void						logEvtNI( const char *evtID, const char *nm, int val ){			// write log entry: "EVENT, at:    d.ddd, NM: VAL "
