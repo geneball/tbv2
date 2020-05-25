@@ -255,14 +255,15 @@ void showRTC( ){
 	char dttm[50];
 	sprintf(dttm, "%s %d-%s-%d %d:%d:%d", wkdy[day], date, month[mon], yr, hr,min,sec );
 	logEvtNS( "RTC", "DtTm", dttm );
-  dbgLog("RTC: %s \n", dttm );
+ // dbgLog("RTC: %s \n", dttm );
 }
 
 static uint32_t lastTmStmp = 0;
 static uint32_t lastHalTick = 0, HalSameCnt = 0;
  
 uint32_t 								tbTimeStamp(){																	// return msecs since boot
-	lastTmStmp =  osKernelGetTickCount();
+	if ( osKernelGetState()==osKernelRunning )
+		lastTmStmp =  osKernelGetTickCount();
 	return lastTmStmp;
 }
 int 										delayReq, actualDelay;
@@ -295,7 +296,7 @@ void *									tbAlloc( int nbytes, const char *msg ){					// malloc() & check f
 	void *mem = (void *) malloc( nbytes );
 	dbgEvt( TB_Alloc, nbytes, (int)mem, tbAllocTotal, 0 );
 	if ( mem==NULL ){
-		  errLog( "out of heap %s: tbAllocTotal=%d \n", msg, tbAllocTotal );
+		  errLog( "no heap %s: rq=%d Tot=%d \n", msg, nbytes, tbAllocTotal );
 			tbErr("out of heap");
 	}
 	return mem;
@@ -338,19 +339,12 @@ void 										tbErr( const char * fmt, ... ){											// report fatal error
 	va_start( arg_ptr, fmt );
 	vprintf( fmt, arg_ptr );
 	va_end( arg_ptr );
-//	errLog( "TBErr: %s \n", msg );
-	//logEvtS( "*** tbError: ", msg );
+	logEvtS( "*** tbError: ", fmt );
 	dbgEvtS( TB_Error, fmt );
+	logPowerDown();		// try to save log
 	
-	while ( true ){ 
-//	for (int i=0; i<20; i++){
-		flashLED( "RRR__GGG__" );
-	}
-	
-//	gSet( gRED, 1 );
-//	gSet( gGREEN, 1 );
-//	__breakpoint(0);
-//	ledFg( "R8_2 R8_2 R8_20!" );
+	ledFg( "R8_2 R8_2 R8_20!" );
+	while ( true ){ }
 }
 void										tbShw( const char *s, char **p1, char **p2 ){  	// assign p1, p2 to point into s for debugging
 	short len = strlen(s);
@@ -582,7 +576,6 @@ void 										HardFault_Handler_C( svFault_t *svFault, uint32_t linkReg ){
   if ( usgF ) printf( "  Usg: 0x%04x \n", usgF );
   if ( busF ){
 		printf( "  Bus: 0x%02x \n   BFAR: 0x%08x \n", busF, svSCB.BFAR );
-		printAudSt(); // show audio state for bus faults
 	}
   if ( memF ) printf( "  Mem: 0x%02x \n   MMAR: 0x%08x \n", memF, svSCB.MMAR );
 	
