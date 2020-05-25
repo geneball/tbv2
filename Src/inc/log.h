@@ -32,7 +32,8 @@ typedef struct {	// MsgStats -- stats for iSubj/iMsg
 //
 // external functions
 extern void			initLogger( void );												// init tbLog file on bootup
-extern void			logPowerUp( void );												// re-init logger after USB or sleeping
+extern void			logPowerUp( bool reboot );								// re-init logger after USB or sleeping
+extern char *		loadLine( char * line, char * fpath, fsTime *tm );		// => 1st 200 chars of 'fpath' & *tm to lastAccessed
 extern void			logPowerDown( void );											// save & shut down logger for USB or sleeping
 extern void			saveStats( MsgStats *st ); 										// save statistics block to file
 extern char *		logMsgName( char *path, const char * sNm, short iSubj, short iMsg, const char *ext );	// build & => file path for next msg for Msg_<sNm>_S<iS>_M<iM>.<ext>
@@ -44,6 +45,7 @@ extern void			logEvtNS( const char *evtID, const char *nm, const char *val );	//
 extern void			logEvtNI( const char *evtID, const char *nm, int val );			// write log entry: "EVENT, at:    d.ddd, NM: VAL "
 extern void			logEvtNSNS( const char *evtID, const char *nm, const char *val, const char *nm2, const char *val2 );	// write log entry
 extern void			logEvtNSNSNS( const char *evtID, const char *nm, const char *val, const char *nm2, const char *val2, const char *nm3, const char *val3 );	// write log entry
-extern void			logEvtNSNI( const char *evtID, const char *nm, const char *val, const char *nm2, short val2 );	// write log entry
+extern void			logEvtNINI( const char *evtID, const char *nm, int val, const char *nm2, int val2 );	// write log entry
+extern void			logEvtNSNI( const char *evtID, const char *nm, const char *val, const char *nm2, int val2 );	// write log entry
 
 #endif  // log.h

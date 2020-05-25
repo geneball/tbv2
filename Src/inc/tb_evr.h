@@ -52,6 +52,13 @@ extern void 			dbgEvtS( int id, const char *d );
 #define TB_Fault            EventID(EventLevelError,  TB_no,    0x02)
 #define TB_Alloc            EventID(EventLevelOp,     TB_no,    0x03)
 #define TB_bootCnt          EventID(EventLevelOp,     TB_no,    0x04)
+#define TB_wrMsgFile		EventID(EventLevelAPI,    TB_no,    0x05)
+#define TB_wrLogFile		EventID(EventLevelAPI,    TB_no,    0x06)
+#define TB_wrAudFile		EventID(EventLevelAPI,    TB_no,    0x07)
+#define TB_wrLnFile			EventID(EventLevelAPI,    TB_no,    0x08)
+#define TB_wrStatFile		EventID(EventLevelAPI,    TB_no,    0x09)
+#define TB_LdStatFile		EventID(EventLevelAPI,    TB_no,    0x0A)
+#define TB_flshLog			EventID(EventLevelOp,     TB_no,    0x0B)
 
 #define TBAud_no            (0x02)
 #define TB_ldBuff           EventID(EventLevelDetail, TBAud_no, 0x00)
@@ -72,6 +79,7 @@ extern void 			dbgEvtS( int id, const char *d );
 #define TB_stRecord         EventID(EventLevelOp,     TBAud_no, 0x0f)
 #define TB_audRecClose      EventID(EventLevelOp,     TBAud_no, 0x10)
 #define TB_audRecDn         EventID(EventLevelOp,     TBAud_no, 0x11)
+#define TB_wrRecBuff        EventID(EventLevelOp,     TBAud_no, 0x12)
 
 #define TBsai_no            (0x03)
 #define TB_saiEvt           EventID(EventLevelDetail, 		TBsai_no, 0x04)
@@ -90,6 +98,7 @@ extern void 			dbgEvtS( int id, const char *d );
 #define TB_akSpkEn          EventID(EventLevelOp,     		TBsai_no, 0x11)
 #define TB_saiRcv        		EventID(EventLevelDetail,     TBsai_no, 0x12)
 #define TB_saiRXDN          EventID(EventLevelDetail, 		TBsai_no, 0x13)
+#define TB_relBuff          EventID(EventLevelDetail, 		TBsai_no, 0x14)
 
 #define TBCSM_no            (0x04)
 #define TB_csmChSt					EventID(EventLevelOp,     		TBCSM_no, 0x00)

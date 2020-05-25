@@ -8,10 +8,12 @@
 
 typedef void(*HPE)( int );		// type for ptr to powerEventHandler() 
 
+
 extern void		initPowerMgr( void );							// initialize PowerMgr & start thread
 extern void 	enableSleep( void );							// low power mode -- CPU stops till interrupt
 extern void		powerDownTBook( void );						// shut down TBook
 extern void		wakeup( void );
+extern void		setPowerCheckTimer( int timerMs );	// set delay in msec between power checks
 
 #endif	/* POWER_MGR_H */
 

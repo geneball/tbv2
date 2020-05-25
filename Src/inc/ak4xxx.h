@@ -451,7 +451,7 @@ typedef  union {
 			unsigned int DVTM				: 1;
 			unsigned int Z3_1				: 3;
 			unsigned int FRN				: 1;
-			unsigned int FRATT			: 1;
+			unsigned int RFATT			: 1;
 			unsigned int ADRST1_0		: 2;
 		} TimSel;
 		__packed struct { // 0AH ALC Timer Select 
@@ -657,7 +657,7 @@ typedef  union {
 	#define   AK_Digital_Filter_Mode_RST		0x03
 #endif
 
-#define MAX_VOLUME   100
+#define MAX_VOLUME   10
 #define MIN_VOLUME   0
 #define DEFAULT_VOLUME   80
 
@@ -666,11 +666,11 @@ void 						ak_Init( void );											// init I2C & codec
 void						I2C_Reinit(int lev );									// lev&1 SWRST, &2 => RCC reset, &4 => device re-init
 void						ak_PowerUp( void );										// supply power to codec, & disable PDN, before re-init
 void 						ak_PowerDown( void );									// power down entire codec, requires re-init
-void		 				ak_SetVolume( uint8_t Volume );				// 0..100%
+void		 				ak_SetVolume( uint8_t Volume );				// 0..10
 void		 				ak_SetMute( bool muted );							// for temporarily muting, while speaker powered
 void 						ak_SetOutputMode( uint8_t Output );
 void 						ak_SpeakerEnable( bool enable );			// power up/down lineout, DAC, speaker amp
 void						ak_SetMasterFreq( int freq );					// set AK4637 to MasterMode, 12MHz ref input to PLL, audio @ 'freq'
 void						ak_MasterClock( bool enable );				// enable/disable PLL (Master Clock from codec) -- fill DataReg before enabling 
-
+void						ak_RecordEnable( bool enable );				// power up/down microphone amp, ADC, ALC, filters
 #endif /* __AK4xxx_H */

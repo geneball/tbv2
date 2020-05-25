@@ -131,8 +131,8 @@ extern const int 	CONTROL_STACK_SIZE;		// opens in/out files
 extern const int 	LED_STACK_SIZE;
 
 // SD card path definitions  
-extern char * TBP[];			// indexed by pSTATUS.. pPACKAGE_DIR
-extern const int 	pSTATUS;
+extern char * TBP[];			// indexed by pCSM_VERS.. pPACKAGE_DIR
+extern const int 	pCSM_VERS;
 extern const int	pBOOTCNT; 
 extern const int	pCSM_DEF;
 extern const int	pLOG_TXT;
@@ -140,15 +140,7 @@ extern const int	pSTATS_PATH;
 extern const int	pMSGS_PATH;
 extern const int	pLIST_OF_SUBJS;
 extern const int	pPACKAGE_DIR;
-
-//extern const char *	TBOOK_STATUS; 
-//extern const char *	TBOOK_BOOTCNT; 
-//extern const char *	TBOOK_CSM_DEF;
-//extern const char *	TBOOK_LOG_TXT;
-//extern const char *	TBOOK_STATS_PATH;
-//extern const char *	TBOOK_MSGS_PATH;
-//extern const char *	TBOOK_LIST_OF_SUBJS;
-//extern const char *	TBOOK_PACKAGE_DIR;
+extern const int	pPKG_VERS;
 
 //TBOOK error codes
 extern const int 	TB_SUCCESS;
