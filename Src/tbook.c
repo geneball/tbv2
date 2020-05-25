@@ -6,7 +6,7 @@
 #include "mediaPlyr.h"			// thread to watch audio status
 #include "fs_evr.h"					// FileSys components
 
-const char * 	TBV2_Version 				= "V2.05 of 16-May-2020";
+const char * 	TBV2_Version 				= "V2.06 of 25-May-2020";
 
 //
 // Thread stack sizes
@@ -17,7 +17,8 @@ const int 		MEDIA_STACK_SIZE 		= 4048;		// opens in/out files
 const int 		CONTROL_STACK_SIZE 	= 1024;		// opens in/out files
 const int 		LED_STACK_SIZE 			= 512;
 
-const int pSTATUS 				= 0;
+//const int pSTATUS 				= 0;
+const int pCSM_VERS				= 0;
 const int	pBOOTCNT 				= 1; 
 const int	pCSM_DEF 				= 2;
 const int	pLOG_TXT 				= 3;
@@ -25,10 +26,11 @@ const int	pSTATS_PATH 		= 4;
 const int	pMSGS_PATH 			= 5;
 const int	pLIST_OF_SUBJS 	= 6;
 const int	pPACKAGE_DIR		= 7;
-const int pAUDIO = 8;		// DEBUG
-const int pLAST = 8;
+const int pPKG_VERS  		  = 8;
+const int pAUDIO = 9;		// DEBUG
+const int pLAST = 9;
 char * TBP[] = {
-		"M0:/system/status.txt",
+		"M0:/system/version.txt",
 		"M0:/system/bootcount.txt",
 		"M0:/system/control.def",
 		"M0:/log/tbLog.txt",
@@ -36,6 +38,7 @@ char * TBP[] = {
 		"M0:/messages/",
 		"M0:/package/list_of_subjects.txt",
 		"M0:/package/",
+		"M0:/package/version.txt",
 		"M0:/audio.wav"
 };
 	
@@ -239,7 +242,7 @@ void talking_book( void *argument ) {
 			flashCode( 10 );		// R G R G : not M0:
 			flashLED( "__" );
 		}
-		for ( int i = pSTATUS; i <= pLAST; i++ ){		// change paths to fsDevs[0]
+		for ( int i = pCSM_VERS; i <= pLAST; i++ ){		// change paths to fsDevs[0]
 			setDev( TBP[ i ], fsDevs[0] );
 		}
 		if ( fsNDevs > 1 ){
@@ -251,25 +254,23 @@ void talking_book( void *argument ) {
 			}
 		}
 		
-		if ( gGet( gMINUS ) || !fexists( TBP[pSTATUS] ))	
+		if ( gGet( gMINUS ) || !fexists( TBP[pCSM_VERS] ))	
 			debugLoop( );
 	}
 
 	// signal start
-	flashLED( "GGGGGRRRRR" );
+//	flashLED( "GGGGGRRRRR" );
 
 	initLogger( );
-	logEvt( "PowerUp" );
+//	logEvt( "PowerUp" );
 
 	initLedManager();									//  Setup GPIOs for LEDs
 	
 	initInputManager();								//  Initialize keypad handler & thread
 	
-//	const char* startUp = "R3G3_4 R3G3_4 R3G3_4";
-//	ledFg( startUp );
+	const char* startUp = "R3G3_4 R3G3_4 R3G3_4";
+	ledFg( startUp );
 	
-//	initUSBManager( );
-
 	initControlManager();		// instantiate ControlManager & run on this thread-- doesn't return
 }
 // end  tbook.c
