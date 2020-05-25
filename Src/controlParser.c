@@ -1,6 +1,7 @@
 // TBookV2  controlParser.c
 //   Gene Ball  May2018
 
+#include "tbook.h"
 #include "controlMgr.h"
 
 
@@ -45,9 +46,15 @@ void 					readContent( void ){		// parse list_of_subjects.txt & messages.txt for
 	FILE *inFile = fopen( TBP[ pLIST_OF_SUBJS ], "rb" );
 	if ( inFile==NULL )
 		tbErr( "list_of_subjects file not found" );
+	
+	char 		line[200], dt[30];			// up to 200 characters per line
+	fsTime tm;
+	char *	contentVersion = loadLine( line, TBP[ pPKG_VERS ], &tm );
+	sprintf( dt, "%d-%d-%d %d:%d", tm.year, tm.mon, tm.day, tm.hr, tm.min );
+	logEvtNSNS( "Package", "dt", dt, "ver", contentVersion );
+	
 	TknID 	lineTkns[20];
 	short 	nLnTkns = 0;		// num tokens in current line
-	char 	line[200];			// up to 200 characters per line
 	char	msg_txt_fname[MAX_PATH+15];
 	while (true){
 		char *s = fgets( line, 200, inFile );
