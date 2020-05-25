@@ -6,6 +6,7 @@
 const int 									CODEC_DATA_TX_DN   =	0x01; 			// signal sent by SAI callback when an buffer completes
 const int 									CODEC_PLAYBACK_DN	 =  0x02;				// signal from SAI on playback done
 const int 									CODEC_DATA_RX_DN   =	0x04; 			// signal sent by SAI callback when a buffer has been filled
+const int 									CODEC_RECORD_DN    =	0x08; 			// signal sent by SAI callback when recording stops
 const int 									MEDIA_PLAY_EVENT	 =	0x10;
 const int 									MEDIA_RECORD_START =	0x20;
 
@@ -108,7 +109,7 @@ void					stopRecording( void ){  						// stop recording
 //		CODEC_PLAY_DONE 	=> send AudioDone CSM event
 ***************/
 static void 	mediaThread( void *arg ){						// communicates with audio codec for playback & recording		
-	const int MEDIA_EVENTS = MEDIA_PLAY_EVENT | MEDIA_RECORD_START | CODEC_DATA_TX_DN | CODEC_DATA_RX_DN | CODEC_PLAYBACK_DN;
+	const int MEDIA_EVENTS = MEDIA_PLAY_EVENT | MEDIA_RECORD_START | CODEC_DATA_TX_DN | CODEC_DATA_RX_DN | CODEC_PLAYBACK_DN | CODEC_RECORD_DN;
 	while (true){		
 		uint32_t flags = osEventFlagsWait( mMediaEventId, MEDIA_EVENTS,  osFlagsWaitAny, osWaitForever );
 		
@@ -121,6 +122,9 @@ static void 	mediaThread( void *arg ){						// communicates with audio codec for
 			
 		} else if ( (flags & CODEC_PLAYBACK_DN) != 0 ){				// playback complete
 			audPlaybackComplete();
+			
+		} else if ( (flags & CODEC_RECORD_DN) != 0 ){				// recording complete
+			audRecordComplete();
 
 		} else if ( (flags & MEDIA_PLAY_EVENT) != 0 ){				// request to start playback
 			if ( mPlaybackFilePath[0] == 0 ) continue;
