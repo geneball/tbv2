@@ -111,10 +111,11 @@ static void		saveWriteMsg( char *txt ){				// save 'txt' in Msg file
 	tbSubject * tbS = TBookSubj[ TBook.iSubj ];
 	char path[MAX_PATH];
 	char * fNm = logMsgName( path, tbS->name, TBook.iSubj, TBook.iMsg, ".txt" );		// build file path for next text msg for S<iS>M<iM>
-	logEvtNSNS( "writeMsg", "file", fNm, "msg", txt );
 	FILE* outFP = fopen( fNm, "w" );
-	fputs( txt, outFP );
-	fclose( outFP ); 
+	int nch = fprintf( outFP, "%s\n", txt );
+	int err = fclose( outFP ); 
+	dbgEvt( TB_wrMsgFile, nch, err, 0, 0 );
+	logEvtNSNS( "writeMsg", "file", fNm, "msg", txt );
 }
 static void 	USBmode( bool start ){					// start (or stop) USB storage mode
 	if ( start ){
@@ -122,9 +123,10 @@ static void 	USBmode( bool start ){					// start (or stop) USB storage mode
 		logPowerDown();				// flush & shut down logs
 		enableMassStorage( "M0:", NULL, NULL, NULL );
 	} else {	
-		logEvt( "exitUSB" );
 		disableMassStorage();
-		logPowerUp();	
+		ledFg( "_" );
+		logPowerUp( false );	
+		logEvt( "exitUSB" );
 	} 
 }
 static int		stIdx( int iSt ){
@@ -176,7 +178,7 @@ static void 	doAction( Action act, char *arg, int iarg ){	// execute one csmActi
 			break;
 		case finishRec:
 			stopRecording(); 
-			logEvt( "finishRec" );
+			logEvt( "stopRec" );
 			break;
 		case writeMsg:
 			saveWriteMsg( arg );
@@ -225,7 +227,6 @@ static void 	doAction( Action act, char *arg, int iarg ){	// execute one csmActi
 			break;
 		case powerDown:		
 			powerDownTBook();
-			//TODO:  powermanager powerDown
 			break;
 		default:				break; 
 	}
@@ -280,12 +281,6 @@ static void		tbTimer( void * eNum ){
 static void 	executeCSM( void ){						// execute TBook control state machine
 	TB_Event *evt;
 	osStatus_t status;
-
-	for ( int it=0; it<3; it++ ){
-		timers[it] = osTimerNew( tbTimer, osTimerOnce, (void *)it, NULL );
-		if ( timers[it] == NULL ) 
-			tbErr( "timer not alloc'd" );
-	}
 	
 	TBook.volume = TB_Config.default_volume;
 	TBook.speed = TB_Config.default_speed;
@@ -336,7 +331,7 @@ static void 	runCSM(  ){								// CSM thread -- called by tbook after everythin
 }
 
 
-// debug power signals
+/* debug power signals
 const int numPwrSig = 7;
 GPIO_ID pwrID[] = { gADC_ENABLE, gSC_ENABLE, g3V3_SW_EN, gEN_5V, gEN1V8, gBOOT1_PDN, gPA_EN };
 								//				PA2		PD1		PD6			PD4		PD5		PB2			PD3
@@ -368,197 +363,6 @@ void dbgTgl( char * enm,  int i ){
 	gSet( id, v=='+'? 1 : 0 );
 	showSig( enm, i );
 }
-
-
-static void 	eventTest(  ){					// report Events until DFU (pot table)
-	TB_Event *evt;
-	osStatus_t status;
-
-	dbgLog( "EvtTst pot_tab\n" );
-	while (true) {
-	  status = osMessageQueueGet( osMsg_TBEvents, &evt, NULL, osWaitForever );  // wait for next TB_Event
-		if (status != osOK) 
-			tbErr(" EvtQGet error");
-
-	  TBook.lastEventName = eventNm( evt->typ );
-		dbgLog( " %s \n", eventNm( evt->typ ));
-		dbgEvt( TB_csmEvt, evt->typ, tbTimeStamp(), 0, 0);
-		
-		if ( evt->typ == FirmwareUpdate ) return;
-	}
-}
-
-static void 	controlTest(  ){					// CSM test procedure
-	TB_Event *evt;
-	osStatus_t status;
-	MediaState mediaStatus;
-	int audioSeconds = 0;
-	TBook.iCurrSt = stIdx( TB_Config.initState );
-	TBook.cSt = TBookCSM[ TBook.iCurrSt ];
-	TBook.currStateName = TBook.cSt->nm;	//DEBUG -- update currSt string
-  bool playforever = false;
-	
-	
-	dbgLog( "CTest: \n" );
-	while (true) {
-	  status = osMessageQueueGet( osMsg_TBEvents, &evt, NULL, osWaitForever );  // wait for next TB_Event
-		if (status != osOK) 
-			tbErr(" EvtQGet error");
-		
-	  TBook.lastEventName = eventNm( evt->typ );
-		//dbgLog( " %s ", eventNm( evt->typ ));
-		dbgEvt( TB_csmEvt, evt->typ, 0, 0, 0);
-		if (isMassStorageEnabled()){		// if USB MassStorage running: ignore events
-			if ( evt->typ==starHome || evt->typ==starCircle )
-				USBmode( false );
-			else
-				dbgLog("starHome to exit USB \n" );
-		} else {
-			tbSubject * tbS = TBookSubj[ TBook.iSubj ];
-			switch (evt->typ){
-				case Tree:
-					playSysAudio( "welcome" );
-					dbgLog( "PlaySys welcome...\n" );
-					logEvtNS( "Play", "file", "welcome" );
-					break; 
-				case AudioDone:
-				case starPot: 
-				case Pot:
-					if ( evt->typ==AudioDone && !playforever ) break;
-					if ( evt->typ==starPot ) playforever = true;
-				
-					dbgLog( "Playing msg...\n" );
-					playSubjAudio( "msg" );
-					logEvt( "PlaySubj" );
-					TBook.iMsg++;
-					if ( TBook.iMsg >= tbS->NMsgs ) TBook.iMsg = 0;
-					break; 
-				case Plus:
-					adjVolume( 5 );
-					logEvt( "Louder" );
-					break;
-				case Minus:
-					adjVolume( -5 );
-					logEvt( "Softer" );
-					break;
-				case Lhand:
-					adjPlayPosition( -2 );
-					logEvt( "JumpBack2" );
-					break;
-				case starLhand:
-					adjPlayPosition( 2 );
-					logEvt( "JumpFwd2" );
-					break;
-				case starRhand:
-					break;
-				
-				case Circle:
-					showSig("Pwr", 2 );
-					break;
-				
-				case Star:
-					mediaStatus = getStatus();
-					if ( mediaStatus==Playing ){
-						pauseResume();
-						//stop( );
-						audioSeconds = playPosition();
-						logEvtNI( "stopPlay", "pos", audioSeconds );
-					} else if ( mediaStatus==Recording ){
-						pauseResume();
-						logEvtNI( "stopRecord", "pos", 0 );
-					}
-					break;
-					
-				case Table:		// Record
-					mediaStatus = getStatus();
-					startRecAudio( NULL );
-					logEvt( "Record" );
-					break;
-				case starPlus:			
-					stopRecording( );
-					break;
-				
-				case starCircle:
-					__breakpoint(0);
-				  break;
-				
-				case starHome:
-					dbgLog( "going to USB mass-storage mode \n");
-					USBmode( true );
-					break;
-					
-				case starMinus: 
-					ak_SetVolume(99);		//Debug test +db volume settings
-					//executeCSM();
-					break;
-				case starTable:
-					eventTest(  );
-					break;
-				
-				case FirmwareUpdate:   // pot table
-					dbgLog( "rebooting to system bootloader for DFU... \n" );
-					ledFg( "R5_5 R5_3 R5_1 R5_1"); 
-					break;
-				default:
-					dbgLog( "evt: %d %s \n", evt->typ, eventNm( evt->typ ) );
-			}
-		}
-		osMemoryPoolFree( TBEvent_pool, evt );
-	}
-}
-
-// Debug LED patterns
-const int  mxClr = 8, mxSpd = 4;
-const char* clrs[ mxClr+1 ] = { "Rr","Gg","Oo", "Rg", "Gr", "RGR", "RGO", "GRG", "GRO" };
-/*const char * LEDtsts[] = { 	// distinctive repeating LED patterns
-		"R10r10!", 		// Minus__	pulsing Red .5Hz	
-		"G5g5!",  		// Tree__		pulsing Green 1Hz
-		"O3o2!",   		// Circle__	pulsing Orange 2Hz
-		"g5R2_3!",   	// LHand__	grn/Red flash 1Hz
-		"G2r3!", 			// Pot__ 		alt Grn/Red 2Hz
-		"O3_7!", 			// RHand__	Orange flash 1Hz
-		"r2G2O2_4!", 	// Table__	Red/Green/Orange flash 1Hz
-		"G4r4G4_8!",	// Star  		Grn/red/Grn flash .5Hz  	
-		"Rr!"					// Star__  	pulsing Red 5Hz
-}; */
-void ledSig( bool flash, int iClrs, int iSpd ){  // flash/pulse,  clrs 0..8, spd 0..4
-	// 																	5Hz	    3Hz	   2Hz			1Hz					.5Hz
-	//								period in .1sec:	 2				3			5		 		10					20	
-	// 1 clr pulse dim/bright  	R/G/O		1,1			2,1		 3,2	 		5,5	 				10,10
-	// 1 clr flash color/off    R/G/O  	1,1			2_1		 3_2	 		3_7	  			5_15
-	// 2 clr pulse							RG/GR  	1,1		  2,1		 3,2	 		5,5	 				0,10	
-	// 2 clr flash		 					RG/GR   				1,1_1	 2,2_1 		3,3_4 			5,5,10
-	// 3 clr pulse							RGO/GRO 				1,1,1	 1,2,2 		3,3,4 			7,7,8 
-	// 3 clr flash							rGr/GrG/rgO 					 1,1,1_2	2,2,2_4			4,4,4_8
-	const char* clrs[ mxClr+1 ] = { "Rr","Gg","Oo", "Rg", "Gr", "RGR", "RGO", "GRG", "GRO" };
-	
-	//  speed/period:				 sHalf=20				sOne=10					sTwo=5					sThree=3			sFive=2
-	const char* f1Fmt[] = { "%c5_15!", 			"%c3_7!", 			"%c3_2!", 			"%c2_1!", 		"%c1_1!" };
-	const char* p2Fmt[] = { "%c10%c10!", 		"%c5%c5!", 			"%c3%c2!", 			"%c2%c1!", 		"%c1%c1!" };
-	const char* f2Fmt[] = { "%c5%c5_10!", 	"%c3%c3_4!", 		"%c1%c2_2!", 		"%c1%c1_1!", 	"" };
-	const char* p3Fmt[] = { "%c7%c7%c8!", 	"%c3%c3%c4!", 	"%c1%c2%c2!", 	"%c1%c1%c1!", "" };
-	const char* f3Fmt[] = { "%c4%c4%c4_8!", "%c2%c2%c2_4!", "%c1%c1%c1_2!", NULL, 				NULL };
-
-	iClrs =  iClrs < 0? 0 : (iClrs > mxClr? mxClr : iClrs);
-	const char* clr = clrs[ iClrs ];
-
-	char fg[20];
-  fg[0] = 0;
-	iSpd = iSpd < 0? 0 : (iSpd > mxSpd? mxSpd : iSpd);
-	switch ( strlen( clr ) ){
-		default:
-		case 0: break;
-		case 1: sprintf( fg, f1Fmt[ iSpd ], clr[0] ); break;
-		case 2: sprintf( fg, flash? f2Fmt[ iSpd ] : p2Fmt[ iSpd ], clr[0], clr[1] ); break;
-		case 3: sprintf( fg, flash? f3Fmt[ iSpd ] : p3Fmt[ iSpd ], clr[0], clr[1], clr[2] ); break;
-	}
-	if ( strlen(fg) > 0 )
-		ledFg( fg );
-}
-
-static int cClr = 0, cSpd = 0;
-bool cFlash = false;
-
 void dbgLED( char * enm, int i ){		// 0: flash/pulse, 1: nxt colors, 2: nxt speed
 	if ( i==0 ) cFlash = !cFlash;
 	if ( i==1 ) cClr = cClr==mxClr? 0 : cClr+1; 
@@ -652,12 +456,203 @@ static void 	debugTest(  ){						// hardware test without FS
 		osMemoryPoolFree( TBEvent_pool, evt );
 	}
 }
+*/
+
+static void 	eventTest(  ){					// report Events until DFU (pot table)
+	TB_Event *evt;
+	osStatus_t status;
+
+	dbgLog( "EvtTst starPlus\n" );
+	while (true) {
+	  status = osMessageQueueGet( osMsg_TBEvents, &evt, NULL, osWaitForever );  // wait for next TB_Event
+		if (status != osOK) 
+			tbErr(" EvtQGet error");
+
+	  TBook.lastEventName = eventNm( evt->typ );
+		dbgLog( " %s \n", eventNm( evt->typ ));
+		dbgEvt( TB_csmEvt, evt->typ, tbTimeStamp(), 0, 0);
+
+		if ( evt->typ == Tree ) 
+			osTimerStart( timers[0], TB_Config.shortIdleMS );
+		if ( evt->typ == Pot ) 
+			osTimerStart( timers[1], TB_Config.longIdleMS );
+		if ( evt->typ == Table ) 
+			osTimerStart( timers[2], 20000 );	// 20 sec
+
+		if ( evt->typ == starPlus ) return;
+	}
+}
+
+static void 	controlTest(  ){					// CSM test procedure
+	TB_Event *evt;
+	osStatus_t status;
+	MediaState mediaStatus;
+	int audioSeconds = 0;
+	TBook.iCurrSt = stIdx( TB_Config.initState );
+	TBook.cSt = TBookCSM[ TBook.iCurrSt ];
+	TBook.currStateName = TBook.cSt->nm;	//DEBUG -- update currSt string
+  bool playforever = false;
+	
+	
+	dbgLog( "CTest: \n" );
+	while (true) {
+	  status = osMessageQueueGet( osMsg_TBEvents, &evt, NULL, osWaitForever );  // wait for next TB_Event
+		if (status != osOK) 
+			tbErr(" EvtQGet error");
+		
+	  TBook.lastEventName = eventNm( evt->typ );
+		//dbgLog( " %s ", eventNm( evt->typ ));
+		dbgEvt( TB_csmEvt, evt->typ, 0, 0, 0);
+		if (isMassStorageEnabled()){		// if USB MassStorage running: ignore events
+			if ( evt->typ==starHome || evt->typ==starCircle )
+				USBmode( false );
+			else
+				dbgLog("starHome to exit USB \n" );
+		} else {
+			tbSubject * tbS = TBookSubj[ TBook.iSubj ];
+			switch (evt->typ){
+				case Tree:
+					playSysAudio( "welcome" );
+					dbgLog( "PlaySys welcome...\n" );
+					break; 
+				case AudioDone:
+				case starPot: 
+				case Pot:
+					if ( evt->typ==AudioDone && !playforever ) break;
+					if ( evt->typ==starPot ) playforever = !playforever;
+				
+					dbgLog( "Playing msg...\n" );
+					playSubjAudio( "msg" );
+					TBook.iMsg++;
+					if ( TBook.iMsg >= tbS->NMsgs ) TBook.iMsg = 0;
+					break; 
+				case Plus:
+					adjVolume( 5 );
+					logEvt( "Louder" );
+					break;
+				case Minus:
+					adjVolume( -5 );
+					logEvt( "Softer" );
+					break;
+				case Lhand:
+					adjPlayPosition( -2 );
+					logEvt( "JumpBack2" );
+					break;
+				case starLhand:
+					adjPlayPosition( 2 );
+					logEvt( "JumpFwd2" );
+					break;
+				case starRhand:
+					osTimerStart( timers[1], TB_Config.longIdleMS );
+					break;
+				case LongIdle:
+					playSysAudio( "slower" );
+					break;
+				
+//				case Circle:
+//					showSig("Pwr", 2 );
+//					break;
+				
+				case Star:
+					mediaStatus = getStatus();
+					if ( mediaStatus==Playing ){
+						pauseResume();
+						//stop( );
+						audioSeconds = playPosition();
+						logEvtNI( "stopPlay", "pos", audioSeconds );
+					} else if ( mediaStatus==Recording ){
+						pauseResume();
+						logEvtNI( "stopRecord", "pos", 0 );
+					}
+					break;
+					
+				case Table:		// Record
+					mediaStatus = getStatus();
+					startRecAudio( NULL );
+					logEvt( "Record" );
+					break;
+				case starTable:
+					stopRecording( );
+					break;
+				
+				case starCircle:
+					powerDownTBook();
+				  break;
+				
+				case starHome:
+					dbgLog( "going to USB mass-storage mode \n");
+					USBmode( true );
+					break;
+					
+				case starMinus: 
+					ak_SetVolume(99);		//Debug test +db volume settings
+					//executeCSM();
+					break;
+				
+				case starPlus:			
+					eventTest(  );
+					break;
+				
+				case FirmwareUpdate:   // pot table
+					dbgLog( "rebooting to system bootloader for DFU... \n" );
+					ledFg( "R5_5 R5_3 R5_1 R5_1"); 
+					break;
+				default:
+					dbgLog( "evt: %d %s \n", evt->typ, eventNm( evt->typ ) );
+			}
+		}
+		osMemoryPoolFree( TBEvent_pool, evt );
+	}
+}
+
+/* Debug LED patterns
+const int  mxClr = 8, mxSpd = 4;
+const char* clrs[ mxClr+1 ] = { "Rr","Gg","Oo", "Rg", "Gr", "RGR", "RGO", "GRG", "GRO" };
+
+void ledSig( bool flash, int iClrs, int iSpd ){  // flash/pulse,  clrs 0..8, spd 0..4
+	// 																	5Hz	    3Hz	   2Hz			1Hz					.5Hz
+	//								period in .1sec:	 2				3			5		 		10					20	
+	// 1 clr pulse dim/bright  	R/G/O		1,1			2,1		 3,2	 		5,5	 				10,10
+	// 1 clr flash color/off    R/G/O  	1,1			2_1		 3_2	 		3_7	  			5_15
+	// 2 clr pulse							RG/GR  	1,1		  2,1		 3,2	 		5,5	 				0,10	
+	// 2 clr flash		 					RG/GR   				1,1_1	 2,2_1 		3,3_4 			5,5,10
+	// 3 clr pulse							RGO/GRO 				1,1,1	 1,2,2 		3,3,4 			7,7,8 
+	// 3 clr flash							rGr/GrG/rgO 					 1,1,1_2	2,2,2_4			4,4,4_8
+	const char* clrs[ mxClr+1 ] = { "Rr","Gg","Oo", "Rg", "Gr", "RGR", "RGO", "GRG", "GRO" };
+	
+	//  speed/period:				 sHalf=20				sOne=10					sTwo=5					sThree=3			sFive=2
+	const char* f1Fmt[] = { "%c5_15!", 			"%c3_7!", 			"%c3_2!", 			"%c2_1!", 		"%c1_1!" };
+	const char* p2Fmt[] = { "%c10%c10!", 		"%c5%c5!", 			"%c3%c2!", 			"%c2%c1!", 		"%c1%c1!" };
+	const char* f2Fmt[] = { "%c5%c5_10!", 	"%c3%c3_4!", 		"%c1%c2_2!", 		"%c1%c1_1!", 	"" };
+	const char* p3Fmt[] = { "%c7%c7%c8!", 	"%c3%c3%c4!", 	"%c1%c2%c2!", 	"%c1%c1%c1!", "" };
+	const char* f3Fmt[] = { "%c4%c4%c4_8!", "%c2%c2%c2_4!", "%c1%c1%c1_2!", NULL, 				NULL };
+
+	iClrs =  iClrs < 0? 0 : (iClrs > mxClr? mxClr : iClrs);
+	const char* clr = clrs[ iClrs ];
+
+	char fg[20];
+  fg[0] = 0;
+	iSpd = iSpd < 0? 0 : (iSpd > mxSpd? mxSpd : iSpd);
+	switch ( strlen( clr ) ){
+		default:
+		case 0: break;
+		case 1: sprintf( fg, f1Fmt[ iSpd ], clr[0] ); break;
+		case 2: sprintf( fg, flash? f2Fmt[ iSpd ] : p2Fmt[ iSpd ], clr[0], clr[1] ); break;
+		case 3: sprintf( fg, flash? f3Fmt[ iSpd ] : p3Fmt[ iSpd ], clr[0], clr[1], clr[2] ); break;
+	}
+	if ( strlen(fg) > 0 )
+		ledFg( fg );
+}
+
+static int cClr = 0, cSpd = 0;
+bool cFlash = false;
+*/
 
 void 					initControlManager( void ){				// initialize control manager 	
 	// init to odd values so changes are visible
-	TB_Config.default_volume = 3;
+	TB_Config.default_volume = 8;  				// first audPlay will use TB_Config.default_volume;
 	TB_Config.default_speed = 3;
-	TB_Config.powerCheckMS = 10000;				// used by powermanager.c
+	TB_Config.powerCheckMS = 10000;				// set by setPowerCheckTimer()
 	TB_Config.shortIdleMS = 3000;
 	TB_Config.longIdleMS = 11000;
 	TB_Config.systemAudio = "M0:/system/aud/";			// path to system audio files
@@ -670,17 +665,26 @@ void 					initControlManager( void ){				// initialize control manager
 	
 	initTknTable();
 	if ( TBDataOK ) {
-		readControlDef( );
+		readControlDef( );		// reads TB_Config settings
 		readContent( );
 		TBook.iSubj = 0;
 		TBook.iMsg = 1;
-		controlTest();
+		
+		setPowerCheckTimer( TB_Config.powerCheckMS );		// adjust power timer to input configuration
+
+		for ( int it=0; it<3; it++ ){
+			timers[it] = osTimerNew( tbTimer, osTimerOnce, (void *)it, NULL );
+			if ( timers[it] == NULL ) 
+				tbErr( "timer not alloc'd" );
+		}
+		controlTest();  //DEBUG
 		runCSM( );	
+		
 	} else if ( FileSysOK ) {		// FS but no data, go into USB mode
 		logEvt( "NoFS USBmode" );
 		USBmode( true );
 	} else {  // no FileSystem
-		debugTest();
+		eventTest();
 	}
 }
 // contentmanager.cpp 
