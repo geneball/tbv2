@@ -14,7 +14,7 @@ extern bool						firstBoot;						// true if 1st run after data loaded
 #define 									PM_NOPWR  1											// id for osEvent signaling NOPWR interrupt
 #define 									PM_PWRCHK 2											// id for osTimerEvent signaling periodic power check
 #define 									PM_ADCDONE  4										// id for osEvent signaling period power check interrupt
-#define 									PWR_TIME_OUT 30000							// 30sec periodic power check
+#define 									PWR_TIME_OUT 300000							// 5min periodic power check
 
 enum PwrStat { TEMPFAULT=0, xxx=1, CHARGING=2, LOWBATT=3, CHARGED=4, xxy=5, NOLITH=6, NOUSBPWR=7 };
 
@@ -70,16 +70,30 @@ void											initPowerMgr( void ){						// initialize PowerMgr & start thread
 	osTimerStart( pwrCheckTimer, timerMS );
 	dbgLog( "PowerMgr OK \n" );
 }
+void											setPowerCheckTimer( int timerMs ){
+	osTimerStop( pwrCheckTimer );
+	osTimerStart( pwrCheckTimer, timerMs );
+}
+
 void 											enableSleep( void ){						// low power mode -- CPU stops till interrupt
-	__WFE();	// CMSIS sleep till interrupt
+	__WFI();	// sleep till interrupt
 }
 void 											enableStandby( void ){					// power off-- reboot on wakeup from NRST
+	PWR->CR |= PWR_CR_CWUF;		// clear wakeup flag
+	PWR->CR |= PWR_CR_PDDS;		// set power down deepsleep 
+	for (int i=0; i<3; i++){
+		uint32_t pend = NVIC->ISPR[i];
+		if ( pend != 0 ) 	// clear any pending interrupts
+			NVIC->ICPR[i] = pend;		
+	}
+	__WFI();	// standby till reboot
 }
 void											powerDownTBook( void ){					// shut down TBook
+	logEvt( "Standby" );
 	logPowerDown();		// flush & close logs
-	ledBg("_");
+//	ledBg("_");
 	ledFg("_");
-	enableStandby();
+	enableStandby();		// shut down
 }
 
 void 											initPwrSignals( void ){					// configure power GPIO pins, & EXTI on NOPWR 	
@@ -120,7 +134,7 @@ void 											initPwrSignals( void ){					// configure power GPIO pins, & EXTI
 	gSet( gBOOT1_PDN, 1 );			// initially codec OFF
 	gSet( gPA_EN, 0 );					// initially audio external amplifier OFF
 	
-	tbDelay_ms( 3 );		// wait 3 msec to make sure everything is stable
+	tbDelay_ms( 5 ); //DEBUG: 3 );		// wait 3 msec to make sure everything is stable
 }
 void											startADC( int chan ){						// set up ADC for single conversion on 'chan', then start 
 	AdcC->CCR &= ~ADC_CCR_ADCPRE;		// CCR.ADCPRE = 0 => PClk div 2
@@ -198,6 +212,11 @@ uint16_t									readPVD( void ){								// read PVD level
 	}
 	return pvdMV;
 }
+uint8_t										Bcd2( int v ){									// return v as 8 bits-- bcdTens : bcdUnits
+	if ( v > 99 ) v = v % 100;
+	int vt = v / 10, vu = v % 10;
+	return (vt << 4) | vu;
+}
 void											setupRTC( fsTime time ){				// init RTC & set based on fsTime
 	int cnt = 0;
 	RCC->APB1ENR |= ( RCC_APB1ENR_PWREN | RCC_APB1ENR_RTCAPBEN );				// start clocking power control & RTC_APB
@@ -212,12 +231,16 @@ void											setupRTC( fsTime time ){				// init RTC & set based on fsTime
 	
 	PWR->CR 	|= PWR_CR_DBP;			// enable access to Backup Domain to configure RTC
 	
+	RCC->BDCR |= RCC_BDCR_RTCEN;
 	RCC->BDCR |= RCC_BDCR_LSEON;												// enable 32KHz LSE clock
 	cnt = 0;
 	while ( (RCC->BDCR & RCC_BDCR_LSERDY)==0 && (cnt < 1000) ) cnt++; 	// & wait till ready
 
 	// configure RTC  (per RM0402 22.3.5)
-	RCC->BDCR |= RCC_BDCR_RTCSEL_0;					// select LSE as RTC source
+	RCC->BDCR |= RCC_BDCR_RTCSEL_0;										// select LSE as RTC source
+
+	RTC->WPR = 0xCA;
+	RTC->WPR = 0x53;		// un write-protect the RTC
 
 	RTC->ISR |= RTC_ISR_INIT;													// set init mode
 	cnt = 0;
@@ -226,31 +249,24 @@ void											setupRTC( fsTime time ){				// init RTC & set based on fsTime
 	RTC->PRER  = (256 << RTC_PRER_PREDIV_S_Pos);				// Synchronous prescaler = 256  MUST BE FIRST
 	RTC->PRER |= (127 << RTC_PRER_PREDIV_A_Pos);				// THEN asynchronous = 127 for 32768Hz => 1Hz
 	
-	uint8_t hr = time.hr,   min = time.min, sec = time.sec;
-	uint8_t ht = hr/10, hu = hr%10, mnt = min/10, mnu = min%10, st = sec/10, su = sec%10;
-	RTC->TR   =  0;			// reset & 24hr format
-	RTC->TR 	|= (ht << RTC_TR_HT_Pos) 	| (hu << RTC_TR_HU_Pos);
-	RTC->TR 	|= (mnt << RTC_TR_MNT_Pos)| (mnu << RTC_TR_MNU_Pos);
-	RTC->TR 	|= (st << RTC_TR_ST_Pos) 	| (su << RTC_TR_SU_Pos);
-
-	uint8_t day = time.day, mon = time.mon, yr = time.year;
-	uint8_t dt = day/10, du = day%10, mt = mon/10, mu = mon%10, yt = yr/10, yu = yr%10;
+	uint32_t TR = ( Bcd2( time.hr ) << 16 ) + ( Bcd2( time.min ) << 8 ) + Bcd2( time.sec );
 	
-	uint8_t cenCd[] = { 6, 4, 2 };	// for 20, 21, 22
-	uint8_t monCd[] = { 0, 3, 3, 6, 1, 4, 6, 2, 5, 0, 3, 5 };
-	uint8_t cen = yr/100, yy = yr%100, cCd = cenCd[cen-19];
-	uint8_t yCd = (yy/4 + yy) % 7;
-	uint8_t mCd = monCd[ day ];
+	// calc weekday from date
+	int yr = time.year, yy = yr % 100, cen = yr / 100, mon = time.mon, day = time.day;
 	bool leap = (yr%400==0) || (yr%4==0 && yr%100!=0);
+	uint16_t cenCd[] = { 6, 4, 2 };	// for 20, 21, 22
+	uint16_t monCd[] = { 0, 3, 3, 6, 1, 4, 6, 2, 5, 0, 3, 5 };
+	uint16_t cCd = cenCd[cen-20];
+	uint16_t yCd = (yy/4 + yy) % 7;
+	uint16_t mCd = monCd[ mon-1 ];
 	uint8_t wkday = (yCd+mCd+day+cCd - (leap && mon<3? 1 : 0)) % 7;
 	if (wkday==0) wkday = 7;
 	
-	RTC->DR   =  wkday << RTC_DR_WDU_Pos;			// set day of week
-	RTC->DR 	|= (dt << RTC_DR_DT_Pos) | (du << RTC_DR_DU_Pos);
-	RTC->DR 	|= (mt << RTC_DR_MT_Pos) | (mu << RTC_DR_MU_Pos);
-	RTC->DR 	|= (yt << RTC_DR_YT_Pos) | (yu << RTC_DR_YU_Pos);
+	uint32_t DR = ( Bcd2( yy ) << 16 ) | (wkday << 13 ) | ( Bcd2( mon ) << 8 ) | Bcd2( day );
 
-	RTC->CR |= RTC_CR_FMT;
+	RTC->TR = TR;		// set time of day
+	RTC->DR = DR;		// set y
+	// RTC->CR.FMT == 0 (24 hour format)
 	RTC->ISR 	&= ~RTC_ISR_INIT;												// leave RTC init mode
 	
 	PWR->CR 	&= ~PWR_CR_DBP;													// disable access to Backup Domain 
