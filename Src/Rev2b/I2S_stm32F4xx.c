@@ -727,7 +727,8 @@ static int32_t 								I2S2only_Receive( void *data, uint32_t nSamples, I2S_RESO
 	dma->CR = cfg;
 
 	// 2nd buffer ready, start transfer into M0AR
-
+	ak_RecordEnable( true );									// power up mic, ADC, ALC, filters
+	
 	dma->CR |= DMA_SxCR_EN;											// enable DMA
 	i2s->instance->CR2 |= I2S_CR2_RXDMAEN;			// enable RXDMA for I2S device
 	i2s->instance->I2SCFGR |= I2S_MODE_ENAB;		// enable I2S device-- starts receiving audio
