@@ -13,6 +13,7 @@ extern ARM_DRIVER_SAI 			Driver_SAI0;			// from I2S_stm32F4xx.c
 extern const int 						CODEC_DATA_TX_DN; 	// signal sent by SAI callback when buffer TX done
 extern const int 						CODEC_PLAYBACK_DN; 	// signal sent by SAI callback when playback complete
 extern const int 						CODEC_DATA_RX_DN; 	// signal sent by SAI callback when a buffer has been filled
+extern const int 						CODEC_RECORD_DN; 	  // signal sent by SAI callback when recording stops
 extern const int 						MEDIA_PLAY_EVENT;
 extern const int 						MEDIA_RECORD_START;
 
@@ -47,7 +48,7 @@ typedef enum {  			// pnRes_t  					-- return codes from PlayNext
 	pnPlaying
 } pnRes_t;
 typedef enum {				// BuffState					-- audio buffer states
-	bEmpty, bAlloc, bFull, bDecoding, bPlaying
+	bFree, bAlloc, bEmpty, bFull, bDecoding, bPlaying, bRecording, bRecorded
 } BuffState;
 
 typedef struct { 			// Buffer_t						-- audio buffer
@@ -57,7 +58,7 @@ typedef struct { 			// Buffer_t						-- audio buffer
 	uint16_t * data;		// buffer of 16bit samples
 } Buffer_t;
 
-#define N_AUDIO_BUFFS			4
+#define N_AUDIO_BUFFS			8
 typedef enum {				// playback_state_t		-- audio playback state codes
 	pbIdle, 		// not playing anything
 	pbOpening,	// calling fopen 
@@ -112,8 +113,8 @@ typedef struct { 			// PlaybackFile_t			-- audio state block
 	uint32_t 							LastError;			// last audio error code
 	uint32_t 							ErrCnt;					// # of audio errors
 	
-	Buffer_t *						Buff[ N_AUDIO_BUFFS ];			// pointers to playback buffers (for double buffering)
-	Buffer_t *						RecBuff[ N_AUDIO_BUFFS ];	// pointers to record buffers (for double buffering)
+	Buffer_t *						Buff[ N_AUDIO_BUFFS ];			// pointers to playback/record buffers (for double buffering)
+	Buffer_t *						SvBuff[ N_AUDIO_BUFFS ];		// pointers to save buffers (waiting to write to file)
 	
 	bool 									SqrWAVE;				// T => wavHdr pre-filled to generate square wave
 	int32_t								sqrSamples;			// samples still to send
@@ -144,6 +145,7 @@ extern void 				audSquareWav( int nsecs, int hz );				  // square: 'nsecs' secon
 extern void					audLoadBuffs( void );												// pre-load playback data (from mediaThread)
 extern void 				audSaveBuffs( void );												// save recorded buffers (called from mediaThread)
 extern void 				audPlaybackComplete( void );								// playback complete (from mediaThread)
+extern void 				audRecordComplete( void );									// last buff recorded, finish save
 
 //DEBUG
 extern void 				PlayWave( const char *fname ); // start playing from file
