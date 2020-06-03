@@ -52,34 +52,31 @@ static ARM_DRIVER_I2C *		I2Cdrv = 				&Driver_I2C1;
 #define VERIFY_WRITTENDATA 
 #endif /* VERIFY_WRITTENDATA */
 
-static uint8_t 	akFmtVolume 	= 0;
+static uint8_t 	akFmtVolume;
 static bool			akSpeakerOn 	= false;
 static bool			akMuted			 	= false;
 
-const int I2C_Xmt = 0;
-const int I2C_Rcv = 1;
-const int I2C_Evt = 2;
-const int AK_DefReg = 3;
-const int AK_WrReg = 4;
-static int 											AK_ErrCnt[ ]= { 0,0,0,0,0 };
+const int 			I2C_Xmt = 0;
+const int 			I2C_Rcv = 1;
+const int 			I2C_Evt = 2;		// errors reported from ISR 
+const int 			AK_DefReg = 3;
+const int 			AK_WrReg = 4;
+
+static bool			akCodecDummyWrite = true;		// flag dummy ak write at startup-- ignore NAK error 
+static int 			AK_ErrCnt[ ]= { 0,0,0,0,0 };
+static char * 	akGrp[] = { "Xmt", "Rcv", "Evt", "Def", "Wr" };
 
 static AK4637_Registers 				akR;		// akR.reg[1] == akR.R.PM2 (changed values)
 static AK4637_Registers 				akC;		// akC.reg[] -- values written to codec
 
 static volatile int32_t 				I2C_Event = 0;
 static int											MaxBusyWaitCnt = 0;
-struct ErrInfo {
-	int8_t grp;
-	int8_t exp;
-	int8_t got;
-	int32_t reg;
-	int16_t caller;
-};
-static struct ErrInfo 					errs[200];
 static int											eCnt = 0;
+const  int 											maxErrLog	= 10;				// max errors to add to log
 
 static int 											reinitCnt = 0;	
 static int 											LastVolume 	= 0;			// retain last setting, so audio restarts at last volume
+static int 											WatchReg   = -1;			//DEBUG: log register read/write ops for a specific codec register
 
 void 						Codec_WrReg( uint8_t Reg, uint8_t Value);		// FORWARD
 
@@ -136,25 +133,19 @@ void 						Codec_WrReg( uint8_t Reg, uint8_t Value);		// FORWARD
 };
 #endif
 
-void 		 				cntErr( int8_t grp, int8_t exp, int8_t got, int32_t reg, int16_t caller ){
-	if ( got == exp ) return;
+void 		 				cntErr( int8_t grp, int8_t exp, int8_t got, int32_t reg, int16_t caller ){  // count and/or report ak errors
+	if ( got == exp || akCodecDummyWrite ) return;
+	akCodecDummyWrite = false;
 	AK_ErrCnt[ grp ]++;
-	errs[ eCnt ].grp = grp;
-	grp = errs[eCnt].grp; //no warning
-	errs[ eCnt ].exp = exp;
-	errs[ eCnt ].got = got;
-	errs[ eCnt ].reg = reg; 
-	errs[ eCnt ].caller = caller; 
 	eCnt++;
-	if (eCnt >= 200) eCnt=0;
-	//errLog("AK %s err: exp:0x%x, got:0x%x reg:%d\n", grpNm[grp], exp, got, reg );
+	dbgEvt( TB_i2cErr, (caller << 8) + grp, exp, got, reg );
+	if ( eCnt < maxErrLog && grp!=I2C_Evt )	// can't report I2C_Evt (from ISR)
+		errLog("AK %s err, exp=0x%x, got=0x%x reg=%d caller=%d", akGrp[grp], exp, got, reg, caller );
 }
-void 						i2c_Sig_Event( uint32_t event ){		// called for I2C errors or complete
+void 						i2c_Sig_Event( uint32_t event ){														// called from ISR for I2C errors or complete
 	I2C_Event = event;
 	cntErr( I2C_Evt, ARM_I2C_EVENT_TRANSFER_DONE, event, I2Cdrv->GetDataCount(), 1 );
 }
-
-
 void		 				I2C_initialize() {																					// Initialize I2C device
 //	I2Cdrv->Control( ARM_I2C_BUS_CLEAR, 0 );  // resets GPIO, etc. -- if needed, should be before initialization
   I2Cdrv->Initialize( i2c_Sig_Event );					// sets up SCL & SDA pins, evt handler
@@ -164,9 +155,10 @@ void		 				I2C_initialize() {																					// Initialize I2C device
 }
 void 						I2C_Init() {																								// Initialize I2C connection to reset AK4637 & write a reg
   I2C_initialize();				// init device
+	akCodecDummyWrite = true;
 	Codec_WrReg( 0, 0 );		// DUMMY COMMAND: won't be acknowledged-- will generate an error  -- AK4637 datasheet pg 34: SystemReset
 }
-void						I2C_Reinit(int lev ){			// lev&1 SWRST, &2 => RCC reset, &4 => device re-init
+void						I2C_Reinit(int lev ){																				// lev&1 SWRST, &2 => RCC reset, &4 => device re-init
 	if ( lev & 4 ){
 		I2Cdrv->Uninitialize( );					// deconfigures SCL & SDA pins, evt handler
 		I2C_initialize();
@@ -212,7 +204,8 @@ uint8_t 				Codec_RdReg( uint8_t Reg ){																	// return value of codec
 	if ( waitCnt > MaxBusyWaitCnt ) MaxBusyWaitCnt = waitCnt;
 	cntErr( I2C_Xmt, ARM_I2C_EVENT_TRANSFER_DONE, I2C_Event, 0, 5 );  // err if any other bits set
 	
-//	dbgLog( " R%x:%02x \n", Reg, value );
+	if ( Reg==WatchReg )
+		dbgLog( " R%x:%02x \n", Reg, value );
 	if ( Reg < AK_NREGS )
 		akR.reg[ Reg ] = akC.reg[ Reg ] = value;
 	return value;
@@ -220,7 +213,9 @@ uint8_t 				Codec_RdReg( uint8_t Reg ){																	// return value of codec
 #endif
 
 void 						Codec_WrReg( uint8_t Reg, uint8_t Value){										// write codec register Reg with Value
-dbgEvt( TB_akWrReg, Reg,Value,0,0);
+	dbgEvt( TB_akWrReg, Reg,Value,0,0);
+	if ( Reg==WatchReg )
+		dbgLog( "Wr R%x = %02x \n", Reg, Value );
 
 	uint32_t status;
 	int waitCnt = 0;
@@ -235,7 +230,7 @@ dbgEvt( TB_akWrReg, Reg,Value,0,0);
   while (( I2C_Event & ARM_I2C_EVENT_TRANSFER_DONE ) == 0U){
 		waitCnt++;  // busy wait until transfer completed
 		if ( waitCnt > 1000 ){
-			errLog("I2C Tx hang");
+			errLog("I2C Tx hang, r=%d v=0x%x", Reg, Value);
 			reinitCnt++;
 			if ( reinitCnt > 16 ) tbErr( "Can't restart I2C\n" );
 			I2C_Reinit( reinitCnt );			// SW, RST, SW+RST, INIT, INIT+SW, ...
@@ -254,7 +249,7 @@ dbgEvt( TB_akWrReg, Reg,Value,0,0);
 	#endif /* VERIFY_WRITTENDATA */
 	reinitCnt = 0;			// success-- reset recursive counter
 }
-void						akUpd(){														// write values of any modified codec registers
+void						akUpd(){																										// write values of any modified codec registers
 	for ( int i=0; i < AK_NREGS; i++ ){
 		uint8_t nv = akR.reg[ i ];
 		uint8_t cv = akC.reg[ i ];
@@ -414,7 +409,7 @@ void						ak_PowerUp( void ){
 void 						ak_Init( ){ 																								// Init codec & I2C (i2s_stm32f4xx.c)
 	dbgEvt( TB_akInit, 0,0,0,0);
 
-	akFmtVolume 	= 0;			// reset static state
+	memset( &akC, 0, sizeof( AK4637_Registers ));
 	akSpeakerOn 	= false;
 	akMuted			 	= false;
 
@@ -508,15 +503,16 @@ dbgEvt( TB_akPwrDn, 0,0,0,0);
 	gSet( gEN_5V, 0 );				// OUT: 1 to supply 5V to codec		AP6714 EN		
 	gSet( gEN1V8, 0 );			  // OUT: 1 to supply 1.8 to codec  TLV74118 EN		
 }
-
-
-static uint8_t testVol = 0x19;
-
+//
+//
+static uint8_t testVol = 0x19;			// DEBUG
 void		 				ak_SetVolume( uint8_t Volume ){														// sets volume 0..10  ( mediaplayer )
 	const uint8_t akMUTEVOL = 0xCC, akMAXVOL = 0x18, akVOLRNG = akMUTEVOL-akMAXVOL;		// ak4637 digital volume range to use
 	uint8_t v = Volume>10? 10 : Volume; 
 
 	LastVolume = v;
+	if ( audGetState()!=Playing ) return;			// just remember for next ak_Init()
+	
 	// Conversion of volume from user scale [0:10] to audio codec AK4343 scale  [akMUTEVOL..akMAXVOL] == 0xCC..0x18 
   //   values >= 0xCC force mute on AK4637
   //   limit max volume to 0x18 == 0dB (to avoid increasing digital level-- causing resets?)
@@ -524,10 +520,11 @@ void		 				ak_SetVolume( uint8_t Volume ){														// sets volume 0..10  ( 
 	
 
 	if (Volume==99)	//DEBUG
-	{ akFmtVolume = testVol; 	testVol--; }	// test if vol>akMAXVOL causes problems
+		{ akFmtVolume = testVol; 	testVol--; }	//DEBUG: test if vol>akMAXVOL causes problems
 	
+//	logEvtNI( "setVol", "vol", v );
 	dbgEvt( TB_akSetVol, Volume, akFmtVolume,0,0);
-	dbgLog( "akSetVol v=%d akV=%x \n", v, akFmtVolume );
+	dbgLog( "akSetVol v=%d akV=0x%x \n", v, akFmtVolume );
 	#if defined( AK4343 )
 		Codec_WrReg( AK_Lch_Digital_Volume_Control, akFmtVolume );  // Left Channel Digital Volume control
 		Codec_WrReg( AK_Rch_Digital_Volume_Control, akFmtVolume );  // Right Channel Digital Volume control
