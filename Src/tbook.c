@@ -6,7 +6,7 @@
 #include "mediaPlyr.h"			// thread to watch audio status
 #include "fs_evr.h"					// FileSys components
 
-const char * 	TBV2_Version 				= "V2.06 of 25-May-2020";
+const char * 	TBV2_Version 				= "V2.06 of 2-Jun-2020";
 
 //
 // Thread stack sizes
@@ -64,12 +64,7 @@ char 					MallocHeap[ 20000 ];    // MALLOC_HEAP_SIZE ];
 bool					FileSysOK 						= false;
 bool					TBDataOK 							= true;			// false if no TB config found
 
-bool fexists( char *fname ){
-	fsFileInfo info;
-	info.fileID = 0;
-	fsStatus stat = ffind( fname, &info );
-	return ( stat==fsOK );
-}
+
 void setDev( char *fname, const char *dev ){  // replace front of fname with dev
 	for (int i=0; i< strlen(dev); i++ )
 	  fname[i] = dev[i];
@@ -253,7 +248,9 @@ void talking_book( void *argument ) {
 				copyFile( TBP[pAUDIO], dst );
 			}
 		}
-		
+
+		if ( !fexists( TBP[pCSM_VERS] ) && fexists( "M0:/system/status.txt" ))
+			copyFile( TBP[pCSM_VERS], "M0:/system/status.txt" );  // backward compatibility
 		if ( gGet( gMINUS ) || !fexists( TBP[pCSM_VERS] ))	
 			debugLoop( );
 	}

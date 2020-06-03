@@ -9,15 +9,21 @@ const int 									CODEC_DATA_RX_DN   =	0x04; 			// signal sent by SAI callback 
 const int 									CODEC_RECORD_DN    =	0x08; 			// signal sent by SAI callback when recording stops
 const int 									MEDIA_PLAY_EVENT	 =	0x10;
 const int 									MEDIA_RECORD_START =	0x20;
+const int										MEDIA_ADJ_POS 		 =  0x40;
+const int										MEDIA_SET_SPD 		 =  0x80;
+const int										MEDIA_SET_VOL 		 =  0x100;
+const int 									MEDIA_EVENTS 			 =  0x1FF;		// mask for all events
 
 static 	osThreadAttr_t 				thread_attr;
 static 	osThreadId_t					mMediaThreadId;
 
 osEventFlagsId_t							mMediaEventId;			// for signals to mediaThread
 
-static int audioVolume				= DEFAULT_VOLUME;
-
 // communication variables shared with mediaThread
+static volatile int 					mAudioVolume		= 7;			// current volume, overwritten from CSM config (setVolume)
+static volatile int 					mAudioSpeed			= 5;			// current speed, NYI
+
+static volatile int 					mAdjPosSec;
 static volatile char					mPlaybackFilePath[ MAX_PATH ];
 static volatile MsgStats *		mPlaybackStats;
 static volatile char 					mRecordFilePath[ MAX_PATH ];
@@ -43,73 +49,79 @@ void					initMediaPlayer( void ){						// init mediaPlayer & spawn thread to han
 		tbErr( "mediaThread spawn failed" );	
 	
 	//registerPowerEventHandler( handlePowerEvent );
-	audInitialize( );
+	audInitialize( );		// still on TB thread, during init
 }
-void					mediaPowerDown( void ){
+void					mediaPowerDown( void ){			// not called currently
 	audStopAudio();
 }
-
+// 
 // external methods for  controlManager executeActions
-int 					playAudio( const char * fileName, MsgStats *stats ){ // start playback from fileName
-	while ( audGetState()!=Ready ){ 
-		audStopAudio();
-		osDelay( 5 );
-	}
+//
+//**** Operations signaled to complete on media thread
+void 					playAudio( const char * fileName, MsgStats *stats ){ // start playback from fileName
 	strcpy( (char *)mPlaybackFilePath, fileName );
 	mPlaybackStats = stats==NULL? sysStats : stats;
 	osEventFlagsSet( mMediaEventId, MEDIA_PLAY_EVENT );
-	return TB_SUCCESS;
 }
-void 					pauseResume( void ){								// pause (or resume) playback or recording
-	audPauseResumeAudio( );
-}
-void 					stop( void ){												// stop playback
-	audStopAudio( );
-}
-
-int						playPosition( void ){								// => current playback position in sec
-	return audPlayPct();
+void					recordAudio( const char * fileName, MsgStats *stats ){	// start recording into fileName
+	strcpy( (char *)mRecordFilePath, fileName );
+	mRecordStats = stats==NULL? sysStats : stats;
+	osEventFlagsSet( mMediaEventId, MEDIA_RECORD_START );
 }
 void 					adjPlayPosition( int sec ){					// skip playback forward/back 'sec' seconds
 	dbgEvt( TB_audAdjPos, sec, 0, 0,0);
-	audAdjPlayPos( sec );
-}
-void 					adjVolume( int adj ){								// adjust playback volume by 'adj'
-	audioVolume += adj;
-	if ( audioVolume > MAX_VOLUME ) audioVolume = MAX_VOLUME;
-	if ( audioVolume < MIN_VOLUME ) audioVolume = MIN_VOLUME;
-	dbgEvt( TB_audAdjVol, adj, audioVolume, 0,0);
-	ak_SetVolume( audioVolume );
-	dbgLog( "SetVol:%d  [%d]", audioVolume, audPlayPct() );
+	mAdjPosSec = sec;
+	osEventFlagsSet( mMediaEventId, MEDIA_ADJ_POS );
 }
 void 					adjSpeed( int adj ){								// adjust playback speed by 'adj'
-	audAdjPlaySpeed( adj );
-	dbgEvt( TB_audAdjSpd, adj, 0, 0,0);
+	mAudioSpeed += adj;
+	if ( mAudioSpeed < 0 ) mAudioSpeed = 0;
+	if ( mAudioSpeed > 10 ) mAudioSpeed = 10;
+	dbgEvt( TB_audAdjSpd, mAudioSpeed, 0, 0,0);
+	osEventFlagsSet( mMediaEventId, MEDIA_SET_SPD );
+}
+void 					adjVolume( int adj ){								// adjust playback volume by 'adj'
+	mAudioVolume += adj;
+	if ( mAudioVolume > MAX_VOLUME ) mAudioVolume = MAX_VOLUME;
+	if ( mAudioVolume < MIN_VOLUME ) mAudioVolume = MIN_VOLUME;
+	dbgEvt( TB_audAdjVol, adj, mAudioVolume, 0,0);
+	osEventFlagsSet( mMediaEventId, MEDIA_SET_VOL );
+}
+void 					stopPlayback( void ){								// stop playback
+	audStopAudio( );
+}
+//**** Operations done directly on TB thread
+void 					pauseResume( void ){								// pause (or resume) playback or recording
+	audPauseResumeAudio( );
+}
+int						playPosition( void ){								// => current playback position in sec
+	return audPlayPct();
+}
+void					setVolume( int vol ){								// set initial volume
+	mAudioVolume = vol;		// remember for next Play
 }
 MediaState		getStatus( void ){									// => Ready / Playing / Recording
 	return audGetState();
 }
-int						recordAudio( const char * fileName, MsgStats *stats ){	// start recording into fileName
-	while ( audGetState()!=Ready ){ 
-		audStopAudio();
-		osDelay( 5 );
-	}
-	strcpy( (char *)mRecordFilePath, fileName );
-	mRecordStats = stats==NULL? sysStats : stats;
-	osEventFlagsSet( mMediaEventId, MEDIA_RECORD_START );
-	return TB_SUCCESS;
-}
 void					stopRecording( void ){  						// stop recording
-	audStopRecording( ); 
+	audRequestRecStop( ); 
+}
+//************************************
+// called only on MediaThread
+void 					resetAudio(){ 											// stop any playback/recording in progress 
+	audStopAudio();
 }
 
-/* **************  mediaThread -- start audio play & record operations, handle completion signal
+/* **************  mediaThread -- start audio play & record operations, handle completion signals
 // 		MEDIA_PLAY_EVENT 	=> play mPlaybackFilename
+//		CODEC_DATA_TX_DN  => buffer xmt done, call audLoadBuffs outside ISR
+//		CODEC_PLAYBACK_DN 	=> finish up, & send AudioDone CSM event
+//
 //		MEDIA_RECORD_START 	=> record into mRecordFilePath
-//		CODEC_PLAY_DONE 	=> send AudioDone CSM event
+//		CODEC_DATA_RX_DN		=> buffer filled, call audSaveBuffs outside ISR
+//		CODEC_RECORD_DN			=> finish recording & save file
 ***************/
 static void 	mediaThread( void *arg ){						// communicates with audio codec for playback & recording		
-	const int MEDIA_EVENTS = MEDIA_PLAY_EVENT | MEDIA_RECORD_START | CODEC_DATA_TX_DN | CODEC_DATA_RX_DN | CODEC_PLAYBACK_DN | CODEC_RECORD_DN;
 	while (true){		
 		uint32_t flags = osEventFlagsWait( mMediaEventId, MEDIA_EVENTS,  osFlagsWaitAny, osWaitForever );
 		
@@ -128,15 +140,27 @@ static void 	mediaThread( void *arg ){						// communicates with audio codec for
 
 		} else if ( (flags & MEDIA_PLAY_EVENT) != 0 ){				// request to start playback
 			if ( mPlaybackFilePath[0] == 0 ) continue;
+			resetAudio();
 			audPlayAudio( (const char *)mPlaybackFilePath, (MsgStats *) mPlaybackStats );
 			
 		} else if ( (flags & MEDIA_RECORD_START) != 0 ){			// request to start recording
 			FILE* outFP = fopen( (const char *)mRecordFilePath, "wb" );
 			if ( outFP != NULL ){
+				dbgLog("Rec fnm: %s", (char *)mRecordFilePath );
+				resetAudio();			// clean up anything in progress 
 				audStartRecording( outFP, (MsgStats *) mRecordStats );
 			} else {
 				printf ("Cannot open record file to write\n\r");
 			}
+		} else if ( (flags & MEDIA_SET_VOL) != 0 ){			// request to set volume
+			logEvtNI( "setVol", "vol", mAudioVolume );
+			ak_SetVolume( mAudioVolume );
+			
+		} else if ( (flags & MEDIA_SET_SPD) != 0 ){			// request to set speed (NYI)
+			audAdjPlaySpeed( mAudioSpeed );
+
+		} else if ( (flags & MEDIA_ADJ_POS) != 0 ){			// request to adjust playback position
+			audAdjPlayPos( mAdjPosSec );
 		}
 	}
 }

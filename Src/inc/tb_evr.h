@@ -54,7 +54,7 @@ extern void 			dbgEvtS( int id, const char *d );
 #define TB_bootCnt          EventID(EventLevelOp,     TB_no,    0x04)
 #define TB_wrMsgFile		EventID(EventLevelAPI,    TB_no,    0x05)
 #define TB_wrLogFile		EventID(EventLevelAPI,    TB_no,    0x06)
-#define TB_wrAudFile		EventID(EventLevelAPI,    TB_no,    0x07)
+#define TB_clAud			EventID(EventLevelOp,     TB_no,    0x07)
 #define TB_wrLnFile			EventID(EventLevelAPI,    TB_no,    0x08)
 #define TB_wrStatFile		EventID(EventLevelAPI,    TB_no,    0x09)
 #define TB_LdStatFile		EventID(EventLevelAPI,    TB_no,    0x0A)
@@ -80,6 +80,15 @@ extern void 			dbgEvtS( int id, const char *d );
 #define TB_audRecClose      EventID(EventLevelOp,     TBAud_no, 0x10)
 #define TB_audRecDn         EventID(EventLevelOp,     TBAud_no, 0x11)
 #define TB_wrRecBuff        EventID(EventLevelOp,     TBAud_no, 0x12)
+#define TB_FtchSk			EventID(EventLevelError,  TBAud_no, 0x13)
+#define TB_FtchRd			EventID(EventLevelError,  TBAud_no, 0x14)
+#define TB_StorSk			EventID(EventLevelError,  TBAud_no, 0x15)
+#define TB_StorWr			EventID(EventLevelError,  TBAud_no, 0x16)
+#define TB_initLogFile		EventID(EventLevelOp,     TBAud_no, 0x17)
+#define TB_chkLog			EventID(EventLevelOp,     TBAud_no, 0x18)
+#define TB_recPause			EventID(EventLevelOp,     TBAud_no, 0x19)
+#define TB_recResume		EventID(EventLevelOp,     TBAud_no, 0x1A)
+
 
 #define TBsai_no            (0x03)
 #define TB_saiEvt           EventID(EventLevelDetail, 		TBsai_no, 0x04)
@@ -99,6 +108,7 @@ extern void 			dbgEvtS( int id, const char *d );
 #define TB_saiRcv        		EventID(EventLevelDetail,     TBsai_no, 0x12)
 #define TB_saiRXDN          EventID(EventLevelDetail, 		TBsai_no, 0x13)
 #define TB_relBuff          EventID(EventLevelDetail, 		TBsai_no, 0x14)
+#define TB_i2cErr			EventID(EventLevelError, 		TBsai_no, 0x15)
 
 #define TBCSM_no            (0x04)
 #define TB_csmChSt					EventID(EventLevelOp,     		TBCSM_no, 0x00)
@@ -191,8 +201,13 @@ extern void 			dbgEvtS( int id, const char *d );
 #define TB_keyUp						EventID(EventLevelDetail, 		TBkey_no, 0x0e)
 #define TB_keyWk						EventID(EventLevelDetail, 		TBkey_no, 0x0f)
 #define TBkeyMismatch				EventID(EventLevelError, 		  TBkey_no, 0x10)
-
 //#define TB_keyX						EventID(EventLevelAPI, 				TBkey_no, 0x0a)
+
+#define TBnor_no						(0x08)
+#define TB_norErr						EventID(EventLevelError, 				TBnor_no, 0x01)
+#define TB_longOp						EventID(EventLevelError, 				TBnor_no, 0x02)
+
+//#define TB_norX						EventID(EventLevelAPI, 				TBnor_no, 0x01)
 
 #endif /* __TBEVR_H__ */
 

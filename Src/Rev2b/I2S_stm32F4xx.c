@@ -170,7 +170,7 @@ static int32_t 								I2S_PowerControl( ARM_POWER_STATE state, I2S_RESOURCES *i
 
 // internal functions
 int32_t 											todo( char *msg ){ 																										// report use of NotYetImplemented
-	errLog( "TODO: %s", msg ); 
+	errLog( "TODO, %s", msg ); 
 	return 0; 
 }
 void 													reset_I2S_Info( I2S_RESOURCES *i2s ) {																// initialized run-time info

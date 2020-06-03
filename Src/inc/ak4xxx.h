@@ -659,7 +659,8 @@ typedef  union {
 
 #define MAX_VOLUME   10
 #define MIN_VOLUME   0
-#define DEFAULT_VOLUME   80
+//#define DEFAULT_VOLUME   80
+
 
 // audio codec functions --  ak4343 or ak4637
 void 						ak_Init( void );											// init I2C & codec

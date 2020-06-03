@@ -477,6 +477,11 @@
               <FileType>1</FileType>
               <FilePath>.\Src\Rev2b\system_stm32f4xx.c</FilePath>
             </File>
+            <File>
+              <FileName>W25Q64JV.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Src\Rev2b\W25Q64JV.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1356,11 +1361,7 @@
       <api Capiversion="2.2.0" Cclass="CMSIS Driver" Cgroup="Flash" exclusive="0">
         <package name="CMSIS" schemaVersion="1.3" url="http://www.keil.com/pack/" vendor="ARM" version="5.6.0"/>
         <targetInfos>
-          <targetInfo excluded="1" name="TBv2b" versionMatchMode="">
-            <c>
-              <Define>DRIVER_SPI_NUM=4</Define>
-            </c>
-          </targetInfo>
+          <targetInfo name="TBv2b"/>
         </targetInfos>
       </api>
       <api Capiversion="2.3.0" Cclass="CMSIS Driver" Cgroup="I2C" exclusive="0">
@@ -1373,12 +1374,6 @@
         <package name="CMSIS" schemaVersion="1.3" url="http://www.keil.com/pack/" vendor="ARM" version="5.6.0"/>
         <targetInfos>
           <targetInfo excluded="1" name="TBv2b" versionMatchMode=""/>
-        </targetInfos>
-      </api>
-      <api Capiversion="2.3.0" Cclass="CMSIS Driver" Cgroup="NAND" exclusive="0">
-        <package name="CMSIS" schemaVersion="1.3" url="http://www.keil.com/pack/" vendor="ARM" version="5.6.0"/>
-        <targetInfos>
-          <targetInfo name="TBv2b"/>
         </targetInfos>
       </api>
       <api Capiversion="2.2.0" Cclass="CMSIS Driver" Cgroup="SPI" exclusive="0">
@@ -1407,7 +1402,7 @@
       </api>
     </apis>
     <components>
-      <component Capiversion="2.3.0" Cclass="CMSIS Driver" Cgroup="NAND" Csub="Custom" Cvendor="ARM" Cversion="2.3.0">
+      <component Capiversion="2.2.0" Cclass="CMSIS Driver" Cgroup="Flash" Csub="Custom" Cvendor="ARM" Cversion="2.2.0">
         <package name="CMSIS" schemaVersion="1.3" url="http://www.keil.com/pack/" vendor="ARM" version="5.6.0"/>
         <targetInfos>
           <targetInfo name="TBv2b"/>
@@ -1485,6 +1480,12 @@
           <targetInfo excluded="1" name="TBv2b" versionMatchMode=""/>
         </targetInfos>
       </component>
+      <component Capiversion="2.0.0" Cclass="CMSIS Driver" Cgroup="Flash" Csub="AT45DB641E" Cvendor="Keil" Cversion="1.3.0" condition="CMSIS Core and SPI Driver">
+        <package name="CMSIS-Driver" schemaVersion="1.4.0" url="http://www.keil.com/pack/" vendor="ARM" version="2.4.1"/>
+        <targetInfos>
+          <targetInfo excluded="1" name="TBv2b"/>
+        </targetInfos>
+      </component>
       <component Capiversion="2.0.0" Cclass="CMSIS Driver" Cgroup="Flash" Csub="AT45DB642D" Cvendor="Keil" Cversion="1.3.0" condition="CMSIS Core and SPI Driver">
         <package name="CMSIS-Driver" schemaVersion="1.4.0" url="http://www.keil.com/pack/" vendor="ARM" version="2.4.1"/>
         <targetInfos>
@@ -1493,6 +1494,12 @@
               <Define>DRIVER_SPI_NUM=4</Define>
             </c>
           </targetInfo>
+        </targetInfos>
+      </component>
+      <component Capiversion="2.0.0" Cclass="CMSIS Driver" Cgroup="Flash" Csub="N25Q032A" Cvendor="Keil" Cversion="1.1.0" condition="CMSIS Core and SPI Driver">
+        <package name="CMSIS-Driver" schemaVersion="1.4.0" url="http://www.keil.com/pack/" vendor="ARM" version="2.4.1"/>
+        <targetInfos>
+          <targetInfo excluded="1" name="TBv2b"/>
         </targetInfos>
       </component>
       <component Capiversion="2.2" Cclass="CMSIS Driver" Cgroup="I2C" Cvendor="Keil" Cversion="2.8" condition="STM32F4 CMSIS_Driver I2C">
@@ -1528,7 +1535,7 @@
       <component Cclass="Device" Cgroup="STM32Cube HAL" Csub="ADC" Cvendor="Keil" Cversion="1.7.4" condition="STM32F4 HAL DMA">
         <package name="STM32F4xx_DFP" schemaVersion="1.3" url="http://www.keil.com/pack" vendor="Keil" version="2.13.0"/>
         <targetInfos>
-          <targetInfo excluded="1" name="TBv2b"/>
+          <targetInfo excluded="1" name="TBv2b" versionMatchMode=""/>
         </targetInfos>
       </component>
       <component Cclass="Device" Cgroup="STM32Cube HAL" Csub="Common" Cvendor="Keil" Cversion="1.7.4" condition="STM32F4 HAL Common">
@@ -1552,7 +1559,7 @@
       <component Cclass="Device" Cgroup="STM32Cube HAL" Csub="Flash" Cvendor="Keil" Cversion="1.7.4" condition="STM32F4 HAL">
         <package name="STM32F4xx_DFP" schemaVersion="1.3" url="http://www.keil.com/pack" vendor="Keil" version="2.13.0"/>
         <targetInfos>
-          <targetInfo excluded="1" name="TBv2b"/>
+          <targetInfo excluded="1" name="TBv2b" versionMatchMode=""/>
         </targetInfos>
       </component>
       <component Cclass="Device" Cgroup="STM32Cube HAL" Csub="GPIO" Cvendor="Keil" Cversion="1.7.4" condition="STM32F4 HAL">
@@ -1570,13 +1577,13 @@
       <component Cclass="Device" Cgroup="STM32Cube HAL" Csub="NAND" Cvendor="Keil" Cversion="1.7.4" condition="STM32F40_41_412_42_43_44_46_47x HAL">
         <package name="STM32F4xx_DFP" schemaVersion="1.3" url="http://www.keil.com/pack" vendor="Keil" version="2.13.0"/>
         <targetInfos>
-          <targetInfo excluded="1" name="TBv2b"/>
+          <targetInfo excluded="1" name="TBv2b" versionMatchMode=""/>
         </targetInfos>
       </component>
       <component Cclass="Device" Cgroup="STM32Cube HAL" Csub="NOR" Cvendor="Keil" Cversion="1.7.4" condition="STM32F40_41_412_42_43_44_46_47x_4x3 HAL">
         <package name="STM32F4xx_DFP" schemaVersion="1.3" url="http://www.keil.com/pack" vendor="Keil" version="2.13.0"/>
         <targetInfos>
-          <targetInfo excluded="1" name="TBv2b"/>
+          <targetInfo excluded="1" name="TBv2b" versionMatchMode=""/>
         </targetInfos>
       </component>
       <component Cclass="Device" Cgroup="STM32Cube HAL" Csub="PWR" Cvendor="Keil" Cversion="1.7.4" condition="STM32F4 HAL">

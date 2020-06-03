@@ -249,7 +249,10 @@ void											setupRTC( fsTime time ){				// init RTC & set based on fsTime
 	RTC->PRER  = (256 << RTC_PRER_PREDIV_S_Pos);				// Synchronous prescaler = 256  MUST BE FIRST
 	RTC->PRER |= (127 << RTC_PRER_PREDIV_A_Pos);				// THEN asynchronous = 127 for 32768Hz => 1Hz
 	
-	uint32_t TR = ( Bcd2( time.hr ) << 16 ) + ( Bcd2( time.min ) << 8 ) + Bcd2( time.sec );
+	// try AM/PM to see if days will switch
+	int32_t ampm = 0, hr = time.hr;
+	if ( hr > 12 ){ ampm = 1; hr -= 12; }
+	uint32_t TR = (ampm << 22) | ( Bcd2( hr ) << 16 ) | ( Bcd2( time.min ) << 8 ) | Bcd2( time.sec );
 	
 	// calc weekday from date
 	int yr = time.year, yy = yr % 100, cen = yr / 100, mon = time.mon, day = time.day;
@@ -264,6 +267,7 @@ void											setupRTC( fsTime time ){				// init RTC & set based on fsTime
 	
 	uint32_t DR = ( Bcd2( yy ) << 16 ) | (wkday << 13 ) | ( Bcd2( mon ) << 8 ) | Bcd2( day );
 
+	RTC->CR 	|= RTC_CR_FMT;			// use AM/PM hour format
 	RTC->TR = TR;		// set time of day
 	RTC->DR = DR;		// set y
 	// RTC->CR.FMT == 0 (24 hour format)
@@ -282,12 +286,13 @@ char 											RngChar( int lo, int hi, int val ){   // => '-', '0', ... '9', '
 	return ( (val-lo)/stp + '0' );
 }
 
-bool HaveUsbPower = false, HaveLithium = false, HavePrimary = false, HaveBackup = false, firstCheck = true;
+bool HaveUsbPower = false, HaveLithium = false, HavePrimary = false, HaveBackup = false, firstCheck = true, pwrChanged;
 enum PwrStat oldState;
 
-void checkPowerChange( char *nm, int newVal, bool *pSvVal ){
+void 											checkPowerChange( char *nm, int newVal, bool *pSvVal ){
 	if ( !firstCheck ){
 		if ( newVal == *pSvVal ) return;  // no change
+		pwrChanged = true;
 		if ( newVal )
 			dbgLog( " Gained %s\n", nm);
 		else
@@ -317,8 +322,8 @@ void 											checkPower( ){				// check and report power status
 	// 		L			L			L		0-- temperature (or timer) fault
 
 	enum PwrStat pstat = (enum PwrStat) ((BatStat1? 4:0) + (BatStat2? 2:0) + (PwrGood_N? 1:0));
-  if ( firstCheck )	
-		oldState = pstat;
+	pwrChanged = ( firstCheck || pstat != oldState );
+	oldState = pstat;
 	
 	bool hvUsb = PwrGood_N==0;
 	bool hvLith = (pstat!=NOLITH);
@@ -361,10 +366,6 @@ void 											checkPower( ){				// check and report power status
 	if (pstat==CHARGED) 	sCh = 'C';
 	if (pstat==TEMPFAULT) sCh = 'X';
 
-	char pwrStat[10];
-	sprintf(pwrStat, "%c L%c%c%c P%c B%c T%c", sUsb, sLi,sCh,sLt, sPr, sBk, sMt); 
-	logEvtNS( "PwrCheck","Stat",	pwrStat ); 
-
 	// report changes & update state
 	checkPowerChange( "USB", 		 	hvUsb, 	&HaveUsbPower );
 	checkPowerChange( "Lithium", 	hvLith, &HaveLithium );
@@ -372,12 +373,17 @@ void 											checkPower( ){				// check and report power status
 	checkPowerChange( "Backup", 	hvBack, &HaveBackup );
 	firstCheck = false;
 	
+	char pwrStat[10];
+	sprintf(pwrStat, "%c L%c%c%c P%c B%c T%c", sUsb, sLi,sCh,sLt, sPr, sBk, sMt); 
+	if ( pwrChanged )	
+		logEvtNS( "PwrCheck","Stat",	pwrStat ); 
+	
   dbgLog( "srTB: %d %4d %3d %4d\n", pstat, VRefMV, MpuTempMV, VBatMV );
 	dbgLog( "LtLP: %3d %4d %4d\n", LiThermMV, LiMV, PrimaryMV );
 	if ( MpuTempMV > 1000 ) sendEvent( MpuHot, MpuTempMV );
 	if ( LiThermMV > 1000 ) sendEvent( LithiumHot, LiThermMV );
 	
-	if ( pstat != oldState ){
+	if ( pwrChanged ){
 		switch ( pstat ){
 			case CHARGED:				sendEvent( BattCharged, 0 ); 			break; 		// CHARGING complete
 			case CHARGING: 			sendEvent( BattCharging, LiMV );	break;		// started charging

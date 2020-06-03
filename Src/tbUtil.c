@@ -210,7 +210,7 @@ void 										initIDs(){																		// initialize CPU_ID & TB_ID strings
 		case 0x2000: rev = 'b';
 		case 0x3000: rev = 'c';
 	}
-	sprintf( CPU_ID, "CPU%x_%c", id->dev_id, rev );
+	sprintf( CPU_ID, "0x%x.%c", id->dev_id, rev );
 
 	struct {						// STM32 unique device ID 
 		// Ref Man: 30.2 Unique device ID register  
@@ -249,6 +249,7 @@ void showRTC( ){
 	hr =  ((Tm>>20) & 0x3)*10 + ((Tm>>16) & 0xF);
 	min = ((Tm>>12) & 0x7)*10 + ((Tm>>8) & 0xF);
 	sec = ((Tm>> 4) & 0x7)*10 + (Tm & 0xF);
+	if ( (Tm>>22) & 0x1 ) hr += 12;
 	
 	char * wkdy[] = { "", "Mon","Tue","Wed","Thu","Fri","Sat","Sun" };
 	char * month[] = { "", "Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec" };
@@ -296,8 +297,8 @@ void *									tbAlloc( int nbytes, const char *msg ){					// malloc() & check f
 	void *mem = (void *) malloc( nbytes );
 	dbgEvt( TB_Alloc, nbytes, (int)mem, tbAllocTotal, 0 );
 	if ( mem==NULL ){
-		  errLog( "no heap %s: rq=%d Tot=%d \n", msg, nbytes, tbAllocTotal );
-			tbErr("out of heap");
+		  errLog( "out of heap, %s, rq=%d, Tot=%d \n", msg, nbytes, tbAllocTotal );
+		//	tbErr( "no heap %s: rq=%d Tot=%d \n", msg, nbytes, tbAllocTotal);
 	}
 	return mem;
 }
@@ -327,21 +328,32 @@ void 										errLog( const char * fmt, ... ){
 	va_start( arg_ptr, fmt );
 	enableLCD();
 	setTxtColor( LCD_COLOR_RED );
-	printf("E: ");
-	vprintf( fmt, arg_ptr );
+	char msg[200];
+	vsprintf( msg, fmt, arg_ptr );
 	va_end( arg_ptr );
-	printf("\n");
+	logEvtNS( "errLog", "msg", msg );
+	printf("%s \n", msg );
 	disableLCD();
 }
 
-void 										tbErr( const char * fmt, ... ){											// report fatal error
-	va_list arg_ptr;
-	va_start( arg_ptr, fmt );
-	vprintf( fmt, arg_ptr );
-	va_end( arg_ptr );
-	logEvtS( "*** tbError: ", fmt );
-	dbgEvtS( TB_Error, fmt );
-	logPowerDown();		// try to save log
+static int 							tbErrNest = 0;
+void 										tbErr( const char * fmt, ... ){									// report fatal error
+	if ( tbErrNest == 0 ){ 
+		char s[100];
+		tbErrNest++;
+		
+		va_list arg_ptr;
+		va_start( arg_ptr, fmt );
+		vsprintf( s, fmt, arg_ptr );
+		va_end( arg_ptr );
+		
+		printf( "%s \n", s );
+		logEvtS( "***tbErr", s );
+		dbgEvtS( TB_Error, s );
+		logPowerDown();			// try to save log
+	}
+	__breakpoint(0);		// halt if in debugger
+	
 	
 	ledFg( "R8_2 R8_2 R8_20!" );
 	while ( true ){ }
@@ -353,6 +365,13 @@ void										tbShw( const char *s, char **p1, char **p2 ){  	// assign p1, p2 t
 		*p2 = len>64? (char *)&s[64] : "";
 }
 
+
+bool 										fexists( const char *fname ){										// return true if file path exists
+	fsFileInfo info;
+	info.fileID = 0;
+	fsStatus stat = ffind( fname, &info );
+	return ( stat==fsOK );
+}
 
 // fault handlers *****************************************************
 int divTst(int lho, int rho){	// for div/0 testing
@@ -565,21 +584,19 @@ void 										HardFault_Handler_C( svFault_t *svFault, uint32_t linkReg ){
 		"Usage" // 6 
 	};
 	int vAct = svSCB.ICSR & SCB_ICSR_VECTACTIVE_Msk;
-	enableLCD();
-	printf( "Fault: 0x%x = %s \n",  vAct, vAct<7? fNms[vAct]:"" );
 	int cfsr = svSCB.CFSR, usgF = cfsr >> 16, busF = (cfsr & 0xFF00) >> 8, memF = cfsr & 0xFF;
-	dbgEvt( TB_Fault, vAct, cfsr, 0,0 );
+	dbgEvt( TB_Fault, vAct, cfsr, svFault->PC,0 );
 	
-	printf( "CFSR: 0x%08x \n", cfsr );
-	printf( "EXC_R: 0x%08x \n", svSCB.EXC_RET );
-	printf( "  sp: 0x%08x \n ", svSCB.SP + (sizeof svFault) );
-  if ( usgF ) printf( "  Usg: 0x%04x \n", usgF );
-  if ( busF ){
-		printf( "  Bus: 0x%02x \n   BFAR: 0x%08x \n", busF, svSCB.BFAR );
-	}
-  if ( memF ) printf( "  Mem: 0x%02x \n   MMAR: 0x%08x \n", memF, svSCB.MMAR );
+	enableLCD();
+	dbgLog( "Fault: 0x%x = %s \n",  vAct, vAct<7? fNms[vAct]:"" );
+  dbgLog( "PC: 0x%08x \n", svFault->PC );
+	dbgLog( "CFSR: 0x%08x \n", cfsr );
+	dbgLog( "EXC_R: 0x%08x \n", svSCB.EXC_RET );
+	dbgLog( "  sp: 0x%08x \n ", svSCB.SP + (sizeof svFault) );
+  if ( usgF ) dbgLog( "  Usg: 0x%04x \n", usgF );
+  if ( busF ) dbgLog( "  Bus: 0x%02x \n   BFAR: 0x%08x \n", busF, svSCB.BFAR );
+  if ( memF ) dbgLog( "  Mem: 0x%02x \n   MMAR: 0x%08x \n", memF, svSCB.MMAR );
 	
-  printf( "PC: 0x%08x \n", svFault->PC );
 	tbErr(" Fault" );
 }
 void 										RebootToDFU( void ){													// reboot into SystemMemory -- Device Firmware Update bootloader

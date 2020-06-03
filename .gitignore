@@ -15,6 +15,7 @@
 # Logs and databases #
 ######################
 *.log
+*.csv
 
 # Editor backups
 *.bak
@@ -30,6 +31,7 @@ Objects/*.d
 Objects/*.iex
 Objects/*.lnp
 Objects/*.axf
+Objects/*._ia
 old/*
 
 # uVision duplicates files in RTE/* (even though I'm using copies in Keil/

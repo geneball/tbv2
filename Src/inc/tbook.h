@@ -67,7 +67,7 @@ extern void 			showRTC( void );
 extern uint32_t 	tbTimeStamp( void );
 extern void 			tbDelay_ms( int ms ); 					//  Delay execution for a specified number of milliseconds
 extern void *			tbAlloc( int nbytes, const char *msg );
-
+extern bool 			fexists( const char *fname );		// return true if file path exists
 #include "tb_evr.h"
 
 extern void 			dbgEvt( int id, int a1, int a2, int a3, int a4 );

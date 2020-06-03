@@ -37,6 +37,7 @@ typedef struct{				// WAV file header
 } WAVE_FormatTypeDef;
 
 typedef enum {			// audType
+  audUNDEF,
 	audWave,
 	audMP3,
 	audOGG
@@ -86,43 +87,46 @@ typedef struct { 			// PlaybackFile_t			-- audio state block
 	
   FILE * 								audF;						// stream for data
 	
+	uint32_t 							samplesPerSec;	// sample frequency 
 	uint32_t 							bytesPerSample;	// eg. 4 for 16bit stereo
 	uint32_t 							nSamples;				// total samples in file
 	uint32_t							msecLength;			// length of file in msec
-	uint32_t 							samplesPerSec;	// sample frequency 
-	int32_t								buffNum;				// idx in file of buffer currently playing
 
 	uint32_t 							tsOpen;					// timestamp at start of fopen
 	uint32_t 							tsPlay;					// timestamp at start of curr playback or resume
 	uint32_t 							tsPause;				// timestamp at pause
-	uint32_t 							tsResume;				// timestamp at resume
+	uint32_t 							tsResume;				// timestamp at resume (or start)
 	uint32_t							tsRecord;				// timestamp at recording start
 	
-	uint32_t 							msPlayed;				// elapsed msec playing file
-	uint32_t 							msPos;					// msec position in file
-	uint32_t 							msRecorded;			// elapsed msec recording file
-	uint32_t 							nSaved;					// recorded samples sent to file so far
-
-//	uint32_t 							nPlayed;				// samples played of file so far
-	uint32_t 							nLoaded;				// samples loaded from file so far
-	uint32_t 							nToPlay;				// samples currently playing
-	bool 									monoMode;				// true if data is 1 channel (duplicate on send)
-	bool 									audioEOF;				// true if all sample data has been read
 	playback_state_t  		state;					// current (overly detailed) playback state
-	
+	bool 									monoMode;				// true if data is 1 channel (duplicate on send)
+	uint32_t 							nPerBuff;				// samples per buffer (always stereo)
 	uint32_t 							LastError;			// last audio error code
 	uint32_t 							ErrCnt;					// # of audio errors
-	
+	MsgStats *						stats;					// statistics to go to logger
+
 	Buffer_t *						Buff[ N_AUDIO_BUFFS ];			// pointers to playback/record buffers (for double buffering)
 	Buffer_t *						SvBuff[ N_AUDIO_BUFFS ];		// pointers to save buffers (waiting to write to file)
 	
+	// playback 
+	int32_t								buffNum;				// idx in file of buffer currently playing
+	uint32_t 							nLoaded;				// samples loaded from file so far
+	uint32_t 							nPlayed;				// # samples in completed buffers
+	uint32_t 							msPlayed;				// elapsed msec playing file
+	bool 									audioEOF;				// true if all sample data has been read
+//	uint32_t 							msPos;					// msec position in file
+	
+	// recording
+	uint32_t 							msRecorded;			// elapsed msec recording file
+	uint32_t 							nSaved;					// recorded samples sent to file so far
+
+	// simulated square wave data
 	bool 									SqrWAVE;				// T => wavHdr pre-filled to generate square wave
 	int32_t								sqrSamples;			// samples still to send
 	uint32_t 							sqrHfLen;				// samples per half wave
 	int32_t 							sqrWvPh;				// position in wave form: HfLen..0:HI 0..-HfLen: LO
 	uint16_t 							sqrHi;					//  = 0x9090;
 	uint16_t 							sqrLo;					//  = 0x1010;
-	MsgStats *						stats;					// statistics to go to logger
 	
 } PlaybackFile_t;
 
@@ -138,7 +142,7 @@ extern void 				audAdjPlaySpeed( int16_t adj );							// change playback speed b
 extern void 				audPlayAudio( const char* audioFileName, MsgStats *stats ); // start playing from file
 extern void 				audStopAudio( void );												// signal playback loop to stop
 extern void 				audStartRecording( FILE *outFP, MsgStats *stats );	// start recording into file -- TBV2_REV1 version
-extern void 				audStopRecording( void );										// signal record loop to stop
+extern void 				audRequestRecStop( void );										// signal record loop to stop
 extern void 				audPauseResumeAudio( void );								// signal playback loop to request Pause or Resume
 extern void 				audPlaybackDn( void );											// handle end of buffer event
 extern void 				audSquareWav( int nsecs, int hz );				  // square: 'nsecs' seconds of 'hz' squareWave
