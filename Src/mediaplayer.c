@@ -15,7 +15,6 @@ const int										MEDIA_SET_VOL 		 =  0x100;
 const int 									MEDIA_EVENTS 			 =  0x1FF;		// mask for all events
 
 static 	osThreadAttr_t 				thread_attr;
-static 	osThreadId_t					mMediaThreadId;
 
 osEventFlagsId_t							mMediaEventId;			// for signals to mediaThread
 
@@ -44,8 +43,8 @@ void					initMediaPlayer( void ){						// init mediaPlayer & spawn thread to han
 	
 	thread_attr.name = "Media";
 	thread_attr.stack_size = MEDIA_STACK_SIZE; 
-	mMediaThreadId = osThreadNew( mediaThread, NULL, &thread_attr );
-	if ( mMediaThreadId == NULL )
+	Dbg.thread[2] = (osRtxThread_t *) osThreadNew( mediaThread, NULL, &thread_attr );
+	if ( Dbg.thread[2] == NULL )
 		tbErr( "mediaThread spawn failed" );	
 	
 	//registerPowerEventHandler( handlePowerEvent );
@@ -122,46 +121,50 @@ void 					resetAudio(){ 											// stop any playback/recording in progress
 //		CODEC_RECORD_DN			=> finish recording & save file
 ***************/
 static void 	mediaThread( void *arg ){						// communicates with audio codec for playback & recording		
+	dbgLog( "mediaThr: 0x%x 0x%x \n", &arg, &arg + MEDIA_STACK_SIZE );
 	while (true){		
 		uint32_t flags = osEventFlagsWait( mMediaEventId, MEDIA_EVENTS,  osFlagsWaitAny, osWaitForever );
 		
 		dbgEvt( TB_mediaEvt, flags, 0,0,0);
-		if ( (flags & CODEC_DATA_TX_DN) != 0 ){								// buffer transmission complete from SAI_event
-			audLoadBuffs();		// preload any empty audio buffers
+		if ( (flags & CODEC_DATA_TX_DN) != 0 )		// buffer transmission complete from SAI_event
+			audLoadBuffs();															// preload any empty audio buffers
 			
-		} else if ( (flags & CODEC_DATA_RX_DN) != 0 ){				// buffer reception complete from SAI_event
+		if ( (flags & CODEC_DATA_RX_DN) != 0 )		// buffer reception complete from SAI_event
 			audSaveBuffs();
 			
-		} else if ( (flags & CODEC_PLAYBACK_DN) != 0 ){				// playback complete
+		if ( (flags & CODEC_PLAYBACK_DN) != 0 )		// playback complete
 			audPlaybackComplete();
 			
-		} else if ( (flags & CODEC_RECORD_DN) != 0 ){				// recording complete
+		if ( (flags & CODEC_RECORD_DN) != 0 )			// recording complete
 			audRecordComplete();
 
-		} else if ( (flags & MEDIA_PLAY_EVENT) != 0 ){				// request to start playback
+		if ( (flags & MEDIA_PLAY_EVENT) != 0 ){		// request to start playback
 			if ( mPlaybackFilePath[0] == 0 ) continue;
 			resetAudio();
 			audPlayAudio( (const char *)mPlaybackFilePath, (MsgStats *) mPlaybackStats );
-			
-		} else if ( (flags & MEDIA_RECORD_START) != 0 ){			// request to start recording
+		} 
+		
+		if ( (flags & MEDIA_RECORD_START) != 0 ){	// request to start recording
 			FILE* outFP = fopen( (const char *)mRecordFilePath, "wb" );
 			if ( outFP != NULL ){
-				dbgLog("Rec fnm: %s", (char *)mRecordFilePath );
+				dbgLog("Rec fnm: %s \n", (char *)mRecordFilePath );
 				resetAudio();			// clean up anything in progress 
 				audStartRecording( outFP, (MsgStats *) mRecordStats );
 			} else {
 				printf ("Cannot open record file to write\n\r");
 			}
-		} else if ( (flags & MEDIA_SET_VOL) != 0 ){			// request to set volume
+		} 
+		
+		if ( (flags & MEDIA_SET_VOL) != 0 ){			// request to set volume
 			logEvtNI( "setVol", "vol", mAudioVolume );
 			ak_SetVolume( mAudioVolume );
-			
-		} else if ( (flags & MEDIA_SET_SPD) != 0 ){			// request to set speed (NYI)
+		}
+		
+		if ( (flags & MEDIA_SET_SPD) != 0 )				// request to set speed (NYI)
 			audAdjPlaySpeed( mAudioSpeed );
 
-		} else if ( (flags & MEDIA_ADJ_POS) != 0 ){			// request to adjust playback position
+		if ( (flags & MEDIA_ADJ_POS) != 0 )				// request to adjust playback position
 			audAdjPlayPos( mAdjPosSec );
-		}
 	}
 }
 //end  mediaplayer.c
