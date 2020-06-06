@@ -20,8 +20,23 @@ static short		lastRef[ MAX_STATS_CACHED ];
 static short		touched[ MAX_STATS_CACHED ];
 static MsgStats	sStats[ MAX_STATS_CACHED ];
 const int				STAT_SIZ = sizeof( MsgStats );
-const char *		norLogFile = "M0:/LOG/NorLog.txt";
 const char *		norEraseFile = "M0:/system/EraseNorLog.txt";			// flag file to force full erase of NOR flash
+const char *		logFilePatt = "M0:/LOG/tbLog_%d.txt";			// file name of previous log on first boot
+
+const int 			NOR_BUFFSZ = 260;		// PGSZ + at least one for /0
+struct {				// NOR LOG state
+	ARM_DRIVER_FLASH *	pNor;
+	ARM_FLASH_INFO * 		pI;
+	int32_t							currLogIdx;		// index of this log
+	int32_t							logBase;			// address of start of log-- 1st page holds up to 64 start addresses-- so flash is wear leveled
+	int32_t							Nxt;					// address of 1st erased byte of Nor flash
+ 	uint32_t 						PGSZ; 				// CONST bytes per page
+ 	uint32_t 						SECTORSZ; 		// CONST bytes per sector
+ 	uint8_t  						E_VAL; 				// CONST errased byte value 
+ 	int32_t  						MAX_ADDR; 		// CONST max address in flash
+	char 								pg[ NOR_BUFFSZ ];
+} NLg;
+
 
 TBH_arr 				TBH;	//DEBUG -- accessible log history
 
@@ -123,7 +138,7 @@ void						closeLog(){
 		dbgEvt( TB_wrLogFile, totLogCh, err1,err2,0);
 	}
 	logF = NULL;
-	checkLog(); //DEBUG
+	//checkLog(); //DEBUG
 }
 
 void dateStr( char *s, fsTime dttm ){
@@ -134,68 +149,76 @@ void						logPowerUp( bool reboot ){											// re-init logger after reboot, U
 	char dt[30];
 	fsTime verDt, bootDt;
 
+	logF = NULL;
 	//checkLog();	//DEBUG
-	if ( !openLog(false) ) return;
+	//if ( !openLog(false) ) return;
+	
+	char * boot = loadLine( line, TBP[ pBOOTCNT ], &bootDt ); 
+	int bootcnt = 0;
+	if ( boot!=NULL ) sscanf( boot, " %d", &bootcnt );
+	
+	if ( bootcnt==1 ){  // FirstBoot after install
+		bool eraseNor = fexists( norEraseFile );
+		if ( eraseNor )  // if M0:/system/EraseNorLog.txt exists-- erase 
+			eraseNorFlash( false );			// CLEAR nor & create a new log
+		else {     // First Boot starts a new log (unless already done by erase)
+			sprintf(line, logFilePatt, NLg.currLogIdx );
+			copyNorLog( line );				// save final previous log
+			initNorLog( true );				// restart with a new log 
+		}
+	}
 	
 	if ( reboot ){
 		totLogCh = 0;			// tot chars appended
 		if (logF!=NULL) fprintf( logF, "\n" );
-		logEvt( "REBOOT--------" );
+		logEvt(   "REBOOT--------" );
 		logEvtNS( "TB_V2", "Firmware", TBV2_Version );
-		logEvtS( "CPU",  CPU_ID );
-		logEvtS( "TB_ID",  TB_ID );
+		logEvtS(  "CPU",  CPU_ID );
+		logEvtS(  "TB_ID",  TB_ID );
 	} else
-		logEvt( "RESUME--");
+		logEvt(   "RESUME--");
+	
+	logEvtNI( "BOOT", "cnt", bootcnt );
+	dbgEvt( TB_bootCnt, bootcnt, 0,0,0);
+	logEvtNINI( "NorLog", "Idx", NLg.currLogIdx, "Sz", NLg.Nxt-NLg.logBase );
 	
 	fsFileInfo fAttr;
 	fAttr.fileID = 0;
 	fsStatus fStat = ffind( TBP[ pCSM_VERS ], &fAttr );
 	if ( fStat != fsOK ){
-		logEvtNS( "FileError", "missing", TBP[ pCSM_VERS ] );
+		logEvtNS( "TB_CSM", "missing", TBP[ pCSM_VERS ] );
 		return;
 	}
-		
 
 	char * status = loadLine( line, TBP[ pCSM_VERS ], &verDt );			// version.txt marker file exists-- when created?
 	dateStr( dt, verDt );
 	logEvtNSNS( "TB_CSM", "dt", dt, "ver", status );
+		
+	if ( bootcnt==1 ){  // FirstBoot after install
+		logEvtNS( "setRTC", "DtTm", dt );
+		setupRTC( verDt );			// init RTC and set to date/time from version.txt
+	} else 					// read & report RTC value
+		showRTC();
 	
-	char * boot = loadLine( line, TBP[ pBOOTCNT ], &bootDt ); 
-	int bootcnt = 0;
-	if ( boot!=NULL ) sscanf( boot, " %d", &bootcnt );
+	//boot complete!  count it
 	bootcnt++;
 	sprintf( line, " %d", bootcnt );
 	writeLine( line,  TBP[ pBOOTCNT ] );
-
-	logEvtNI( "BOOT", "cnt", bootcnt );
-	dbgEvt( TB_bootCnt, bootcnt, 0,0,0);
-		
-	if ( bootcnt==1 ){  // FirstBoot after install
-		bool eraseNor = fexists( norEraseFile );
-		if ( eraseNor )  // if M0:/system/EraseNorLog.txt exists-- erase 
-			eraseNorFlash( false );			// CLEAR nor & create a new log
-				
-		logEvtNS( "setRTC", "DtTm", dt );
-		setupRTC( verDt );			// init RTC and set to date/time from version.txt
-		
-		if ( !eraseNor )       // First Boot starts a new log (unless already done by erase)
-			initNorLog( true );				// start a new log 
-		
-	} else 	// read & report RTC value
-		showRTC();
 }
 void						logPowerDown( void ){															// save & shut down logger for USB or sleeping
 	flushStats();	
+	copyNorLog( "" );		// auto log name
+	
 	if ( logF==NULL ) return;
 	logEvtNI( "WrLog", "nCh", totLogCh );
 	closeLog();
-	copyNorLog( norLogFile );
 }
-void						initVer1NorLog( void );
+
+void						loggerThread(){
+}
 void						initLogger( void ){																// init tbLog file on bootup
 	logLock = osMutexNew( &logMutex );
-	initVer1NorLog();   // for conversion 
-	//initNorLog( false );				// init NOR & find current log 
+	initNorLog( false );				// init NOR & find current log 
 	
 	logPowerUp( true );
 	
@@ -289,16 +312,17 @@ MsgStats *			loadStats( const char *subjNm, short iSubj, short iMsg ){		// load 
 	touched[ newStatIdx ] = 1;
 	return st;
 }
+// logEvt formats
 void						logEvt( const char *evtID ){											// write log entry: 'EVENT, at:    d.ddd'
 	logEvtS( evtID, "" );
 }
 void						norEvt( const char *s1, const char *s2 ){
 	appendNorLog( s1 );
-	appendNorLog( " " );
+	appendNorLog( ", " );
 	appendNorLog( s2 );
 	appendNorLog( "\n" );
 }
-void						logEvtS( const char *evtID, const char *args ){		// write log entry: 'EVENT, at:    d.ddd, ARGS'
+void						logEvtS( const char *evtID, const char *args ){		// write log entry: 'm.ss.s: EVENT, ARGS'
 	int 		ts = tbTimeStamp();
 	char 		evtBuff[ MAX_EVT_LEN1 ];
 	int tsec = ts/100, sec = tsec/10, min = sec/60, hr = min/60;
@@ -379,20 +403,9 @@ void						logEvtNI( const char *evtID, const char *nm, int val ){			// write log
 //
 // NOR-flash LOG
 const char *					norTmpFile = "M0:/system/svLog.txt";
+const char *					norLogPath = "M0:/LOG";
 const int 						BUFFSZ = 260;   // 256 plus space for null to terminate string
 const int							N_SADDR = 64;		// number of startAddresses in page0
-struct {
-	ARM_DRIVER_FLASH *	pNor;
-	ARM_FLASH_INFO * 		pI;
-	int32_t							currLogIdx;		// index of this log
-	int32_t							logBase;			// address of start of log-- 1st page holds up to 64 start addresses-- so flash is wear leveled
-	int32_t							Nxt;					// address of 1st erased byte of Nor flash
- 	uint32_t 						PGSZ; 				// CONST bytes per page
- 	uint32_t 						SECTORSZ; 		// CONST bytes per sector
- 	uint8_t  						E_VAL; 				// CONST errased byte value 
- 	int32_t  						MAX_ADDR; 		// CONST max address in flash
-	char 								pg[ BUFFSZ ];
-} NLg;
 
 void	*					NLogReadPage( uint32_t addr ){					// read NOR page at 'addr' into NLg.pg & return ptr to it
 	uint32_t stat = NLg.pNor->ReadData( addr, NLg.pg, NLg.PGSZ );			// read page at addr into NLg.pg 
@@ -406,10 +419,8 @@ void 						NLogWrite( uint32_t addr, const char *data, int len ){	// write len b
 	uint32_t stat = NLg.pNor->ProgramData( addr, data, len );		
 	if ( stat != ARM_DRIVER_OK ) tbErr(" pNor wr => %d", stat );
 }
-int 						nxtPgAddr( int a ){		// => start of next page after 'a'
-	int nxt = a + NLg.PGSZ;
-  int pg = nxt - (nxt % NLg.PGSZ);
-	return pg;
+int 						nxtBlk( int addr, int blksz ){		// => 1st multiple of 'blksz' after 'addr'
+	return (addr/blksz + 1) * blksz;
 }
 void						findLogNext(){															// sets NLg.Nxt to first erased byte in current log
 	int nxIdx = -1;
@@ -462,7 +473,7 @@ void						findCurrNLog( bool startNewLog ){						// read 1st pg (startAddrs) & i
 			return;  // since everything was set by erase
 		}
 		NLg.currLogIdx = lFull;	
-		startAddr[ lFull ] =  nxtPgAddr( NLg.Nxt );
+		startAddr[ lFull ] =  nxtBlk( NLg.Nxt, NLg.SECTORSZ );
 		NLogWrite( lFull*4, (char *)&startAddr[ lFull ], 4 );		// write lFull'th entry of startAddr[]
 
 		NLg.logBase = startAddr[ lFull ];
@@ -483,34 +494,14 @@ void 						eraseNorFlash( bool svCurrLog ){			// erase entire chip & re-init wit
 		if ( NLg.pg[0] != NLg.E_VAL ) 
 			dbgLog("ebyte at %x reads %x \n", addr, NLg.pg[0] );
 	}
-	//int stat = NLg.pNor->EraseChip( );	
+	
+	//int stat = NLg.pNor->EraseChip( );	//DOESN'T WORK!
 	//if ( stat != ARM_DRIVER_OK ) tbErr(" pNor erase => %d", stat );
 	dbgLog(" NLog erased \n");
 	
 	findCurrNLog( true );				// creates a new empty currentLog
 	if ( svCurrLog )
 		restoreNorLog( norTmpFile );
-}
-void						initVer1NorLog(){
-	uint32_t stat;
-	
-	// init constants in NLg struct
-	NLg.pNor 			= &Driver_Flash0;
-	NLg.pI 				= NLg.pNor->GetInfo();
-	NLg.PGSZ 			= NLg.pI->page_size;
-	NLg.SECTORSZ 	= NLg.pI->sector_size;
-	if ( NLg.PGSZ > BUFFSZ ) tbErr("NLog: buff too small");
-	NLg.E_VAL	 		= NLg.pI->erased_value;
-	NLg.MAX_ADDR 	= ( NLg.pI->sector_count * NLg.pI->sector_size )-1;
-	
-	stat = NLg.pNor->Initialize( NULL );
-	if ( stat != ARM_DRIVER_OK ) tbErr(" pNor->Init => %d", stat );
-	
-	stat = NLg.pNor->PowerControl( ARM_POWER_FULL );
-	if ( stat != ARM_DRIVER_OK ) tbErr(" pNor->Pwr => %d", stat );
-	NLg.logBase = 0;
-	NLg.Nxt = 3200;  //HACK -- overwrite some garbage
-	//findLogNext(); 	// old style -- one log starts at 0
 }
 void						initNorLog( bool startNewLog ){														// init driver for W25Q64JV NOR flash
 	uint32_t stat;
@@ -532,24 +523,31 @@ void						initNorLog( bool startNewLog ){														// init driver for W25Q64
 
 	findCurrNLog( startNewLog );			// locates (and creates, if startNewLog ) current log-- sets logBase & Nxt
 	
-	char s[40];
-	sprintf( s, "\n0.00.0: initNOR, Nxt: %d \n", NLg.Nxt );
-	appendNorLog( s );
+	int logSz = NLg.Nxt-NLg.logBase;
+	dbgLog( "NorLog: cLogSz=%d NorFilled=%d%% \n", logSz, NLg.Nxt*100/NLg.MAX_ADDR );
+	
+	
+/*		lg_thread_attr.name = "Log Erase Thread";	
+	lg_thread_attr.stack_size = LOG_STACK_SIZE; 
+	osThreadId_t lg_thread =  osThreadNew( NLogThreadProc, 0, &lg_thread_attr ); 
+	if ( lg_thread == NULL ) 
+		tbErr( "logThreadProc not created" );
+*/
+	
 }
 void						appendNorLog( const char * s ){									// append text to Nor flash
   if ( NLg.pNor == NULL ) return;				// Nor not initialized
 
 	int len = strlen( s );
-	int nxtPg = nxtPgAddr( NLg.Nxt ); 
 	
 	if ( NLg.Nxt + len > NLg.MAX_ADDR ){		// NOR flash is full!
 		int oldNxt = NLg.Nxt;
 		eraseNorFlash( true );				// ERASE flash & reload copy of current log at front
 		logEvtNINI( "ERASE Nor", "logIdx", NLg.currLogIdx, "Nxt", oldNxt );
 		return;  // since everything was set by erase
-		
 	}
 
+	int nxtPg = nxtBlk( NLg.Nxt, NLg.PGSZ ); 
 	if ( NLg.Nxt+len > nxtPg ){ // crosses page boundary, split into two writes
 		int flen = nxtPg-NLg.Nxt;		// bytes on this page
 		NLogWrite( NLg.Nxt, s, flen );						// write rest of this page
@@ -560,11 +558,16 @@ void						appendNorLog( const char * s ){									// append text to Nor flash
 	
 	NLg.Nxt += len;
 }
-void						copyNorLog( const char * fpath ){								// copy Nor log into file at path
+void						copyNorLog( const char * fpath ){								// copy curr Nor log into file at path
   if ( NLg.pNor == NULL ) return;				// Nor not initialized
 
-	uint32_t stat;
-	FILE * f = fopen( fpath, "w" );
+	char fnm[40];
+	uint32_t stat, msec, tsStart = tbTimeStamp(), totcnt = 0;
+	
+	strcpy( fnm, fpath );
+	if ( strlen( fnm )==0 ) // generate tmp log name
+		sprintf( fnm, "%s/tbLog_%d_%d.txt", norLogPath, NLg.currLogIdx, NLg.Nxt );  // e.g. LOG/NLg0_82173.txt  .,. /NLg61_7829377.txt
+	FILE * f = fopen( fnm, "w" );
 	if ( f==NULL ) tbErr("cpyNor fopen err");
 	
 	for ( int p = NLg.logBase; p < NLg.Nxt; p+= NLg.PGSZ ){
@@ -575,8 +578,11 @@ void						copyNorLog( const char * fpath ){								// copy Nor log into file at 
 		if ( cnt > NLg.PGSZ ) cnt = NLg.PGSZ;
 		stat = fwrite( NLg.pg, 1, cnt, f );
 		if ( stat != cnt ) tbErr("cpyNor fwrite => %d", stat );
+		totcnt += cnt;
 	}
 	fclose( f );
+	msec = tbTimeStamp() - tsStart;
+	dbgLog( "copyNorLog: %s: %d in %d msec \n", fpath, totcnt, msec );
 }
 void						restoreNorLog( const char * fpath ){								// copy file into current log
 	FILE * f = fopen( fpath, "r" );
