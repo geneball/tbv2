@@ -6,6 +6,12 @@
 #include "tbook.h"				// enableMassStorage 
 #include "mediaPlyr.h"		// audio operations
 #include "inputMgr.h"			// osMsg_TBEvents
+const char *  			fgPlaying 			= "G!";
+const char *  			fgPlayPaused		= "G2_3!";
+const char *  			fgRecording			= "R!";
+const char *  			fgRecordPaused	= "R2_3!";
+const char *  			fgUSB_MSC				= "O5o5!";
+const char *  			fgTB_ERR				= "R8_2 R8_2 R8_20!";
 
 // TBook Control State Machine
 int 	 					nCSMstates = 0;
@@ -81,8 +87,8 @@ static void 	playSubjAudio( char *arg ){				// play current Subject: arg must be
 	char *nm = NULL;
 	MsgStats *stats = NULL;
 	if ( strcasecmp( arg, "nm" )==0 ){
-		logEvtNSNS( "Play", "Subj", tbS->name, "nm", nm ); 
 		nm = tbS->audioName;
+		logEvtNSNS( "PlayNm", "Subj", tbS->name, "nm", nm ); 
 	} else if ( strcasecmp( arg, "pr" )==0 ){
 		nm = tbS->audioPrompt;
 		logEvtNSNS( "Play", "Subj", tbS->name, "pr", nm ); 
@@ -93,7 +99,6 @@ static void 	playSubjAudio( char *arg ){				// play current Subject: arg must be
 	}
 	buildPath( path, tbS->path, nm, ".wav" ); //".ogg" );
 	playAudio( path, stats );
-//	logEvtNS( "Play", "file", path );
 }
 static void 	playSysAudio( char *arg ){				// play system file 'arg'
 	char path[MAX_PATH];
@@ -486,6 +491,7 @@ static void 	eventTest(  ){					// report Events until DFU (pot table)
 	}
 }
 
+void measureSystick( void );
 static void 	controlTest(  ){					// CSM test procedure
 	TB_Event *evt;
 	osStatus_t status;
@@ -562,7 +568,6 @@ static void 	controlTest(  ){					// CSM test procedure
 					
 				case Table:		// Record
 					startRecAudio( NULL );
-					logEvt( "Record" );
 					break;
 				case starTable:
 					stopRecording( );
@@ -581,6 +586,7 @@ static void 	controlTest(  ){					// CSM test procedure
 					break;
 					
 				case starMinus: 
+					measureSystick();
 					ak_SetVolume(99);		//Debug test +db volume settings
 					//executeCSM();
 					break;
@@ -591,7 +597,7 @@ static void 	controlTest(  ){					// CSM test procedure
 				
 				case FirmwareUpdate:   // pot table
 					dbgLog( "rebooting to system bootloader for DFU... \n" );
-					ledFg( "Rtb5_5 R5_3 R5_1 R5_1"); 
+					ledFg( "R3_5 R3_3 R3_2 R3_1 R3"); 
 					tbDelay_ms( 3300 );
 					RebootToDFU(  );
 					break;
@@ -656,6 +662,12 @@ void 					initControlManager( void ){				// initialize control manager
 	TB_Config.systemAudio = "M0:/system/aud/";			// path to system audio files
 	TB_Config.minShortPressMS = 30;				// used by inputmanager.c
 	TB_Config.minLongPressMS = 900;				// used by inputmanager.c
+	TB_Config.fgPlaying 			= (char *) fgPlaying;
+	TB_Config.fgPlayPaused		= (char *) fgPlayPaused;
+	TB_Config.fgRecording			= (char *) fgRecording;
+	TB_Config.fgRecordPaused	= (char *) fgRecordPaused;
+	TB_Config.fgUSB_MSC				= (char *) fgUSB_MSC;
+	TB_Config.fgTB_ERR				= (char *) fgTB_ERR;
 
 	EventRecorderEnable(  evrEA, 	  		TB_no, TBsai_no ); 	// TB, TBaud, TBsai  
 	EventRecorderDisable( evrAOD, 			EvtFsCore_No,   EvtFsMcSPI_No );  //FileSys library 
