@@ -6,15 +6,14 @@
 #include "mediaPlyr.h"			// thread to watch audio status
 #include "fs_evr.h"					// FileSys components
 
-const char * 	TBV2_Version 				= "V2.06 of 2-Jun-2020";
+const char * 	TBV2_Version 				= "V2.06 of 5-Jun-2020";
 
 //
 // Thread stack sizes
-const int 		TBOOK_STACK_SIZE 		= 6000;
-const int 		POWER_STACK_SIZE 		= 1024;
+const int 		TBOOK_STACK_SIZE 		= 6144;		// init, becomes control manager
+const int 		POWER_STACK_SIZE 		= 2048;
 const int 		INPUT_STACK_SIZE 		= 1024;
-const int 		MEDIA_STACK_SIZE 		= 4048;		// opens in/out files
-const int 		CONTROL_STACK_SIZE 	= 1024;		// opens in/out files
+const int 		MEDIA_STACK_SIZE 		= 4096;		// opens in/out files
 const int 		LED_STACK_SIZE 			= 512;
 
 //const int pSTATUS 				= 0;
@@ -184,11 +183,11 @@ void debugLoop( ){
 				PlayDBG = (gGet( gTABLE )? 1:0) + (gGet( gPOT )? 2:0) + (gGet( gPLUS )? 4:0) + (gGet( gMINUS )? 8:0) + (gGet( gSTAR )? 0x10:0) + (gGet( gTREE )? 0x20:0); 
 				dbgEvt( TB_dbgPlay, PlayDBG, 0,0,0 );
 				dbgLog( " PlayDBG=0x%x \n", PlayDBG );
-				PlayWave( TBP[pAUDIO] );
+				playWave( TBP[pAUDIO] );
 			} else {
 				int hz = gGet( gPLUS )? 440 : gGet( gMINUS )? 523 : gGet( gLHAND )? 659 : 1000;
 				audSquareWav( 5, hz );							// subst file data with square wave for 5sec
-				PlayWave( "SQR.wav" );							// play x seconds of hz square wave
+				playWave( "SQR.wav" );							// play x seconds of hz square wave
 			}
 		}
 
@@ -197,7 +196,8 @@ void debugLoop( ){
 
 //
 //  TBook main thread
-void talking_book( void *argument ) {
+void talking_book( void *arg ) {
+	dbgLog( "tbThr: 0x%x 0x%x \n", &arg, &arg + TBOOK_STACK_SIZE );
 	
 	EventRecorderInitialize( EventRecordNone, 1 );  // start EventRecorder
 	EventRecorderEnable( evrE, 			EvtFsCore_No, EvtFsMcSPI_No );  	//FileSys library 
@@ -265,7 +265,7 @@ void talking_book( void *argument ) {
 	
 	initInputManager();								//  Initialize keypad handler & thread
 	
-	const char* startUp = "R3G3_4 R3G3_4 R3G3_4";
+	const char* startUp = "R3_3G3";
 	ledFg( startUp );
 	
 	initControlManager();		// instantiate ControlManager & run on this thread-- doesn't return

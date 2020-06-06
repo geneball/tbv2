@@ -152,6 +152,6 @@ extern void 				audPlaybackComplete( void );								// playback complete (from m
 extern void 				audRecordComplete( void );									// last buff recorded, finish save
 
 //DEBUG
-extern void 				PlayWave( const char *fname ); // start playing from file
+extern void 				playWave( const char *fname ); // start playing from file
 
 #endif /* AUDIO_H */

@@ -79,7 +79,7 @@ extern void 			dbgEvtS( int id, const char *d );
 #define TB_stRecord         EventID(EventLevelOp,     TBAud_no, 0x0f)
 #define TB_audRecClose      EventID(EventLevelOp,     TBAud_no, 0x10)
 #define TB_audRecDn         EventID(EventLevelOp,     TBAud_no, 0x11)
-#define TB_wrRecBuff        EventID(EventLevelOp,     TBAud_no, 0x12)
+#define TB_wrRecBuff        EventID(EventLevelDetail, TBAud_no, 0x12)
 #define TB_FtchSk			EventID(EventLevelError,  TBAud_no, 0x13)
 #define TB_FtchRd			EventID(EventLevelError,  TBAud_no, 0x14)
 #define TB_StorSk			EventID(EventLevelError,  TBAud_no, 0x15)

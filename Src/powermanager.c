@@ -60,8 +60,8 @@ void											initPowerMgr( void ){						// initialize PowerMgr & start thread
 
 	pm_thread_attr.name = "PM Thread";	
 	pm_thread_attr.stack_size = POWER_STACK_SIZE; 
-	osThreadId_t pm_thread =  osThreadNew( powerThreadProc, 0, &pm_thread_attr ); //&pm_thread_attr );
-	if ( pm_thread == NULL ) 
+	Dbg.thread[1] = (osRtxThread_t *)osThreadNew( powerThreadProc, 0, &pm_thread_attr ); //&pm_thread_attr );
+	if ( Dbg.thread[1] == NULL ) 
 		tbErr( "powerThreadProc not created" );
 		
 	int timerMS = TB_Config.powerCheckMS;
@@ -79,9 +79,11 @@ void 											enableSleep( void ){						// low power mode -- CPU stops till in
 	__WFI();	// sleep till interrupt
 }
 void 											enableStandby( void ){					// power off-- reboot on wakeup from NRST
-	PWR->CR |= PWR_CR_CWUF;		// clear wakeup flag
-	PWR->CR |= PWR_CR_PDDS;		// set power down deepsleep 
-	for (int i=0; i<3; i++){
+	PWR->CR |= PWR_CR_CWUF;							// clear wakeup flag
+	PWR->CR |= PWR_CR_PDDS;							// set power down deepsleep 
+	SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;	// set DeepSleep
+	
+	for (int i=0; i<3; i++){			// clear all pending ISR
 		uint32_t pend = NVIC->ISPR[i];
 		if ( pend != 0 ) 	// clear any pending interrupts
 			NVIC->ICPR[i] = pend;		
@@ -441,12 +443,13 @@ void 											EXTI4_IRQHandler(void){  				// NOPWR ISR
 void 											wakeup(){												// resume operation after sleep power-down
 }
 static void 							powerThreadProc( void *arg ){		// powerThread -- catches PM_NOPWR from EXTI: NOPWR interrupt
+	dbgLog( "pwrThr: 0x%x 0x%x \n", &arg, &arg + POWER_STACK_SIZE );
 	while( true ){
 		int flg = osEventFlagsWait( pwrEvents, PM_NOPWR | PM_PWRCHK, osFlagsWaitAny, osWaitForever );	
 		
 		switch ( flg ){
 			case PM_NOPWR:
-				logEvt( "Powering Down \n");
+				logEvt( "Powering Down");
 				enableStandby();			// shutdown-- reboot on wakeup keys
 				// never come back  -- just restarts at main()
 				break;

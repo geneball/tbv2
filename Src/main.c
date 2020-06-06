@@ -41,7 +41,7 @@ int  										main( void ){
 	
 	tb_attr.name = (const char*) "talking_book"; 
 	tb_attr.stack_size = TBOOK_STACK_SIZE;
-	osThreadNew( talking_book, NULL, &tb_attr );    // Create application main thread
+	Dbg.thread[0] = (osRtxThread_t *)osThreadNew( talking_book, NULL, &tb_attr );    // Create application main thread
 		
 	osKernelStart();                      // Start thread execution
 	for (;;) {}

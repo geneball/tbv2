@@ -269,7 +269,8 @@ void 					keypadTestKey( KEY evt, int dntime ) {		// verify function of keypad
 }
 // 
 // inputManager-- manager thread
-void 					inputThread( void *argument ){			// converts signals from keypad ISR's to events on controlManager queue
+void 					inputThread( void *arg ){			// converts signals from keypad ISR's to events on controlManager queue
+	dbgLog( "inThr: 0x%x 0x%x \n", &arg, &arg + INPUT_STACK_SIZE );
 	Event eTyp;
 	while (true){
 		uint32_t wkup = osEventFlagsWait( osFlag_InpThr, KEYPAD_EVT, osFlagsWaitAny, osWaitForever );
@@ -335,8 +336,8 @@ void 					initInputManager( void ){ 			// initializes keypad & starts thread
 	
 	thread_attr.name = "input_thread";
 	thread_attr.stack_size = INPUT_STACK_SIZE;
-	osThreadId_t inputThreadId = osThreadNew( inputThread, NULL, &thread_attr );
-	if ( inputThreadId == NULL )
+	Dbg.thread[4] = (osRtxThread_t *) osThreadNew( inputThread, NULL, &thread_attr );
+	if ( Dbg.thread[4] == NULL )
 		tbErr( "inputThread spawn failed" );	
 
 	//PowerManager::getInstance()->registerPowerEventHandler( handlePowerEvent );

@@ -16,12 +16,6 @@
 
 #include <stdlib.h>
 
-// #include "cmsis_os2.h"		// for TestProc osMutex*
-
-void 										setTxtColor( uint16_t c );
-#define LCD_COLOR_RED           (uint16_t)0xF800
-#define LCD_COLOR_BLACK         (uint16_t)0x0000
-#define LCD_COLOR_BLUE          (uint16_t)0x001F
 
 // GPIO utilities based on GPIO_ID enumeration & GPIO_Signal[] in main.h
 GPIO_Def_t  						gpio_def[ MAX_GPIO ];														// array of signal definitions, indexed by GPIO_ID 
@@ -164,7 +158,7 @@ bool			 							gOutVal( GPIO_ID gpio ){												// => LOGICAL state of a GPIO
 	int pin = gpio_def[ gpio ].pin, actval = gpio_def[ gpio ].active;
 	return ((port->ODR >> pin) & 1) == actval;
 }
-// flash -- debug on LED / KEYPAD 
+// flash -- debug on LED / KEYPAD **************************************
 void 										flashLED( const char *s ){											// 'GGRR__' in .1sec
 	for ( int i=0; i<strlen(s); i++ ){
 		switch ( s[i] ){
@@ -183,16 +177,16 @@ void 										flashCode( int v ){															// e.g. 9 => "RR__GG__GG__RR___
 	flashLED("__");
 }
 void										flashInit( ){																		// init keypad GPIOs for debugging	
-	LED_Init( gGREEN );	// blinks then off
-	LED_Init( gRED );		// blinks then off
+	LED_Init( gGREEN );	
+	LED_Init( gRED );		
 	for ( GPIO_ID id = gHOME; id <= gTABLE;  id++ )
 		gConfigKey( id ); // low speed pulldown input
-	tbDelay_ms(1000);
+	//tbDelay_ms(1000);
 }
 
+//
 // MPU Identifiers
 char CPU_ID[20], TB_ID[20];
-
 void 										initIDs(){																		// initialize CPU_ID & TB_ID strings
 	typedef struct {	// MCU device & revision
 		// Ref Man: 30.6.1 or 31.6.1: MCU device ID code
@@ -231,7 +225,20 @@ void 										initIDs(){																		// initialize CPU_ID & TB_ID strings
 	sprintf( TB_ID, "%04x.%04x.%x.%s", stmID.x, stmID.y, stmID.wafer, stmID.lot );
 }
 
-void showRTC( ){
+//
+// timestamps & RTC, allocation, fexists
+struct {
+	uint8_t		yr;
+	uint8_t		mon;
+	uint8_t		date;
+	uint8_t		day;
+	uint8_t		hr;
+	uint8_t		min;
+	uint8_t		sec;
+	uint8_t		tenths;
+	uint8_t		pm;
+} lastRTC, firstRTC;
+void 										showRTC( ){
 	int pDt=0,Dt=1, pTm=0,Tm=1;
 	while (pDt != Dt || pTm != Tm){
 		pDt = Dt;
@@ -248,20 +255,38 @@ void showRTC( ){
 	
 	hr =  ((Tm>>20) & 0x3)*10 + ((Tm>>16) & 0xF);
 	min = ((Tm>>12) & 0x7)*10 + ((Tm>>8) & 0xF);
-	sec = ((Tm>> 4) & 0x7)*10 + (Tm & 0xF);
-	if ( (Tm>>22) & 0x1 ) hr += 12;
-	
+	sec  = ((Tm>> 4) & 0x7)*10 + (Tm & 0xF);
+
+	if ((Tm>>22) & 0x1) hr += 12;
+
 	char * wkdy[] = { "", "Mon","Tue","Wed","Thu","Fri","Sat","Sun" };
 	char * month[] = { "", "Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec" };
 	char dttm[50];
 	sprintf(dttm, "%s %d-%s-%d %d:%d:%d", wkdy[day], date, month[mon], yr, hr,min,sec );
 	logEvtNS( "RTC", "DtTm", dttm );
- // dbgLog("RTC: %s \n", dttm );
+}
+void measureSystick(){
+	const int NTS = 6;
+	int msTS[ NTS ], minTS = 1000000, maxTS=0, sumTS=0;
+	
+	for (int i=0; i<NTS; i++){
+		int tsec1 = RTC->TR & 0x70, tsec2 = tsec1;   // tens of secs: 0..5
+		while ( tsec1 == tsec2 ){
+			tsec2 = RTC->TR & 0x70;
+		}
+		msTS[i] = tbTimeStamp();		// called each time tens-of-sec changes
+		if ( i>0 ){
+			int df = msTS[i] - msTS[i-1];
+			sumTS  += df;
+			if ( df < minTS ) minTS = df;
+			if ( df > maxTS ) maxTS = df;
+		}
+	}
+	dbgLog("Systick: %d..%d avg=%d \n", minTS, maxTS, sumTS/(NTS-1) );
 }
 
 static uint32_t lastTmStmp = 0;
 static uint32_t lastHalTick = 0, HalSameCnt = 0;
- 
 uint32_t 								tbTimeStamp(){																	// return msecs since boot
 	if ( osKernelGetState()==osKernelRunning )
 		lastTmStmp =  osKernelGetTickCount();
@@ -302,7 +327,35 @@ void *									tbAlloc( int nbytes, const char *msg ){					// malloc() & check f
 	}
 	return mem;
 }
-// debug logging
+bool 										fexists( const char *fname ){										// return true if file path exists
+	fsFileInfo info;
+	info.fileID = 0;
+	fsStatus stat = ffind( fname, &info );
+	return ( stat==fsOK );
+}
+//
+// debug logging & printf to Dbg.Scr  & EVR events  *****************************
+#define LCD_COLOR_RED           (uint16_t)0xF800
+#define LCD_COLOR_BLACK         (uint16_t)0x0000
+#define LCD_COLOR_BLUE          (uint16_t)0x001F
+#if !defined( USE_LCD )				// dummy LCD routines
+	void InitLCD( const char * hdr ){
+	}
+	void LCDwriteln( char * s ){
+	}
+	void enableLCD( void ){
+	}
+	void disableLCD( void ){
+	}
+	void clearHdr( void ){
+	}
+	void printHdr( int x, int y, const char *s ){
+	}
+	void setTxtColor( uint16_t c ){	// set color of scroll text
+	}
+#endif
+
+
 void 										usrLog( const char * fmt, ... ){
 	va_list arg_ptr;
 	va_start( arg_ptr, fmt );
@@ -350,7 +403,7 @@ void 										tbErr( const char * fmt, ... ){									// report fatal error
 		printf( "%s \n", s );
 		logEvtS( "***tbErr", s );
 		dbgEvtS( TB_Error, s );
-		logPowerDown();			// try to save log
+//		logPowerDown();			// try to save log
 	}
 	__breakpoint(0);		// halt if in debugger
 	
@@ -364,20 +417,44 @@ void										tbShw( const char *s, char **p1, char **p2 ){  	// assign p1, p2 t
 	if (p2 != p1)
 		*p2 = len>64? (char *)&s[64] : "";
 }
-
-
-bool 										fexists( const char *fname ){										// return true if file path exists
-	fsFileInfo info;
-	info.fileID = 0;
-	fsStatus stat = ffind( fname, &info );
-	return ( stat==fsOK );
+int dbgEvtCnt = 0, dbgEvtMin = 0, dbgEvtMax = 1000000;
+void 										dbgEVR( int id, int a1, int a2, int a3, int a4 ){
+	dbgEvtCnt++;
+	if ( dbgEvtCnt < dbgEvtMin ) return;
+	if ( dbgEvtCnt > dbgEvtMax ) return;
+	EventRecord4( id, a1, a2, a3, a4 ); 
 }
+void 										dbgEvt( int id, int a1, int a2, int a3, int a4 ){ EventRecord4( id, a1, a2, a3, a4 ); }
+void 										dbgEvtD( int id, const void *d, int len ){ EventRecordData( id, d, len ); }
+void 										dbgEvtS( int id, const char *d ){ EventRecordData( id, d, strlen(d) ); }
+const int xMAX = dbgChs; 				// typedef in tbook.h
+const int yMAX = dbgLns;
+static int  cX = 0, cY = 0;
+void 										initPrintf( const char *hdr ){
+	for (int i=0; i<dbgLns; i++)
+		Dbg.Scr[i][0] = 0;
+	cX = 0; 
+	cY = 0;
+	InitLCD( hdr );					// eval_LCD if STM3210E
+	printf( "%s\n", hdr );
+}
+void 										stdout_putchar( char ch ){
+	if ( ch=='\n' || cX >= xMAX ){ // end of line
+		LCDwriteln( &Dbg.Scr[cY][0] );
 
+		cY = (cY+1) % yMAX;		// mv to next line
+		cX = 0;
+		strcpy( Dbg.Scr[(cY+1)%yMAX],  "=================" );	// marker line after current
+		if ( ch=='\n' ) return;
+	}
+	Dbg.Scr[cY][cX++] = ch;
+	Dbg.Scr[cY][cX] = 0;
+}	
+//
 // fault handlers *****************************************************
 int divTst(int lho, int rho){	// for div/0 testing
     return lho/rho;
 }
-
 typedef struct {		// saved registers on exception
 	uint32_t	R0;
 	uint32_t	R1;
@@ -401,159 +478,6 @@ typedef struct  {			// static svSCB for easy access in debugger
 	
 } svSCB_t;
 static svSCB_t svSCB;
-
-/****** printf to Dbg.Scr ******/
-const int xMAX = dbgChs; 				// typedef in tbook.h
-const int yMAX = dbgLns;
-static int  cX = 0, cY = 0;
-#if !defined( USE_LCD )
-void InitLCD( const char * hdr ){
-}
-void LCDwriteln( char * s ){
-}
-void enableLCD( void ){
-}
-void disableLCD( void ){
-}
-void clearHdr( void ){
-}
-void printHdr( int x, int y, const char *s ){
-}
-void setTxtColor( uint16_t c ){	// set color of scroll text
-}
-#endif
-
-void 										initPrintf( const char *hdr ){
-	for (int i=0; i<dbgLns; i++)
-		Dbg.Scr[i][0] = 0;
-	cX = 0; 
-	cY = 0;
-	InitLCD( hdr );					// eval_LCD if STM3210E
-	printf( "%s\n", hdr );
-}
-void 										stdout_putchar( char ch ){
-	if ( ch=='\n' || cX >= xMAX ){ // end of line
-		LCDwriteln( &Dbg.Scr[cY][0] );
-
-		cY = (cY+1) % yMAX;		// mv to next line
-		cX = 0;
-		strcpy( Dbg.Scr[(cY+1)%yMAX],  "=================" );	// marker line after current
-		if ( ch=='\n' ) return;
-	}
-	Dbg.Scr[cY][cX++] = ch;
-	Dbg.Scr[cY][cX] = 0;
-}	
-
-
-
-
-
-
-int dbgEvtCnt = 0, dbgEvtMin = 0, dbgEvtMax = 1000000;
-void 										dbgEVR( int id, int a1, int a2, int a3, int a4 ){
-	dbgEvtCnt++;
-	if ( dbgEvtCnt < dbgEvtMin ) return;
-	if ( dbgEvtCnt > dbgEvtMax ) return;
-	EventRecord4( id, a1, a2, a3, a4 ); 
-}
-void 										dbgEvt( int id, int a1, int a2, int a3, int a4 ){ EventRecord4( id, a1, a2, a3, a4 ); }
-void 										dbgEvtD( int id, const void *d, int len ){ EventRecordData( id, d, len ); }
-void 										dbgEvtS( int id, const char *d ){ EventRecordData( id, d, strlen(d) ); }
-
-struct  {
-	char 			*devNm;		
-	void			*devBase;
-
-	struct {
-						char 			*Nm;
-						uint32_t 	off;
-	}  regs[20];
-} devD[] = 
-{ 
-	{ "RCC", RCC, {
-			{ "C", 0x00 }, { "PLL", 0x04 }, { "CFGR", 0x08 }, { "AHB1ENR", 0x30 }, { "AHB2ENR", 0x34 },
-			{ "APB1ENR", 0x40 }, { "APB2ENR", 0x44 }, { "PLLI2S", 0x84 }, { "DCKCFG", 0x8C },{ "CKGATEN", 0x90 }, { "DCKCFG2", 0x94 }, {NULL,0}
-		}
-	},
-	{ "DMA1", DMA1, {
-			{ "LIS", 0x00 }, { "HIS", 0x04 }, { "LIFC", 0x08 }, { "HIFC", 0x0C }, 
-				{ "S4C", 0x70 }, { "S4NDT", 0x74 }, { "S4PA", 0x78 }, { "S4M0A", 0x7C }, { "S4M1A", 0x80 }, {NULL,0}
-		}
-	},
-	{ "DMA2", DMA2, {
-			{ "LIS", 0x00 }, { "HIS", 0x04 }, { "LIFC", 0x08 }, { "HIFC", 0x0C }, 
-				{ "S3C", 0x58 }, { "S3NDT", 0x5c }, { "S3PA", 0x60 }, { "S3M0A", 0x64 }, { "S3M1A", 0x68 }, 
-				{ "S6C", 0xa0 }, { "S3NDT", 0xa4 }, { "S3PA", 0xa8 }, { "S3M0A", 0xac }, { "S3M1A", 0xb0 }, {NULL,0}
-		}
-	},
-	{ "EXTI", EXTI, {
-			{ "IM", 0x00 }, { "EM", 0x04 }, { "RTS", 0x08 }, { "FTS", 0x0C }, { "SWIE", 0x10 }, {NULL,0}
-		}
-	},
-	{ "I2C1", I2C1, {
-			{ "CR1", 0x00 }, { "CR2", 0x04 }, { "OA1", 0x08 }, { "OA2", 0x0C }, { "S1", 0x14 }, { "S2", 0x18 }, { "TRISE", 0x20 }, { "FLT", 0x24 }, {NULL,0}
-		}
-	},
-	{ "SPI2", SPI2, {
-			{ "CR1", 0x00 }, { "CR2", 0x04 }, { "SR", 0x08 }, { "I2SCFG", 0x1C }, { "I2SP", 0x20 }, {NULL,0}
-		}
-	},
-	{ "SPI3", SPI3, {
-			{ "CR1", 0x00 }, { "CR2", 0x04 }, { "SR", 0x08 }, { "I2SCFG", 0x1C }, { "I2SP", 0x20 }, {NULL,0}
-		}
-	},
-	{ "SDIO", SDIO, {
-			{ "PWR", 0x00 }, { "CLKCR", 0x04 }, { "ARG", 0x08 }, { "CMD", 0x0C }, { "RESP", 0x10 }, { "DCTRL", 0x2C }, 
-				{ "STA", 0x34 }, { "ICR", 0x38 },  { "MASK", 0x3C }, {NULL,0}
-		}
-	},
-	
-	{ "A", GPIOA, { 
-			{"MD", 0x00 }, { "TY", 0x04 }, { "SP", 0x08 }, { "PU", 0x0C }, { "AL", 0x20 },  { "AH", 0x24 }, {NULL,0}
-		} 
-	}, 
-	{ "B", GPIOB, { 
-			{"MD", 0x00 }, { "TY", 0x04 }, { "SP", 0x08 }, { "PU", 0x0C }, { "AL", 0x20 },  { "AH", 0x24 }, {NULL,0}
-		} 
-	}, 
-	{ "C", GPIOC, { 
-			{"MD", 0x00 }, { "TY", 0x04 }, { "SP", 0x08 }, { "PU", 0x0C }, { "AL", 0x20 },  { "AH", 0x24 }, {NULL,0}
-		} 
-	}, 
-	{ "D", GPIOD, { 
-			{"MD", 0x00 }, { "TY", 0x04 }, { "SP", 0x08 }, { "PU", 0x0C }, { "AL", 0x20 },  { "AH", 0x24 }, {NULL,0}
-		} 
-	},
-	{ "E", GPIOE, { 
-			{"MD", 0x00 }, { "TY", 0x04 }, { "SP", 0x08 }, { "PU", 0x0C }, { "AL", 0x20 },  { "AH", 0x24 }, {NULL,0}
-		} 
-	},
-	{ NULL, 0, { {NULL, 0} }}
-};
-const int MXR = 200;
-uint32_t 	prvDS[MXR]={0}, currDS[MXR];
-
-void 										chkDevState( char *loc, bool reset ){ // report any device changes 
-	int idx = 0;		// assign idx for regs in order
-	dbgLog( "chDev: %s\n", loc );
-	for ( int i=0; devD[i].devNm!=NULL; i++ ){
-		uint32_t * d = devD[i].devBase;
-		dbgLog( "%s\n", devD[i].devNm );
-		for ( int j=0; devD[i].regs[j].Nm != NULL; j++){
-			char * rNm = devD[i].regs[j].Nm;
-			int wdoff = devD[i].regs[j].off >> 2;
-			uint32_t val = d[ wdoff ];	// read REG at devBase + regOff
-			currDS[idx] = val;			
-			if ( (reset && val!=0) || val != prvDS[idx] ){
-				dbgLog( ".%s %08x\n", rNm, val ); 
-			}
-			prvDS[ idx ] = currDS[ idx ];
-			idx++;
-			if (idx>=MXR) tbErr("too many regs");
-		}
-	}
-}
-
 void 										HardFault_Handler_C( svFault_t *svFault, uint32_t linkReg ){
 // fault handler --- added to startup_stm32f10x_xl.s
 // for 2:NMIHandler, 3:HardFaultHandler, 4:MemManage_Handler, 5:BusFault_Handler, 6:UsageFault_Handler 
@@ -657,5 +581,101 @@ uint32_t 								osRtxErrorNotify (uint32_t code, void *object_id) {	// osRtx er
 	}
 	return 0;
 }
+
+//
+// device state snapshots  *************************************
+struct  {
+	char 			*devNm;		
+	void			*devBase;
+
+	struct {
+						char 			*Nm;
+						uint32_t 	off;
+	}  regs[20];
+} devD[] = 
+	{ 
+		{ "RCC", RCC, {
+				{ "C", 0x00 }, { "PLL", 0x04 }, { "CFGR", 0x08 }, { "AHB1ENR", 0x30 }, { "AHB2ENR", 0x34 },
+				{ "APB1ENR", 0x40 }, { "APB2ENR", 0x44 }, { "PLLI2S", 0x84 }, { "DCKCFG", 0x8C },{ "CKGATEN", 0x90 }, { "DCKCFG2", 0x94 }, {NULL,0}
+			}
+		},
+		{ "DMA1", DMA1, {
+				{ "LIS", 0x00 }, { "HIS", 0x04 }, { "LIFC", 0x08 }, { "HIFC", 0x0C }, 
+					{ "S4C", 0x70 }, { "S4NDT", 0x74 }, { "S4PA", 0x78 }, { "S4M0A", 0x7C }, { "S4M1A", 0x80 }, {NULL,0}
+			}
+		},
+		{ "DMA2", DMA2, {
+				{ "LIS", 0x00 }, { "HIS", 0x04 }, { "LIFC", 0x08 }, { "HIFC", 0x0C }, 
+					{ "S3C", 0x58 }, { "S3NDT", 0x5c }, { "S3PA", 0x60 }, { "S3M0A", 0x64 }, { "S3M1A", 0x68 }, 
+					{ "S6C", 0xa0 }, { "S3NDT", 0xa4 }, { "S3PA", 0xa8 }, { "S3M0A", 0xac }, { "S3M1A", 0xb0 }, {NULL,0}
+			}
+		},
+		{ "EXTI", EXTI, {
+				{ "IM", 0x00 }, { "EM", 0x04 }, { "RTS", 0x08 }, { "FTS", 0x0C }, { "SWIE", 0x10 }, {NULL,0}
+			}
+		},
+		{ "I2C1", I2C1, {
+				{ "CR1", 0x00 }, { "CR2", 0x04 }, { "OA1", 0x08 }, { "OA2", 0x0C }, { "S1", 0x14 }, { "S2", 0x18 }, { "TRISE", 0x20 }, { "FLT", 0x24 }, {NULL,0}
+			}
+		},
+		{ "SPI2", SPI2, {
+				{ "CR1", 0x00 }, { "CR2", 0x04 }, { "SR", 0x08 }, { "I2SCFG", 0x1C }, { "I2SP", 0x20 }, {NULL,0}
+			}
+		},
+		{ "SPI3", SPI3, {
+				{ "CR1", 0x00 }, { "CR2", 0x04 }, { "SR", 0x08 }, { "I2SCFG", 0x1C }, { "I2SP", 0x20 }, {NULL,0}
+			}
+		},
+		{ "SDIO", SDIO, {
+				{ "PWR", 0x00 }, { "CLKCR", 0x04 }, { "ARG", 0x08 }, { "CMD", 0x0C }, { "RESP", 0x10 }, { "DCTRL", 0x2C }, 
+					{ "STA", 0x34 }, { "ICR", 0x38 },  { "MASK", 0x3C }, {NULL,0}
+			}
+		},
+		
+		{ "A", GPIOA, { 
+				{"MD", 0x00 }, { "TY", 0x04 }, { "SP", 0x08 }, { "PU", 0x0C }, { "AL", 0x20 },  { "AH", 0x24 }, {NULL,0}
+			} 
+		}, 
+		{ "B", GPIOB, { 
+				{"MD", 0x00 }, { "TY", 0x04 }, { "SP", 0x08 }, { "PU", 0x0C }, { "AL", 0x20 },  { "AH", 0x24 }, {NULL,0}
+			} 
+		}, 
+		{ "C", GPIOC, { 
+				{"MD", 0x00 }, { "TY", 0x04 }, { "SP", 0x08 }, { "PU", 0x0C }, { "AL", 0x20 },  { "AH", 0x24 }, {NULL,0}
+			} 
+		}, 
+		{ "D", GPIOD, { 
+				{"MD", 0x00 }, { "TY", 0x04 }, { "SP", 0x08 }, { "PU", 0x0C }, { "AL", 0x20 },  { "AH", 0x24 }, {NULL,0}
+			} 
+		},
+		{ "E", GPIOE, { 
+				{"MD", 0x00 }, { "TY", 0x04 }, { "SP", 0x08 }, { "PU", 0x0C }, { "AL", 0x20 },  { "AH", 0x24 }, {NULL,0}
+			} 
+		},
+		{ NULL, 0, { {NULL, 0} }}
+	};
+const int MXR = 200;
+uint32_t 	prvDS[MXR]={0}, currDS[MXR];
+void 										chkDevState( char *loc, bool reset ){ // report any device changes 
+	int idx = 0;		// assign idx for regs in order
+	dbgLog( "chDev: %s\n", loc );
+	for ( int i=0; devD[i].devNm!=NULL; i++ ){
+		uint32_t * d = devD[i].devBase;
+		dbgLog( "%s\n", devD[i].devNm );
+		for ( int j=0; devD[i].regs[j].Nm != NULL; j++){
+			char * rNm = devD[i].regs[j].Nm;
+			int wdoff = devD[i].regs[j].off >> 2;
+			uint32_t val = d[ wdoff ];	// read REG at devBase + regOff
+			currDS[idx] = val;			
+			if ( (reset && val!=0) || val != prvDS[idx] ){
+				dbgLog( ".%s %08x\n", rNm, val ); 
+			}
+			prvDS[ idx ] = currDS[ idx ];
+			idx++;
+			if (idx>=MXR) tbErr("too many regs");
+		}
+	}
+}
+
 
 // END tbUtil

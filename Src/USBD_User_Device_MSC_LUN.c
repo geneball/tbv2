@@ -128,7 +128,7 @@ bool		enableMassStorage( char *drv0, char *drv1, char *drv2, char *drv3 ){	// in
 	if ( !usbIsInitialized ) 			return false;			// USB failed to initialize
 	
 	dbgEvt( TB_usbConn, 0,0,0,0);
-	ledFg( "O5o5!" );	
+	ledFg( TB_Config.fgUSB_MSC );	
 	stat = USBD_Connect(0);													// signal connection to Host, so Host will enumerate & discover configured drives
 	return usbProvidingMassStorage;
 }

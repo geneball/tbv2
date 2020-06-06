@@ -80,7 +80,7 @@ extern void 			errLog( const char * fmt, ... );
 extern void 			tbErr( const char * fmt, ... );							// report fatal error
 extern void				tbShw( const char *s, char **p1, char **p2 );
 extern void 			_Error_Handler( char *, int );
-extern int 				PlayDBG;			// DEBUG flag for DebugLoop & PlayWave
+extern int 				PlayDBG;			// DEBUG flag for DebugLoop & playWave
 extern void 			chkDevState( char *loc, bool reset );
 extern void 			stdout_putchar( char );
 extern int				divTst(int lho, int rho); 	// for fault handler testing
@@ -154,13 +154,19 @@ extern const int 	MEDIA_ALREADY_IN_USE;
 typedef struct TBConfig {			// TBConfig
 	short 	default_volume;
 	short 	default_speed;
-	int 	powerCheckMS;				// used by powermanager.c
-	int		shortIdleMS;
-	int		longIdleMS;
+	int 		powerCheckMS;				// used by powermanager.c
+	int			shortIdleMS;
+	int			longIdleMS;
 	char *	systemAudio;				// path to system audio files
-	int		minShortPressMS;			// used by inputmanager.c
-	int		minLongPressMS;				// used by inputmanager.c
-	int		initState;	
+	int			minShortPressMS;			// used by inputmanager.c
+	int			minLongPressMS;				// used by inputmanager.c
+	int			initState;	
+	char *  fgPlaying;					// G!
+	char *  fgPlayPaused;				// G2_3!
+	char *  fgRecording;				// R!
+	char *  fgRecordPaused;			// R2_3!
+	char *  fgUSB_MSC;					// O5o5!
+	char *  fgTB_ERR;						// R8_2 R8_2 R8_20!
 	
 }	TBConfig_t;
 extern TBConfig_t 	TB_Config;		// global TBook configuration
@@ -202,6 +208,7 @@ typedef struct {			// Dbg -- pointers for easy access to debug info
 	KeyPadKey_arr * 	KeyPadDef;		// definitions & per/key state of keypad
 	char							keypad[11];		// keypad keys as string
 	
+	osRtxThread_t *		thread[5];		// ptrs to osRtxThread
 	TBConfig_t	* 		TBookConfig;	// TalkingBook configuration block
 	TBH_arr	*					TBookLog;			// TalkingBook event log
 	

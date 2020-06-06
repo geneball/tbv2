@@ -148,6 +148,7 @@ void 								handlePowerEvent( int powerEvent ){
 //******** ledThread -- update LEDs according to current sequence
 volatile static uint32_t wkup = 0;
 void								ledThread( void *arg ){	
+	dbgLog( "inThr: 0x%x 0x%x \n", &arg, &arg + LED_STACK_SIZE );
 	while ( true ){
 		ledSeq *c = currSeq;		// get consistent copy & use it
 
@@ -228,8 +229,8 @@ void 								initLedManager(){				// initialize & spawn LED thread
 	
 	thread_attr.name = "led_thread";
 	thread_attr.stack_size = LED_STACK_SIZE;
-	osThreadId_t ledThreadId = osThreadNew( ledThread, NULL, &thread_attr );
-	if ( ledThreadId == NULL )
+	Dbg.thread[3] = (osRtxThread_t *) osThreadNew( ledThread, NULL, &thread_attr );
+	if ( Dbg.thread[3] == NULL )
 		tbErr( "ledThread spawn failed" );	
 	
 	printf( "LedMgr OK \n" );
