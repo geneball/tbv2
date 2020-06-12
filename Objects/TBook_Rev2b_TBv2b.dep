@@ -1,6 +1,6 @@
 Dependencies for Project 'TBook_Rev2b', Target 'TBv2b': (DO NOT MODIFY !)
 CompilerVersion: 5060750::V5.06 update 6 (build 750)::ARMCC
-F (.\Src\main.c)(0x5EC6B482)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\main.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\main.crf --depend .\objects\main.d)
+F (.\Src\main.c)(0x5EE3EC78)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\main.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\main.crf --depend .\objects\main.d)
 I (.\Src\inc\main.h)(0x5EB36188)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9BB318)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5D9BB318)
@@ -15,7 +15,7 @@ I (.\Keil\inc\mpu_armv7.h)(0x5C902ED4)
 I (C:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include\system_stm32f4xx.h)(0x5A906654)
 I (.\Src\Rev2b\inc\GPIO_STM32F4xx.h)(0x5E51A045)
 I (.\Src\inc\gpio_signals.h)(0x5EC19DE0)
-I (.\Src\inc\tbook.h)(0x5ED53D17)
+I (.\Src\inc\tbook.h)(0x5EE2D1FC)
 I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x5D9BB31A)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5D9BB318)
 I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5D9BB31A)
@@ -36,9 +36,9 @@ I (.\Keil\inc\Driver_SPI.h)(0x5C8B057C)
 I (.\Src\inc\ledMgr.h)(0x5AF4D512)
 I (.\Src\inc\powerMgr.h)(0x5ECC0505)
 I (.\Src\inc\inputMgr.h)(0x5E583396)
-I (.\Src\inc\tb_evr.h)(0x5ED6BBF7)
-F (.\Src\tbook.c)(0x5ED6AE5E)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\tbook.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\tbook.crf --depend .\objects\tbook.d)
-I (.\Src\inc\tbook.h)(0x5ED53D17)
+I (.\Src\inc\tb_evr.h)(0x5ED93095)
+F (.\Src\tbook.c)(0x5EE252B9)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\tbook.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\tbook.crf --depend .\objects\tbook.d)
+I (.\Src\inc\tbook.h)(0x5EE2D1FC)
 I (.\Src\inc\main.h)(0x5EB36188)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9BB318)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5D9BB318)
@@ -73,16 +73,16 @@ I (.\Keil\inc\Driver_SPI.h)(0x5C8B057C)
 I (.\Src\inc\ledMgr.h)(0x5AF4D512)
 I (.\Src\inc\powerMgr.h)(0x5ECC0505)
 I (.\Src\inc\inputMgr.h)(0x5E583396)
-I (.\Src\inc\tb_evr.h)(0x5ED6BBF7)
+I (.\Src\inc\tb_evr.h)(0x5ED93095)
 I (.\Src\inc\controlMgr.h)(0x5E58250A)
-I (.\Src\inc\mediaPlyr.h)(0x5ED15EA5)
-I (.\Src\inc\audio.h)(0x5ED6F494)
+I (.\Src\inc\mediaPlyr.h)(0x5EE2651D)
+I (.\Src\inc\audio.h)(0x5ED92B37)
 I (.\Keil\inc\Driver_SAI.h)(0x5D2671B8)
 I (.\Src\inc\ak4xxx.h)(0x5ED15FD1)
 I (.\Keil\inc\rl_fs_lib.h)(0x5DC07D74)
 I (.\Keil\inc\Driver_MCI.h)(0x5C8B057C)
 I (.\Keil\inc\fs_evr.h)(0x5DB76802)
-F (.\Src\tbUtil.c)(0x5ED6A37D)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\tbutil.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\tbutil.crf --depend .\objects\tbutil.d)
+F (.\Src\tbUtil.c)(0x5EE3A5E7)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\tbutil.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\tbutil.crf --depend .\objects\tbutil.d)
 I (.\Src\inc\main.h)(0x5EB36188)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9BB318)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5D9BB318)
@@ -97,7 +97,7 @@ I (.\Keil\inc\mpu_armv7.h)(0x5C902ED4)
 I (C:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include\system_stm32f4xx.h)(0x5A906654)
 I (.\Src\Rev2b\inc\GPIO_STM32F4xx.h)(0x5E51A045)
 I (.\Src\inc\gpio_signals.h)(0x5EC19DE0)
-I (.\Src\inc\tbook.h)(0x5ED53D17)
+I (.\Src\inc\tbook.h)(0x5EE2D1FC)
 I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x5D9BB31A)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5D9BB318)
 I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5D9BB31A)
@@ -118,11 +118,11 @@ I (.\Keil\inc\Driver_SPI.h)(0x5C8B057C)
 I (.\Src\inc\ledMgr.h)(0x5AF4D512)
 I (.\Src\inc\powerMgr.h)(0x5ECC0505)
 I (.\Src\inc\inputMgr.h)(0x5E583396)
-I (.\Src\inc\tb_evr.h)(0x5ED6BBF7)
+I (.\Src\inc\tb_evr.h)(0x5ED93095)
 I (.\Keil\inc\os_tick.h)(0x5B625184)
-F (.\Src\controlmanager.c)(0x5ED51ED6)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\controlmanager.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\controlmanager.crf --depend .\objects\controlmanager.d)
+F (.\Src\controlmanager.c)(0x5EE26566)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\controlmanager.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\controlmanager.crf --depend .\objects\controlmanager.d)
 I (.\Src\inc\controlMgr.h)(0x5E58250A)
-I (.\Src\inc\tbook.h)(0x5ED53D17)
+I (.\Src\inc\tbook.h)(0x5EE2D1FC)
 I (.\Src\inc\main.h)(0x5EB36188)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9BB318)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5D9BB318)
@@ -157,15 +157,15 @@ I (.\Keil\inc\Driver_SPI.h)(0x5C8B057C)
 I (.\Src\inc\ledMgr.h)(0x5AF4D512)
 I (.\Src\inc\powerMgr.h)(0x5ECC0505)
 I (.\Src\inc\inputMgr.h)(0x5E583396)
-I (.\Src\inc\tb_evr.h)(0x5ED6BBF7)
-I (.\Src\inc\mediaPlyr.h)(0x5ED15EA5)
-I (.\Src\inc\audio.h)(0x5ED6F494)
+I (.\Src\inc\tb_evr.h)(0x5ED93095)
+I (.\Src\inc\mediaPlyr.h)(0x5EE2651D)
+I (.\Src\inc\audio.h)(0x5ED92B37)
 I (.\Keil\inc\Driver_SAI.h)(0x5D2671B8)
 I (.\Src\inc\ak4xxx.h)(0x5ED15FD1)
 I (.\Keil\inc\rl_fs_lib.h)(0x5DC07D74)
 I (.\Keil\inc\Driver_MCI.h)(0x5C8B057C)
-F (.\Src\controlParser.c)(0x5ECC0505)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\controlparser.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\controlparser.crf --depend .\objects\controlparser.d)
-I (.\Src\inc\tbook.h)(0x5ED53D17)
+F (.\Src\controlParser.c)(0x5ECC0505)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\controlparser.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\controlparser.crf --depend .\objects\controlparser.d)
+I (.\Src\inc\tbook.h)(0x5EE2D1FC)
 I (.\Src\inc\main.h)(0x5EB36188)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9BB318)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5D9BB318)
@@ -200,10 +200,10 @@ I (.\Keil\inc\Driver_SPI.h)(0x5C8B057C)
 I (.\Src\inc\ledMgr.h)(0x5AF4D512)
 I (.\Src\inc\powerMgr.h)(0x5ECC0505)
 I (.\Src\inc\inputMgr.h)(0x5E583396)
-I (.\Src\inc\tb_evr.h)(0x5ED6BBF7)
+I (.\Src\inc\tb_evr.h)(0x5ED93095)
 I (.\Src\inc\controlMgr.h)(0x5E58250A)
-F (.\Src\tknTable.c)(0x5EC2E3D6)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\tkntable.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\tkntable.crf --depend .\objects\tkntable.d)
-I (.\Src\inc\tbook.h)(0x5ED53D17)
+F (.\Src\tknTable.c)(0x5EC2E3D6)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\tkntable.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\tkntable.crf --depend .\objects\tkntable.d)
+I (.\Src\inc\tbook.h)(0x5EE2D1FC)
 I (.\Src\inc\main.h)(0x5EB36188)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9BB318)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5D9BB318)
@@ -238,9 +238,9 @@ I (.\Keil\inc\Driver_SPI.h)(0x5C8B057C)
 I (.\Src\inc\ledMgr.h)(0x5AF4D512)
 I (.\Src\inc\powerMgr.h)(0x5ECC0505)
 I (.\Src\inc\inputMgr.h)(0x5E583396)
-I (.\Src\inc\tb_evr.h)(0x5ED6BBF7)
-F (.\Src\inputmanager.c)(0x5EBAE516)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\inputmanager.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\inputmanager.crf --depend .\objects\inputmanager.d)
-I (.\Src\inc\tbook.h)(0x5ED53D17)
+I (.\Src\inc\tb_evr.h)(0x5ED93095)
+F (.\Src\inputmanager.c)(0x5ED81765)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\inputmanager.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\inputmanager.crf --depend .\objects\inputmanager.d)
+I (.\Src\inc\tbook.h)(0x5EE2D1FC)
 I (.\Src\inc\main.h)(0x5EB36188)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9BB318)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5D9BB318)
@@ -275,9 +275,9 @@ I (.\Keil\inc\Driver_SPI.h)(0x5C8B057C)
 I (.\Src\inc\ledMgr.h)(0x5AF4D512)
 I (.\Src\inc\powerMgr.h)(0x5ECC0505)
 I (.\Src\inc\inputMgr.h)(0x5E583396)
-I (.\Src\inc\tb_evr.h)(0x5ED6BBF7)
-F (.\Src\ledmanager.c)(0x5ECC0505)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\ledmanager.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\ledmanager.crf --depend .\objects\ledmanager.d)
-I (.\Src\inc\tbook.h)(0x5ED53D17)
+I (.\Src\inc\tb_evr.h)(0x5ED93095)
+F (.\Src\ledmanager.c)(0x5ED8176B)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\ledmanager.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\ledmanager.crf --depend .\objects\ledmanager.d)
+I (.\Src\inc\tbook.h)(0x5EE2D1FC)
 I (.\Src\inc\main.h)(0x5EB36188)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9BB318)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5D9BB318)
@@ -312,9 +312,9 @@ I (.\Keil\inc\Driver_SPI.h)(0x5C8B057C)
 I (.\Src\inc\ledMgr.h)(0x5AF4D512)
 I (.\Src\inc\powerMgr.h)(0x5ECC0505)
 I (.\Src\inc\inputMgr.h)(0x5E583396)
-I (.\Src\inc\tb_evr.h)(0x5ED6BBF7)
-F (.\Src\logger.c)(0x5ED6E5BD)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\logger.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\logger.crf --depend .\objects\logger.d)
-I (.\Src\inc\tbook.h)(0x5ED53D17)
+I (.\Src\inc\tb_evr.h)(0x5ED93095)
+F (.\Src\logger.c)(0x5EE2C7EF)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\logger.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\logger.crf --depend .\objects\logger.d)
+I (.\Src\inc\tbook.h)(0x5EE2D1FC)
 I (.\Src\inc\main.h)(0x5EB36188)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9BB318)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5D9BB318)
@@ -349,10 +349,10 @@ I (.\Keil\inc\Driver_SPI.h)(0x5C8B057C)
 I (.\Src\inc\ledMgr.h)(0x5AF4D512)
 I (.\Src\inc\powerMgr.h)(0x5ECC0505)
 I (.\Src\inc\inputMgr.h)(0x5E583396)
-I (.\Src\inc\tb_evr.h)(0x5ED6BBF7)
-F (.\Src\mediaplayer.c)(0x5ED52D65)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\mediaplayer.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\mediaplayer.crf --depend .\objects\mediaplayer.d)
-I (.\Src\inc\mediaPlyr.h)(0x5ED15EA5)
-I (.\Src\inc\tbook.h)(0x5ED53D17)
+I (.\Src\inc\tb_evr.h)(0x5ED93095)
+F (.\Src\mediaplayer.c)(0x5EDA77B8)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\mediaplayer.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\mediaplayer.crf --depend .\objects\mediaplayer.d)
+I (.\Src\inc\mediaPlyr.h)(0x5EE2651D)
+I (.\Src\inc\tbook.h)(0x5EE2D1FC)
 I (.\Src\inc\main.h)(0x5EB36188)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9BB318)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5D9BB318)
@@ -387,15 +387,15 @@ I (.\Keil\inc\Driver_SPI.h)(0x5C8B057C)
 I (.\Src\inc\ledMgr.h)(0x5AF4D512)
 I (.\Src\inc\powerMgr.h)(0x5ECC0505)
 I (.\Src\inc\inputMgr.h)(0x5E583396)
-I (.\Src\inc\tb_evr.h)(0x5ED6BBF7)
-I (.\Src\inc\audio.h)(0x5ED6F494)
+I (.\Src\inc\tb_evr.h)(0x5ED93095)
+I (.\Src\inc\audio.h)(0x5ED92B37)
 I (.\Keil\inc\Driver_SAI.h)(0x5D2671B8)
 I (.\Src\inc\ak4xxx.h)(0x5ED15FD1)
 I (.\Keil\inc\rl_fs_lib.h)(0x5DC07D74)
 I (.\Keil\inc\Driver_MCI.h)(0x5C8B057C)
-F (.\Src\powermanager.c)(0x5ED6B3D9)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\powermanager.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\powermanager.crf --depend .\objects\powermanager.d)
+F (.\Src\powermanager.c)(0x5EE14883)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\powermanager.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\powermanager.crf --depend .\objects\powermanager.d)
 I (.\Src\inc\powerMgr.h)(0x5ECC0505)
-I (.\Src\inc\tbook.h)(0x5ED53D17)
+I (.\Src\inc\tbook.h)(0x5EE2D1FC)
 I (.\Src\inc\main.h)(0x5EB36188)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9BB318)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5D9BB318)
@@ -429,9 +429,9 @@ I (.\Keil\inc\Driver_Flash.h)(0x5C8B057C)
 I (.\Keil\inc\Driver_SPI.h)(0x5C8B057C)
 I (.\Src\inc\ledMgr.h)(0x5AF4D512)
 I (.\Src\inc\inputMgr.h)(0x5E583396)
-I (.\Src\inc\tb_evr.h)(0x5ED6BBF7)
-F (.\Src\audio.c)(0x5ED6FAD9)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\audio.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\audio.crf --depend .\objects\audio.d)
-I (.\Src\inc\audio.h)(0x5ED6F494)
+I (.\Src\inc\tb_evr.h)(0x5ED93095)
+F (.\Src\audio.c)(0x5EDA8B15)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\audio.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\audio.crf --depend .\objects\audio.d)
+I (.\Src\inc\audio.h)(0x5ED92B37)
 I (.\Src\inc\main.h)(0x5EB36188)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9BB318)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5D9BB318)
@@ -450,7 +450,7 @@ I (.\Keil\inc\Driver_SAI.h)(0x5D2671B8)
 I (.\Keil\inc\Driver_Common.h)(0x5C8B057C)
 I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5D9BB318)
 I (.\Src\inc\ak4xxx.h)(0x5ED15FD1)
-I (.\Src\inc\tbook.h)(0x5ED53D17)
+I (.\Src\inc\tbook.h)(0x5EE2D1FC)
 I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x5D9BB31A)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5D9BB318)
 I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5D9BB31A)
@@ -469,12 +469,12 @@ I (.\Keil\inc\Driver_SPI.h)(0x5C8B057C)
 I (.\Src\inc\ledMgr.h)(0x5AF4D512)
 I (.\Src\inc\powerMgr.h)(0x5ECC0505)
 I (.\Src\inc\inputMgr.h)(0x5E583396)
-I (.\Src\inc\tb_evr.h)(0x5ED6BBF7)
+I (.\Src\inc\tb_evr.h)(0x5ED93095)
 I (.\Keil\inc\rl_fs_lib.h)(0x5DC07D74)
 I (.\Keil\inc\Driver_MCI.h)(0x5C8B057C)
-I (.\Src\inc\mediaPlyr.h)(0x5ED15EA5)
-F (.\Src\ak4xxx.c)(0x5ED41B2C)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\ak4xxx.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\ak4xxx.crf --depend .\objects\ak4xxx.d)
-I (.\Src\inc\tbook.h)(0x5ED53D17)
+I (.\Src\inc\mediaPlyr.h)(0x5EE2651D)
+F (.\Src\ak4xxx.c)(0x5EE3ED2F)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\ak4xxx.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\ak4xxx.crf --depend .\objects\ak4xxx.d)
+I (.\Src\inc\tbook.h)(0x5EE2D1FC)
 I (.\Src\inc\main.h)(0x5EB36188)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9BB318)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5D9BB318)
@@ -509,15 +509,15 @@ I (.\Keil\inc\Driver_SPI.h)(0x5C8B057C)
 I (.\Src\inc\ledMgr.h)(0x5AF4D512)
 I (.\Src\inc\powerMgr.h)(0x5ECC0505)
 I (.\Src\inc\inputMgr.h)(0x5E583396)
-I (.\Src\inc\tb_evr.h)(0x5ED6BBF7)
+I (.\Src\inc\tb_evr.h)(0x5ED93095)
 I (.\Src\inc\ak4xxx.h)(0x5ED15FD1)
-I (.\Src\inc\audio.h)(0x5ED6F494)
+I (.\Src\inc\audio.h)(0x5ED92B37)
 I (.\Keil\inc\Driver_SAI.h)(0x5D2671B8)
 I (.\Keil\inc\rl_fs_lib.h)(0x5DC07D74)
 I (.\Keil\inc\Driver_MCI.h)(0x5C8B057C)
 I (.\Keil\inc\Driver_I2C.h)(0x5C8B057C)
-F (.\Src\USBD_User_Device_MSC_LUN.c)(0x5ECC0505)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\usbd_user_device_msc_lun.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\usbd_user_device_msc_lun.crf --depend .\objects\usbd_user_device_msc_lun.d)
-I (.\Src\inc\tb_evr.h)(0x5ED6BBF7)
+F (.\Src\USBD_User_Device_MSC_LUN.c)(0x5EDA8AF7)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\usbd_user_device_msc_lun.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\usbd_user_device_msc_lun.crf --depend .\objects\usbd_user_device_msc_lun.d)
+I (.\Src\inc\tb_evr.h)(0x5ED93095)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9BB318)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5D9BB318)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5D9BB318)
@@ -539,7 +539,7 @@ I (.\Keil\inc\usb_cdc_acm_rndis.h)(0x5D150102)
 I (.\Keil\inc\usb_hid.h)(0x5D150102)
 I (.\Keil\inc\usb_msc.h)(0x5D150102)
 I (.\Keil\inc\usb_ms.h)(0x5D150102)
-I (.\Src\inc\tbook.h)(0x5ED53D17)
+I (.\Src\inc\tbook.h)(0x5EE2D1FC)
 I (.\Src\inc\main.h)(0x5EB36188)
 I (.\Src\inc\tbook_rev2.h)(0x5EC18079)
 I (C:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f4xx.h)(0x5A906654)
@@ -562,7 +562,7 @@ I (.\Keil\inc\Driver_SPI.h)(0x5C8B057C)
 I (.\Src\inc\ledMgr.h)(0x5AF4D512)
 I (.\Src\inc\powerMgr.h)(0x5ECC0505)
 I (.\Src\inc\inputMgr.h)(0x5E583396)
-F (.\Src\Rev2b\GPIO_STM32F4xx.c)(0x5E5EF91B)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\gpio_stm32f4xx.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\gpio_stm32f4xx.crf --depend .\objects\gpio_stm32f4xx.d)
+F (.\Src\Rev2b\GPIO_STM32F4xx.c)(0x5E5EF91B)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\gpio_stm32f4xx.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\gpio_stm32f4xx.crf --depend .\objects\gpio_stm32f4xx.d)
 I (.\Src\Rev2b\inc\GPIO_STM32F4xx.h)(0x5E51A045)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5D9BB318)
 I (C:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f4xx.h)(0x5A906654)
@@ -574,8 +574,8 @@ I (.\Keil\inc\cmsis_compiler.h)(0x5D2671B6)
 I (.\Keil\inc\cmsis_armcc.h)(0x5D2671B6)
 I (.\Keil\inc\mpu_armv7.h)(0x5C902ED4)
 I (C:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include\system_stm32f4xx.h)(0x5A906654)
-F (.\Src\Rev2b\I2S_stm32F4xx.c)(0x5ECD5647)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\i2s_stm32f4xx.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\i2s_stm32f4xx.crf --depend .\objects\i2s_stm32f4xx.d)
-I (.\Src\inc\tbook.h)(0x5ED53D17)
+F (.\Src\Rev2b\I2S_stm32F4xx.c)(0x5EDED03D)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\i2s_stm32f4xx.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\i2s_stm32f4xx.crf --depend .\objects\i2s_stm32f4xx.d)
+I (.\Src\inc\tbook.h)(0x5EE2D1FC)
 I (.\Src\inc\main.h)(0x5EB36188)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9BB318)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5D9BB318)
@@ -610,26 +610,16 @@ I (.\Keil\inc\Driver_SPI.h)(0x5C8B057C)
 I (.\Src\inc\ledMgr.h)(0x5AF4D512)
 I (.\Src\inc\powerMgr.h)(0x5ECC0505)
 I (.\Src\inc\inputMgr.h)(0x5E583396)
-I (.\Src\inc\tb_evr.h)(0x5ED6BBF7)
+I (.\Src\inc\tb_evr.h)(0x5ED93095)
 I (.\Src\Rev2b\inc\I2S_STM32F4xx.h)(0x5E8266D7)
 I (.\Keil\inc\Driver_SAI.h)(0x5D2671B8)
 I (.\Src\inc\ak4xxx.h)(0x5ED15FD1)
-I (.\Src\inc\audio.h)(0x5ED6F494)
+I (.\Src\inc\audio.h)(0x5ED92B37)
 I (.\Keil\inc\rl_fs_lib.h)(0x5DC07D74)
 I (.\Keil\inc\Driver_MCI.h)(0x5C8B057C)
 I (C:\Keil_v5\ARM\ARMCC\include\math.h)(0x5D9BB312)
 F (.\Src\Rev2b\hardfault.s)(0x5E503038)(--cpu Cortex-M4.fp.sp -g --apcs=interwork -I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include--pd "__UVISION_VERSION SETA 529" --pd "_RTE_ SETA 1" --pd "STM32F412Vx SETA 1"--list .\listings\hardfault.lst --xref -o .\objects\hardfault.o --depend .\objects\hardfault.d)
-F (.\Src\Rev2b\system_stm32f4xx.c)(0x5EC56D86)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\system_stm32f4xx.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\system_stm32f4xx.crf --depend .\objects\system_stm32f4xx.d)
-I (C:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f4xx.h)(0x5A906654)
-I (C:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f412vx.h)(0x5A906654)
-I (.\Keil\inc\core_cm4.h)(0x5D2671B6)
-I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9BB318)
-I (.\Keil\inc\cmsis_version.h)(0x5D2671B6)
-I (.\Keil\inc\cmsis_compiler.h)(0x5D2671B6)
-I (.\Keil\inc\cmsis_armcc.h)(0x5D2671B6)
-I (.\Keil\inc\mpu_armv7.h)(0x5C902ED4)
-I (C:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include\system_stm32f4xx.h)(0x5A906654)
-F (.\Src\Rev2b\W25Q64JV.c)(0x5ED6E0A8)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\w25q64jv.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\w25q64jv.crf --depend .\objects\w25q64jv.d)
+F (.\Src\Rev2b\W25Q64JV.c)(0x5ED6E0A8)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\w25q64jv.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\w25q64jv.crf --depend .\objects\w25q64jv.d)
 I (.\Keil\inc\Driver_Flash.h)(0x5C8B057C)
 I (.\Keil\inc\Driver_Common.h)(0x5C8B057C)
 I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5D9BB318)
@@ -637,7 +627,7 @@ I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9BB318)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5D9BB318)
 I (.\Keil\inc\Driver_SPI.h)(0x5C8B057C)
 I (.\Src\Rev2b\inc\W25Q64JV.h)(0x5ED00268)
-I (.\Src\inc\tb_evr.h)(0x5ED6BBF7)
+I (.\Src\inc\tb_evr.h)(0x5ED93095)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5D9BB318)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5D9BB31A)
 I (.\Keil\inc\eventrecorder.h)(0x5B90317E)
@@ -646,7 +636,7 @@ F (.\Src\config\tbRTE_Components.h)(0x5EBDCA89)()
 F (.\Src\config\RTE_Device.h)(0x5ED2AB96)()
 F (.\Src\config\RTX_Config.h)(0x5E9A446B)()
 F (.\Src\config\EventRecorderConf.h)(0x5E94DDC1)()
-F (.\Keil\File System\FS_Config.c)(0x5DD85F50)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\fs_config.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\fs_config.crf --depend .\objects\fs_config.d)
+F (.\Keil\File System\FS_Config.c)(0x5DD85F50)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\fs_config.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\fs_config.crf --depend .\objects\fs_config.d)
 I (.\Src\config\RTE_Components.h)(0x5EC2D2E9)
 I (Keil\File System\FS_Config_MC_0.h)(0x5E669356)
 I (.\Keil\inc\fs_config.h)(0x5DC07D74)
@@ -666,7 +656,7 @@ I (.\Keil\inc\cmsis_os2.h)(0x5C8FF898)
 I (.\Keil\inc\rtx_os.h)(0x5D2671B8)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5D9BB31A)
 F (.\Src\config\FS_Config_MC_0.h)(0x5E669356)()
-F (.\Keil\File System\FS_Debug.c)(0x5E9CAB4A)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\fs_debug.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\fs_debug.crf --depend .\objects\fs_debug.d)
+F (.\Keil\File System\FS_Debug.c)(0x5E9CAB4A)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\fs_debug.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\fs_debug.crf --depend .\objects\fs_debug.d)
 I (.\Keil\inc\fs_debug.h)(0x5D14F9D4)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9BB318)
 I (.\Keil\inc\rl_fs_lib.h)(0x5DC07D74)
@@ -675,7 +665,7 @@ I (.\Keil\inc\rl_fs.h)(0x5DB8A9DC)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5D9BB318)
 I (.\Keil\inc\EventRecorder.h)(0x5B90317E)
 I (.\Keil\inc\fs_evr.h)(0x5DB76802)
-F (.\Keil\USB\USBD_Config_0.c)(0x5EB87E3D)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\usbd_config_0.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\usbd_config_0.crf --depend .\objects\usbd_config_0.d)
+F (.\Keil\USB\USBD_Config_0.c)(0x5EB87E3D)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\usbd_config_0.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\usbd_config_0.crf --depend .\objects\usbd_config_0.d)
 I (.\Src\config\RTE_Components.h)(0x5EC2D2E9)
 I (Keil\USB\USBD_Config_MSC_0.h)(0x5E6D31BC)
 I (.\Keil\inc\usbd_config.h)(0x5D02865C)
@@ -711,7 +701,7 @@ I (.\Keil\inc\usbd_cmsis_rtos2.c)(0x5DA776A6)
 I (.\Keil\inc\usbd_config_desc_macros.h)(0x5D150102)
 I (.\Keil\inc\usbd_config_desc_0.c)(0x5D150102)
 F (.\Src\config\USBD_Config_MSC_0.h)(0x5E6D31BC)()
-F (.\Keil\USB\USB_Debug.c)(0x5EB87E8D)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\usb_debug.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\usb_debug.crf --depend .\objects\usb_debug.d)
+F (.\Keil\USB\USB_Debug.c)(0x5EB87E8D)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\usb_debug.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\usb_debug.crf --depend .\objects\usb_debug.d)
 I (.\Src\config\RTE_Components.h)(0x5EC2D2E9)
 I (.\Keil\inc\usbd_debug.h)(0x5D150102)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9BB318)
@@ -737,14 +727,14 @@ I (.\Keil\inc\Driver_USBD.h)(0x5C8B057C)
 I (.\Keil\inc\Driver_USB.h)(0x5C8B057C)
 I (.\Keil\inc\Driver_Common.h)(0x5C8B057C)
 F (.\Src\config\stm32f4xx_hal_conf.h)(0x5ABE52C4)()
-F (.\Keil\CMSIS\RTX_Config.c)(0x5C8FF8D4)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\rtx_config.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\rtx_config.crf --depend .\objects\rtx_config.d)
+F (.\Keil\CMSIS\RTX_Config.c)(0x5C8FF8D4)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\rtx_config.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\rtx_config.crf --depend .\objects\rtx_config.d)
 I (.\Keil\inc\cmsis_compiler.h)(0x5D2671B6)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9BB318)
 I (.\Keil\inc\cmsis_armcc.h)(0x5D2671B6)
 I (.\Keil\inc\rtx_os.h)(0x5D2671B8)
 I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5D9BB318)
 I (.\Keil\inc\cmsis_os2.h)(0x5C8FF898)
-F (.\Keil\CMSIS\rtx_delay.c)(0x5C902ED4)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\rtx_delay.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\rtx_delay.crf --depend .\objects\rtx_delay.d)
+F (.\Keil\CMSIS\rtx_delay.c)(0x5C902ED4)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\rtx_delay.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\rtx_delay.crf --depend .\objects\rtx_delay.d)
 I (.\Keil\inc\rtx_lib.h)(0x5C8FF8C0)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5D9BB318)
 I (.\Keil\inc\rtx_core_c.h)(0x5C8FF8C6)
@@ -768,7 +758,7 @@ I (.\Keil\inc\rtx_os.h)(0x5D2671B8)
 I (.\Keil\inc\rtx_evr.h)(0x5D2671B8)
 I (.\Keil\inc\EventRecorder.h)(0x5B90317E)
 I (.\Src\config\EventRecorderConf.h)(0x5E94DDC1)
-F (.\Keil\CMSIS\rtx_evflags.c)(0x5C902ED4)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\rtx_evflags.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\rtx_evflags.crf --depend .\objects\rtx_evflags.d)
+F (.\Keil\CMSIS\rtx_evflags.c)(0x5C902ED4)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\rtx_evflags.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\rtx_evflags.crf --depend .\objects\rtx_evflags.d)
 I (.\Keil\inc\rtx_lib.h)(0x5C8FF8C0)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5D9BB318)
 I (.\Keil\inc\rtx_core_c.h)(0x5C8FF8C6)
@@ -792,7 +782,7 @@ I (.\Keil\inc\rtx_os.h)(0x5D2671B8)
 I (.\Keil\inc\rtx_evr.h)(0x5D2671B8)
 I (.\Keil\inc\EventRecorder.h)(0x5B90317E)
 I (.\Src\config\EventRecorderConf.h)(0x5E94DDC1)
-F (.\Keil\CMSIS\rtx_evr.c)(0x5C902ED4)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\rtx_evr.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\rtx_evr.crf --depend .\objects\rtx_evr.d)
+F (.\Keil\CMSIS\rtx_evr.c)(0x5C902ED4)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\rtx_evr.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\rtx_evr.crf --depend .\objects\rtx_evr.d)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5D9BB318)
 I (.\Keil\inc\cmsis_compiler.h)(0x5D2671B6)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9BB318)
@@ -805,7 +795,7 @@ I (.\Src\config\RTE_Components.h)(0x5EC2D2E9)
 I (.\Keil\inc\rtx_os.h)(0x5D2671B8)
 I (.\Keil\inc\EventRecorder.h)(0x5B90317E)
 I (.\Src\config\EventRecorderConf.h)(0x5E94DDC1)
-F (.\Keil\CMSIS\rtx_kernel.c)(0x5C902ED4)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\rtx_kernel.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\rtx_kernel.crf --depend .\objects\rtx_kernel.d)
+F (.\Keil\CMSIS\rtx_kernel.c)(0x5C902ED4)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\rtx_kernel.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\rtx_kernel.crf --depend .\objects\rtx_kernel.d)
 I (.\Keil\inc\rtx_lib.h)(0x5C8FF8C0)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5D9BB318)
 I (.\Keil\inc\rtx_core_c.h)(0x5C8FF8C6)
@@ -829,7 +819,7 @@ I (.\Keil\inc\rtx_os.h)(0x5D2671B8)
 I (.\Keil\inc\rtx_evr.h)(0x5D2671B8)
 I (.\Keil\inc\EventRecorder.h)(0x5B90317E)
 I (.\Src\config\EventRecorderConf.h)(0x5E94DDC1)
-F (.\Keil\CMSIS\rtx_lib.c)(0x5D2671B8)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\rtx_lib.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\rtx_lib.crf --depend .\objects\rtx_lib.d)
+F (.\Keil\CMSIS\rtx_lib.c)(0x5D2671B8)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\rtx_lib.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\rtx_lib.crf --depend .\objects\rtx_lib.d)
 I (.\Keil\inc\cmsis_compiler.h)(0x5D2671B6)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9BB318)
 I (.\Keil\inc\cmsis_armcc.h)(0x5D2671B6)
@@ -842,7 +832,7 @@ I (.\Keil\inc\EventRecorder.h)(0x5B90317E)
 I (.\Src\config\EventRecorderConf.h)(0x5E94DDC1)
 I (.\Keil\inc\rtx_evr.h)(0x5D2671B8)
 I (.\Src\config\RTX_Config.h)(0x5E9A446B)
-F (.\Keil\CMSIS\rtx_memory.c)(0x5C8FF8C0)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\rtx_memory.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\rtx_memory.crf --depend .\objects\rtx_memory.d)
+F (.\Keil\CMSIS\rtx_memory.c)(0x5C8FF8C0)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\rtx_memory.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\rtx_memory.crf --depend .\objects\rtx_memory.d)
 I (.\Keil\inc\rtx_lib.h)(0x5C8FF8C0)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5D9BB318)
 I (.\Keil\inc\rtx_core_c.h)(0x5C8FF8C6)
@@ -866,7 +856,7 @@ I (.\Keil\inc\rtx_os.h)(0x5D2671B8)
 I (.\Keil\inc\rtx_evr.h)(0x5D2671B8)
 I (.\Keil\inc\EventRecorder.h)(0x5B90317E)
 I (.\Src\config\EventRecorderConf.h)(0x5E94DDC1)
-F (.\Keil\CMSIS\rtx_mempool.c)(0x5C8FF8BE)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\rtx_mempool.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\rtx_mempool.crf --depend .\objects\rtx_mempool.d)
+F (.\Keil\CMSIS\rtx_mempool.c)(0x5C8FF8BE)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\rtx_mempool.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\rtx_mempool.crf --depend .\objects\rtx_mempool.d)
 I (.\Keil\inc\rtx_lib.h)(0x5C8FF8C0)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5D9BB318)
 I (.\Keil\inc\rtx_core_c.h)(0x5C8FF8C6)
@@ -890,7 +880,7 @@ I (.\Keil\inc\rtx_os.h)(0x5D2671B8)
 I (.\Keil\inc\rtx_evr.h)(0x5D2671B8)
 I (.\Keil\inc\EventRecorder.h)(0x5B90317E)
 I (.\Src\config\EventRecorderConf.h)(0x5E94DDC1)
-F (.\Keil\CMSIS\rtx_msgqueue.c)(0x5C902ED4)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\rtx_msgqueue.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\rtx_msgqueue.crf --depend .\objects\rtx_msgqueue.d)
+F (.\Keil\CMSIS\rtx_msgqueue.c)(0x5C902ED4)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\rtx_msgqueue.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\rtx_msgqueue.crf --depend .\objects\rtx_msgqueue.d)
 I (.\Keil\inc\rtx_lib.h)(0x5C8FF8C0)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5D9BB318)
 I (.\Keil\inc\rtx_core_c.h)(0x5C8FF8C6)
@@ -914,7 +904,7 @@ I (.\Keil\inc\rtx_os.h)(0x5D2671B8)
 I (.\Keil\inc\rtx_evr.h)(0x5D2671B8)
 I (.\Keil\inc\EventRecorder.h)(0x5B90317E)
 I (.\Src\config\EventRecorderConf.h)(0x5E94DDC1)
-F (.\Keil\CMSIS\rtx_mutex.c)(0x5D2671B8)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\rtx_mutex.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\rtx_mutex.crf --depend .\objects\rtx_mutex.d)
+F (.\Keil\CMSIS\rtx_mutex.c)(0x5D2671B8)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\rtx_mutex.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\rtx_mutex.crf --depend .\objects\rtx_mutex.d)
 I (.\Keil\inc\rtx_lib.h)(0x5C8FF8C0)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5D9BB318)
 I (.\Keil\inc\rtx_core_c.h)(0x5C8FF8C6)
@@ -938,7 +928,7 @@ I (.\Keil\inc\rtx_os.h)(0x5D2671B8)
 I (.\Keil\inc\rtx_evr.h)(0x5D2671B8)
 I (.\Keil\inc\EventRecorder.h)(0x5B90317E)
 I (.\Src\config\EventRecorderConf.h)(0x5E94DDC1)
-F (.\Keil\CMSIS\rtx_semaphore.c)(0x5C8FF8BC)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\rtx_semaphore.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\rtx_semaphore.crf --depend .\objects\rtx_semaphore.d)
+F (.\Keil\CMSIS\rtx_semaphore.c)(0x5C8FF8BC)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\rtx_semaphore.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\rtx_semaphore.crf --depend .\objects\rtx_semaphore.d)
 I (.\Keil\inc\rtx_lib.h)(0x5C8FF8C0)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5D9BB318)
 I (.\Keil\inc\rtx_core_c.h)(0x5C8FF8C6)
@@ -962,7 +952,7 @@ I (.\Keil\inc\rtx_os.h)(0x5D2671B8)
 I (.\Keil\inc\rtx_evr.h)(0x5D2671B8)
 I (.\Keil\inc\EventRecorder.h)(0x5B90317E)
 I (.\Src\config\EventRecorderConf.h)(0x5E94DDC1)
-F (.\Keil\CMSIS\rtx_system.c)(0x5C902ED4)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\rtx_system.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\rtx_system.crf --depend .\objects\rtx_system.d)
+F (.\Keil\CMSIS\rtx_system.c)(0x5C902ED4)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\rtx_system.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\rtx_system.crf --depend .\objects\rtx_system.d)
 I (.\Keil\inc\rtx_lib.h)(0x5C8FF8C0)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5D9BB318)
 I (.\Keil\inc\rtx_core_c.h)(0x5C8FF8C6)
@@ -986,7 +976,7 @@ I (.\Keil\inc\rtx_os.h)(0x5D2671B8)
 I (.\Keil\inc\rtx_evr.h)(0x5D2671B8)
 I (.\Keil\inc\EventRecorder.h)(0x5B90317E)
 I (.\Src\config\EventRecorderConf.h)(0x5E94DDC1)
-F (.\Keil\CMSIS\rtx_thread.c)(0x5D2671B8)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\rtx_thread.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\rtx_thread.crf --depend .\objects\rtx_thread.d)
+F (.\Keil\CMSIS\rtx_thread.c)(0x5D2671B8)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\rtx_thread.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\rtx_thread.crf --depend .\objects\rtx_thread.d)
 I (.\Keil\inc\rtx_lib.h)(0x5C8FF8C0)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5D9BB318)
 I (.\Keil\inc\rtx_core_c.h)(0x5C8FF8C6)
@@ -1010,7 +1000,7 @@ I (.\Keil\inc\rtx_os.h)(0x5D2671B8)
 I (.\Keil\inc\rtx_evr.h)(0x5D2671B8)
 I (.\Keil\inc\EventRecorder.h)(0x5B90317E)
 I (.\Src\config\EventRecorderConf.h)(0x5E94DDC1)
-F (.\Keil\CMSIS\rtx_timer.c)(0x5C902ED4)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\rtx_timer.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\rtx_timer.crf --depend .\objects\rtx_timer.d)
+F (.\Keil\CMSIS\rtx_timer.c)(0x5C902ED4)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\rtx_timer.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\rtx_timer.crf --depend .\objects\rtx_timer.d)
 I (.\Keil\inc\rtx_lib.h)(0x5C8FF8C0)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5D9BB318)
 I (.\Keil\inc\rtx_core_c.h)(0x5C8FF8C6)
@@ -1034,7 +1024,7 @@ I (.\Keil\inc\rtx_os.h)(0x5D2671B8)
 I (.\Keil\inc\rtx_evr.h)(0x5D2671B8)
 I (.\Keil\inc\EventRecorder.h)(0x5B90317E)
 I (.\Src\config\EventRecorderConf.h)(0x5E94DDC1)
-F (.\Keil\CMSIS\os_systick.c)(0x5B201F1C)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\os_systick.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\os_systick.crf --depend .\objects\os_systick.d)
+F (.\Keil\CMSIS\os_systick.c)(0x5B201F1C)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\os_systick.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\os_systick.crf --depend .\objects\os_systick.d)
 I (.\Keil\inc\os_tick.h)(0x5B625184)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9BB318)
 I (.\Src\config\RTE_Components.h)(0x5EC2D2E9)
@@ -1047,7 +1037,7 @@ I (.\Keil\inc\cmsis_armcc.h)(0x5D2671B6)
 I (.\Keil\inc\mpu_armv7.h)(0x5C902ED4)
 I (C:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include\system_stm32f4xx.h)(0x5A906654)
 F (.\Keil\CMSIS\irq_cm4f.s)(0x5B201F1C)(--cpu Cortex-M4.fp.sp -g --apcs=interwork -I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include--pd "__UVISION_VERSION SETA 529" --pd "_RTE_ SETA 1" --pd "STM32F412Vx SETA 1"--list .\listings\irq_cm4f.lst --xref -o .\objects\irq_cm4f.o --depend .\objects\irq_cm4f.d)
-F (.\Keil\Compiler\EventRecorder.c)(0x5B90317E)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\eventrecorder.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\eventrecorder.crf --depend .\objects\eventrecorder.d)
+F (.\Keil\Compiler\EventRecorder.c)(0x5B90317E)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\eventrecorder.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\eventrecorder.crf --depend .\objects\eventrecorder.d)
 I (.\Src\config\RTE_Components.h)(0x5EC2D2E9)
 I (C:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f4xx.h)(0x5A906654)
 I (C:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f412vx.h)(0x5A906654)
@@ -1061,7 +1051,7 @@ I (C:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5D9BB318)
 I (.\Keil\inc\EventRecorder.h)(0x5B90317E)
 I (.\Src\config\EventRecorderConf.h)(0x5E94DDC1)
-F (.\Keil\Compiler\retarget_io.c)(0x584F0ABE)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\retarget_io.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\retarget_io.crf --depend .\objects\retarget_io.d)
+F (.\Keil\Compiler\retarget_io.c)(0x584F0ABE)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\retarget_io.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\retarget_io.crf --depend .\objects\retarget_io.d)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5D9BB318)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9BB318)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5D9BB31A)
@@ -1078,7 +1068,7 @@ I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5D9BB318)
 I (.\Keil\inc\Driver_SPI.h)(0x5C8B057C)
 I (.\Keil\inc\rl_fs.h)(0x5DB8A9DC)
 F (.\Keil\STM32F4xx\STM32F412VETx\startup_stm32f412vx.s)(0x5ECC0505)(--cpu Cortex-M4.fp.sp -g --apcs=interwork -I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include--pd "__UVISION_VERSION SETA 529" --pd "_RTE_ SETA 1" --pd "STM32F412Vx SETA 1"--list .\listings\startup_stm32f412vx.lst --xref -o .\objects\startup_stm32f412vx.o --depend .\objects\startup_stm32f412vx.d)
-F (.\Keil\STM32F4xx\I2C_STM32F4xx.c)(0x5A8B0C1C)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\i2c_stm32f4xx.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\i2c_stm32f4xx.crf --depend .\objects\i2c_stm32f4xx.d)
+F (.\Keil\STM32F4xx\I2C_STM32F4xx.c)(0x5A8B0C1C)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\i2c_stm32f4xx.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\i2c_stm32f4xx.crf --depend .\objects\i2c_stm32f4xx.d)
 I (.\Keil\inc\I2C_STM32F4xx.h)(0x5A8B0C1C)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9BB318)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5D9BB318)
@@ -1117,7 +1107,7 @@ I (.\Keil\inc\stm32f4xx_hal_pwr_ex.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_spi.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_qspi.h)(0x5A906654)
 I (.\Src\config\RTE_Device.h)(0x5ED2AB96)
-F (.\Keil\STM32F4xx\MCI_STM32F4xx.c)(0x5A8B0C1C)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\mci_stm32f4xx.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\mci_stm32f4xx.crf --depend .\objects\mci_stm32f4xx.d)
+F (.\Keil\STM32F4xx\MCI_STM32F4xx.c)(0x5A8B0C1C)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\mci_stm32f4xx.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\mci_stm32f4xx.crf --depend .\objects\mci_stm32f4xx.d)
 I (.\Keil\inc\MCI_STM32F4xx.h)(0x5A8B0C1C)
 I (.\Keil\inc\Driver_MCI.h)(0x5C8B057C)
 I (.\Keil\inc\Driver_Common.h)(0x5C8B057C)
@@ -1156,7 +1146,7 @@ I (.\Keil\inc\stm32f4xx_hal_spi.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_qspi.h)(0x5A906654)
 I (.\Src\config\RTE_Device.h)(0x5ED2AB96)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5D9BB318)
-F (.\Keil\STM32F4xx\OTG_FS_STM32F4xx.c)(0x59BFF7FE)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\otg_fs_stm32f4xx.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\otg_fs_stm32f4xx.crf --depend .\objects\otg_fs_stm32f4xx.d)
+F (.\Keil\STM32F4xx\OTG_FS_STM32F4xx.c)(0x59BFF7FE)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\otg_fs_stm32f4xx.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\otg_fs_stm32f4xx.crf --depend .\objects\otg_fs_stm32f4xx.d)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9BB318)
 I (.\Keil\inc\stm32f4xx_hal.h)(0x5A906654)
 I (.\Src\config\stm32f4xx_hal_conf.h)(0x5ABE52C4)
@@ -1196,7 +1186,7 @@ I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5D9BB318)
 I (.\Keil\inc\Driver_USBD.h)(0x5C8B057C)
 I (.\Keil\inc\OTG_FS_STM32F4xx.h)(0x59C015C4)
 I (.\Src\config\RTE_Device.h)(0x5ED2AB96)
-F (.\Keil\STM32F4xx\SPI_STM32F4xx.c)(0x5ABE7534)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\spi_stm32f4xx.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\spi_stm32f4xx.crf --depend .\objects\spi_stm32f4xx.d)
+F (.\Keil\STM32F4xx\SPI_STM32F4xx.c)(0x5ABE7534)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\spi_stm32f4xx.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\spi_stm32f4xx.crf --depend .\objects\spi_stm32f4xx.d)
 I (.\Keil\inc\SPI_STM32F4xx.h)(0x5A8B0C1C)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9BB318)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5D9BB318)
@@ -1235,7 +1225,7 @@ I (.\Keil\inc\stm32f4xx_hal_pwr_ex.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_spi.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_qspi.h)(0x5A906654)
 I (.\Src\config\RTE_Device.h)(0x5ED2AB96)
-F (.\Keil\STM32F4xx\USBD_FS_STM32F4xx.c)(0x5EBC4EAD)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\usbd_fs_stm32f4xx.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\usbd_fs_stm32f4xx.crf --depend .\objects\usbd_fs_stm32f4xx.d)
+F (.\Keil\STM32F4xx\USBD_FS_STM32F4xx.c)(0x5EBC4EAD)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\usbd_fs_stm32f4xx.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\usbd_fs_stm32f4xx.crf --depend .\objects\usbd_fs_stm32f4xx.d)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9BB318)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5D9BB318)
 I (.\Keil\inc\Driver_USBD.h)(0x5C8B057C)
@@ -1243,7 +1233,7 @@ I (.\Keil\inc\Driver_USB.h)(0x5C8B057C)
 I (.\Keil\inc\Driver_Common.h)(0x5C8B057C)
 I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5D9BB318)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5D9BB318)
-I (.\Src\inc\tb_evr.h)(0x5ED6BBF7)
+I (.\Src\inc\tb_evr.h)(0x5ED93095)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5D9BB31A)
 I (.\Keil\inc\eventrecorder.h)(0x5B90317E)
 I (.\Keil\inc\OTG_FS_STM32F4xx.h)(0x59C015C4)
@@ -1279,7 +1269,7 @@ I (.\Keil\inc\stm32f4xx_hal_qspi.h)(0x5A906654)
 I (.\Keil\inc\Driver_USBH.h)(0x5C8B057C)
 I (.\Src\config\RTE_Device.h)(0x5ED2AB96)
 F (.\Keil\STM32F4xx\STM32F412VETx\stm32f4xx_hal_conf.h)(0x5ABE52C4)()
-F (.\Keil\STM32F4xx\stm32f4xx_hal.c)(0x5A906654)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\stm32f4xx_hal.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\stm32f4xx_hal.crf --depend .\objects\stm32f4xx_hal.d)
+F (.\Keil\STM32F4xx\stm32f4xx_hal.c)(0x5A906654)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\stm32f4xx_hal.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\stm32f4xx_hal.crf --depend .\objects\stm32f4xx_hal.d)
 I (.\Keil\inc\stm32f4xx_hal.h)(0x5A906654)
 I (.\Src\config\stm32f4xx_hal_conf.h)(0x5ABE52C4)
 I (.\Src\config\RTE_Components.h)(0x5EC2D2E9)
@@ -1311,7 +1301,7 @@ I (.\Keil\inc\stm32f4xx_hal_pwr.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_pwr_ex.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_spi.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_qspi.h)(0x5A906654)
-F (.\Keil\STM32F4xx\stm32f4xx_hal_cortex.c)(0x5A906654)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\stm32f4xx_hal_cortex.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\stm32f4xx_hal_cortex.crf --depend .\objects\stm32f4xx_hal_cortex.d)
+F (.\Keil\STM32F4xx\stm32f4xx_hal_cortex.c)(0x5A906654)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\stm32f4xx_hal_cortex.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\stm32f4xx_hal_cortex.crf --depend .\objects\stm32f4xx_hal_cortex.d)
 I (.\Keil\inc\stm32f4xx_hal.h)(0x5A906654)
 I (.\Src\config\stm32f4xx_hal_conf.h)(0x5ABE52C4)
 I (.\Src\config\RTE_Components.h)(0x5EC2D2E9)
@@ -1343,7 +1333,7 @@ I (.\Keil\inc\stm32f4xx_hal_pwr.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_pwr_ex.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_spi.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_qspi.h)(0x5A906654)
-F (.\Keil\STM32F4xx\stm32f4xx_hal_dma.c)(0x5A906654)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\stm32f4xx_hal_dma.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\stm32f4xx_hal_dma.crf --depend .\objects\stm32f4xx_hal_dma.d)
+F (.\Keil\STM32F4xx\stm32f4xx_hal_dma.c)(0x5A906654)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\stm32f4xx_hal_dma.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\stm32f4xx_hal_dma.crf --depend .\objects\stm32f4xx_hal_dma.d)
 I (.\Keil\inc\stm32f4xx_hal.h)(0x5A906654)
 I (.\Src\config\stm32f4xx_hal_conf.h)(0x5ABE52C4)
 I (.\Src\config\RTE_Components.h)(0x5EC2D2E9)
@@ -1375,7 +1365,7 @@ I (.\Keil\inc\stm32f4xx_hal_pwr.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_pwr_ex.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_spi.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_qspi.h)(0x5A906654)
-F (.\Keil\STM32F4xx\stm32f4xx_hal_dma_ex.c)(0x5A906654)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\stm32f4xx_hal_dma_ex.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\stm32f4xx_hal_dma_ex.crf --depend .\objects\stm32f4xx_hal_dma_ex.d)
+F (.\Keil\STM32F4xx\stm32f4xx_hal_dma_ex.c)(0x5A906654)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\stm32f4xx_hal_dma_ex.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\stm32f4xx_hal_dma_ex.crf --depend .\objects\stm32f4xx_hal_dma_ex.d)
 I (.\Keil\inc\stm32f4xx_hal.h)(0x5A906654)
 I (.\Src\config\stm32f4xx_hal_conf.h)(0x5ABE52C4)
 I (.\Src\config\RTE_Components.h)(0x5EC2D2E9)
@@ -1407,7 +1397,7 @@ I (.\Keil\inc\stm32f4xx_hal_pwr.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_pwr_ex.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_spi.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_qspi.h)(0x5A906654)
-F (.\Keil\STM32F4xx\stm32f4xx_hal_gpio.c)(0x5A906654)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\stm32f4xx_hal_gpio.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\stm32f4xx_hal_gpio.crf --depend .\objects\stm32f4xx_hal_gpio.d)
+F (.\Keil\STM32F4xx\stm32f4xx_hal_gpio.c)(0x5A906654)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\stm32f4xx_hal_gpio.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\stm32f4xx_hal_gpio.crf --depend .\objects\stm32f4xx_hal_gpio.d)
 I (.\Keil\inc\stm32f4xx_hal.h)(0x5A906654)
 I (.\Src\config\stm32f4xx_hal_conf.h)(0x5ABE52C4)
 I (.\Src\config\RTE_Components.h)(0x5EC2D2E9)
@@ -1439,7 +1429,7 @@ I (.\Keil\inc\stm32f4xx_hal_pwr.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_pwr_ex.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_spi.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_qspi.h)(0x5A906654)
-F (.\Keil\STM32F4xx\stm32f4xx_hal_i2c.c)(0x5A906654)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\stm32f4xx_hal_i2c.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\stm32f4xx_hal_i2c.crf --depend .\objects\stm32f4xx_hal_i2c.d)
+F (.\Keil\STM32F4xx\stm32f4xx_hal_i2c.c)(0x5A906654)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\stm32f4xx_hal_i2c.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\stm32f4xx_hal_i2c.crf --depend .\objects\stm32f4xx_hal_i2c.d)
 I (.\Keil\inc\stm32f4xx_hal.h)(0x5A906654)
 I (.\Src\config\stm32f4xx_hal_conf.h)(0x5ABE52C4)
 I (.\Src\config\RTE_Components.h)(0x5EC2D2E9)
@@ -1471,7 +1461,7 @@ I (.\Keil\inc\stm32f4xx_hal_pwr.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_pwr_ex.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_spi.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_qspi.h)(0x5A906654)
-F (.\Keil\STM32F4xx\stm32f4xx_hal_pwr.c)(0x5A906654)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\stm32f4xx_hal_pwr.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\stm32f4xx_hal_pwr.crf --depend .\objects\stm32f4xx_hal_pwr.d)
+F (.\Keil\STM32F4xx\stm32f4xx_hal_pwr.c)(0x5A906654)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\stm32f4xx_hal_pwr.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\stm32f4xx_hal_pwr.crf --depend .\objects\stm32f4xx_hal_pwr.d)
 I (.\Keil\inc\stm32f4xx_hal.h)(0x5A906654)
 I (.\Src\config\stm32f4xx_hal_conf.h)(0x5ABE52C4)
 I (.\Src\config\RTE_Components.h)(0x5EC2D2E9)
@@ -1503,7 +1493,7 @@ I (.\Keil\inc\stm32f4xx_hal_pwr.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_pwr_ex.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_spi.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_qspi.h)(0x5A906654)
-F (.\Keil\STM32F4xx\stm32f4xx_hal_pwr_ex.c)(0x5A906654)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\stm32f4xx_hal_pwr_ex.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\stm32f4xx_hal_pwr_ex.crf --depend .\objects\stm32f4xx_hal_pwr_ex.d)
+F (.\Keil\STM32F4xx\stm32f4xx_hal_pwr_ex.c)(0x5A906654)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\stm32f4xx_hal_pwr_ex.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\stm32f4xx_hal_pwr_ex.crf --depend .\objects\stm32f4xx_hal_pwr_ex.d)
 I (.\Keil\inc\stm32f4xx_hal.h)(0x5A906654)
 I (.\Src\config\stm32f4xx_hal_conf.h)(0x5ABE52C4)
 I (.\Src\config\RTE_Components.h)(0x5EC2D2E9)
@@ -1535,7 +1525,7 @@ I (.\Keil\inc\stm32f4xx_hal_pwr.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_pwr_ex.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_spi.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_qspi.h)(0x5A906654)
-F (.\Keil\STM32F4xx\stm32f4xx_hal_qspi.c)(0x5A906654)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\stm32f4xx_hal_qspi.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\stm32f4xx_hal_qspi.crf --depend .\objects\stm32f4xx_hal_qspi.d)
+F (.\Keil\STM32F4xx\stm32f4xx_hal_qspi.c)(0x5A906654)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\stm32f4xx_hal_qspi.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\stm32f4xx_hal_qspi.crf --depend .\objects\stm32f4xx_hal_qspi.d)
 I (.\Keil\inc\stm32f4xx_hal.h)(0x5A906654)
 I (.\Src\config\stm32f4xx_hal_conf.h)(0x5ABE52C4)
 I (.\Src\config\RTE_Components.h)(0x5EC2D2E9)
@@ -1567,7 +1557,7 @@ I (.\Keil\inc\stm32f4xx_hal_pwr.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_pwr_ex.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_spi.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_qspi.h)(0x5A906654)
-F (.\Keil\STM32F4xx\stm32f4xx_hal_rcc.c)(0x5A906654)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\stm32f4xx_hal_rcc.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\stm32f4xx_hal_rcc.crf --depend .\objects\stm32f4xx_hal_rcc.d)
+F (.\Keil\STM32F4xx\stm32f4xx_hal_rcc.c)(0x5A906654)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\stm32f4xx_hal_rcc.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\stm32f4xx_hal_rcc.crf --depend .\objects\stm32f4xx_hal_rcc.d)
 I (.\Keil\inc\stm32f4xx_hal.h)(0x5A906654)
 I (.\Src\config\stm32f4xx_hal_conf.h)(0x5ABE52C4)
 I (.\Src\config\RTE_Components.h)(0x5EC2D2E9)
@@ -1599,7 +1589,7 @@ I (.\Keil\inc\stm32f4xx_hal_pwr.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_pwr_ex.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_spi.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_qspi.h)(0x5A906654)
-F (.\Keil\STM32F4xx\stm32f4xx_hal_rcc_ex.c)(0x5A906654)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\stm32f4xx_hal_rcc_ex.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\stm32f4xx_hal_rcc_ex.crf --depend .\objects\stm32f4xx_hal_rcc_ex.d)
+F (.\Keil\STM32F4xx\stm32f4xx_hal_rcc_ex.c)(0x5A906654)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\stm32f4xx_hal_rcc_ex.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\stm32f4xx_hal_rcc_ex.crf --depend .\objects\stm32f4xx_hal_rcc_ex.d)
 I (.\Keil\inc\stm32f4xx_hal.h)(0x5A906654)
 I (.\Src\config\stm32f4xx_hal_conf.h)(0x5ABE52C4)
 I (.\Src\config\RTE_Components.h)(0x5EC2D2E9)
@@ -1631,7 +1621,7 @@ I (.\Keil\inc\stm32f4xx_hal_pwr.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_pwr_ex.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_spi.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_qspi.h)(0x5A906654)
-F (.\Keil\STM32F4xx\stm32f4xx_hal_spi.c)(0x5A906654)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx-o .\objects\stm32f4xx_hal_spi.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\stm32f4xx_hal_spi.crf --depend .\objects\stm32f4xx_hal_spi.d)
+F (.\Keil\STM32F4xx\stm32f4xx_hal_spi.c)(0x5A906654)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\stm32f4xx_hal_spi.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\stm32f4xx_hal_spi.crf --depend .\objects\stm32f4xx_hal_spi.d)
 I (.\Keil\inc\stm32f4xx_hal.h)(0x5A906654)
 I (.\Src\config\stm32f4xx_hal_conf.h)(0x5ABE52C4)
 I (.\Src\config\RTE_Components.h)(0x5EC2D2E9)
@@ -1663,6 +1653,16 @@ I (.\Keil\inc\stm32f4xx_hal_pwr.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_pwr_ex.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_spi.h)(0x5A906654)
 I (.\Keil\inc\stm32f4xx_hal_qspi.h)(0x5A906654)
+F (.\Src\Rev2b\system_stm32f4xx.c)(0x5EDECDE8)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000"-o .\objects\system_stm32f4xx.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\system_stm32f4xx.crf --depend .\objects\system_stm32f4xx.d)
+I (C:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f4xx.h)(0x5A906654)
+I (C:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f412vx.h)(0x5A906654)
+I (.\Keil\inc\core_cm4.h)(0x5D2671B6)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9BB318)
+I (.\Keil\inc\cmsis_version.h)(0x5D2671B6)
+I (.\Keil\inc\cmsis_compiler.h)(0x5D2671B6)
+I (.\Keil\inc\cmsis_armcc.h)(0x5D2671B6)
+I (.\Keil\inc\mpu_armv7.h)(0x5C902ED4)
+I (C:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include\system_stm32f4xx.h)(0x5A906654)
 F (.\Keil\File System\FS_Dbg_LFN_CM3_L.lib)(0x5DC07D74)()
 F (.\Keil\USB\USB_Dbg_CM3_L.lib)(0x5D5C5FAA)()
 F (C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\RTOS2\RTX\Source\ARM\irq_cm4f.s)(0x5B201F1C)()

@@ -336,7 +336,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>TBOOKREV2B,STM32F412Vx</Define>
+              <Define>TBOOKREV2B,STM32F412Vx, HSE_VALUE=8000000</Define>
               <Undefine></Undefine>
               <IncludePath>.\Src\inc;.\Src\config;.\Keil\inc;.\Src\Rev2b\inc</IncludePath>
             </VariousControls>
@@ -471,11 +471,6 @@
               <FileName>hardfault.s</FileName>
               <FileType>2</FileType>
               <FilePath>.\Src\Rev2b\hardfault.s</FilePath>
-            </File>
-            <File>
-              <FileName>system_stm32f4xx.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Src\Rev2b\system_stm32f4xx.c</FilePath>
             </File>
             <File>
               <FileName>W25Q64JV.c</FileName>
@@ -872,6 +867,11 @@
               <FileName>stm32f4xx_hal_spi.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Keil\STM32F4xx\stm32f4xx_hal_spi.c</FilePath>
+            </File>
+            <File>
+              <FileName>system_stm32f4xx.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Src\Rev2b\system_stm32f4xx.c</FilePath>
             </File>
           </Files>
         </Group>
