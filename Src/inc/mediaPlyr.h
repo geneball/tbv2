@@ -21,4 +21,5 @@ extern int			recordPosition( void );
 extern MediaState	getStatus( void );
 extern void			recordAudio( const char *fileName, MsgStats *stats );
 extern void			stopRecording( void );
+extern void 		resetAudio( void ); 								// stop any playback/recording in progress
 #endif

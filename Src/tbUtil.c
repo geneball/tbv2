@@ -262,13 +262,14 @@ void 										showRTC( ){
 	char * wkdy[] = { "", "Mon","Tue","Wed","Thu","Fri","Sat","Sun" };
 	char * month[] = { "", "Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec" };
 	char dttm[50];
-	sprintf(dttm, "%s %d-%s-%d %d:%d:%d", wkdy[day], date, month[mon], yr, hr,min,sec );
+	sprintf(dttm, "%s %d-%s-%d %d:%02d:%02d", wkdy[day], date, month[mon], yr, hr,min,sec );
 	logEvtNS( "RTC", "DtTm", dttm );
 }
 void measureSystick(){
 	const int NTS = 6;
 	int msTS[ NTS ], minTS = 1000000, maxTS=0, sumTS=0;
 	
+	dbgLog("Systick @ %d MHz \n", SystemCoreClock/1000000 );
 	for (int i=0; i<NTS; i++){
 		int tsec1 = RTC->TR & 0x70, tsec2 = tsec1;   // tens of secs: 0..5
 		while ( tsec1 == tsec2 ){
@@ -276,13 +277,15 @@ void measureSystick(){
 		}
 		msTS[i] = tbTimeStamp();		// called each time tens-of-sec changes
 		if ( i>0 ){
-			int df = msTS[i] - msTS[i-1];
+			int df = (msTS[i] - msTS[i-1])/10;
 			sumTS  += df;
 			if ( df < minTS ) minTS = df;
 			if ( df > maxTS ) maxTS = df;
 		}
 	}
-	dbgLog("Systick: %d..%d avg=%d \n", minTS, maxTS, sumTS/(NTS-1) );
+	dbgLog("Mn/mx: %d..%d \n", minTS, maxTS );
+	dbgLog("Avg: %d \n",  sumTS/(NTS-1) );
+	dbgLog("Ld: %d \n", SysTick->LOAD );
 }
 
 static uint32_t lastTmStmp = 0;
@@ -450,6 +453,116 @@ void 										stdout_putchar( char ch ){
 	Dbg.Scr[cY][cX++] = ch;
 	Dbg.Scr[cY][cX] = 0;
 }	
+//
+//  system clock configuration *********************************************
+uint32_t AHB_clock;
+uint32_t APB2_clock;
+uint32_t APB1_clock;
+void 										setCpuClock( int mHz, int apbshift2, int apbshift1 ){		// config & enable PLL & PLLI2S, bus dividers, flash latency & switch HCLK to PLL at 'mHz' MHz 
+	int cnt=0;
+  // mHz can be 16..100
+	const int MHZ=1000000;
+//	const int HSE = 8*MHZ;		// HSE on TBrev2b is 8 Mhz crystal
+//	const int HSI = 16*MHZ;		// HSI for F412
+//	const int LSE=32768;			// LSE on TBrev2b is 32768 Hz crystal
+//  const int PLL_M = 4; 			// VCOin 		= HSE / PLL_M  == 2 MHZ as recommended by RM0402 6.3.2 pg124
+//  PLL_N is set so that:				 VCO_out  = 4*mHz MHZ 
+//	const int PLL_P = 0;			// SYSCLK 	= VCO_out / 2  = 2*mHz MHZ
+
+	// AHB  clock:  CPU, GPIOx, DMAx  						== HCLK == SYSCLK >> (HPRE -7) = mHz MHz
+	// APB2 clock:  SYSCFG, SDIO, ADC1						== HCLK >> (PPRE2-3)
+	// APB1 clock:  PWR, I2C1, SPI2, SPI3, RTCAPB == HCLK >> (PPRE1-3)
+	// PLLI2S_R:  	I2S2, I2S3	== 48MHz
+	// PLLI2S_Q:    USB, SDIO		== 48MHz
+	
+	int AHBshift  = 1;	// HCLK     = SYSCLK / 1   
+//	int APB2shift = 0;	// PCLK2    = HCLK / 1		 < 100 MHZ
+//	int APB1shift = 1;	// PCLK1    = HCLK / 2		 < 50 MHZ
+
+  AHB_clock  = mHz;				// HCLK & CPU_CLK
+  APB2_clock = mHz >> apbshift2;
+  APB1_clock = mHz >> apbshift1;
+	
+	int CFGR_HPRE  = 7 + AHBshift;   // AHBshift = >>0: 7  >>1: 8  >>2: 9
+	int CFGR_PPRE2 = 3 + apbshift2;  // APB2shift= >>0: 3  >>1: 4: >>2: 5
+	int CFGR_PPRE1 = 3 + apbshift1;  // APB2shift= >>0: 3  >>1: 4  >>2: 5
+	
+	//  PLLCFGR:		 _RRR QQQQ _S__ __PP _NNN NNNN NNMM MMMM
+	//   0x44400004  0100 0100 0100 0000 0000 0000 0000 0100
+	const int PLL_CFG 	= 0x44400004;		//  SRC = 1(HSE), M = 4, Q = 4, R = 4
+	
+	// PLLI2SCFGR:		 _RRR QQQQ _SS_ ____ _NNN NNNN NNMM MMMM
+	//     0x44001804  0100 0100 0000 0000 0001 1000 0000 0100
+	const int PLLI2S_CFG 	= 0x44001804;		//  SRC = 0(same as PLL = HSE), M = 4, N = 96=0x60, Q = 4, R = 4 ==> PLLI2S_Q = 48MHz
+
+	//  RCC->CFGR -- HPRE=8 (HCLK = SYSCLK/2), PPRE1=4 (PCLK1=HCLK/2),  PPRE2=0  (PCLK2=HCLK/1)
+	int CFGR_cfg =  (CFGR_HPRE << RCC_CFGR_HPRE_Pos) | (CFGR_PPRE1 << RCC_CFGR_PPRE1_Pos) | (CFGR_PPRE2 << RCC_CFGR_PPRE2_Pos);
+	RCC->CR |= RCC_CR_HSEON;		// turn on HSE since we're going to use it as src for PLL & PLLI2S
+	while ( (RCC->CR & RCC_CR_HSERDY) == 0 ) cnt++;		// wait till ready 
+
+	// ALWAYS config PLLI2S to generate 48MHz PLLI2SQ 
+	//  1) selected by RCC->DCKCFGR2.CK48MSEL as clock for USB
+	//  2) and selected by RCC->DCKCFGR2.CKSDIOSEL as clock for SDIO
+	//  3) and used by SPI3 to generate 12MHz external clock for VS4637 codec
+  RCC->PLLI2SCFGR = PLLI2S_CFG;
+	
+	// config PLL to generate HCLK ( CPU base clock ) at 'mHz'  ( VCO_in == 2MHz )
+	//   not using Q & R outputs of PLL -- USB & SDIO come from PLLI2S
+	int PLL_N = mHz * 2;			// VCO_out  = VCO_in * PLL_N == ( 4*mHz MHZ )
+	RCC->PLLCFGR = PLL_CFG | (PLL_N << RCC_PLLCFGR_PLLN_Pos );	// PLL_N + constant parts
+
+	// turn on PLL & PLLI2S
+	RCC->CR |= RCC_CR_PLLON | RCC_CR_PLLI2SON;
+
+  RCC->CFGR = CFGR_cfg;   // sets AHB, APB1 & APB2 prescalers -- (MCOs & RTCPRE are unused)
+	
+	RCC->DCKCFGR = 0;   // default-- .I2S2SRC=00 & .I2S1SRC=00 => I2Sx clocks come from PLLI2S_R
+	RCC->DCKCFGR2 = RCC_DCKCFGR2_CK48MSEL;  // select PLLI2S_Q as clock for USB & SDIO
+	
+	uint8_t vos, vos_maxMHz[] = { 0, 64, 84, 100 };		// find lowest voltage scaling output compatible with mHz HCLK
+	for ( vos=1; vos<4; vos++ )
+		if ( mHz <= vos_maxMHz[ vos ] )	break;
+	
+	RCC->APB1ENR |= RCC_APB1ENR_PWREN;			// enable PWR control registers
+	uint32_t pwrCR = (vos << PWR_CR_VOS_Pos) | (7 << PWR_CR_PLS_Pos) | PWR_CR_PVDE;	// set Voltage Scaling Output & enable VoltageDetect < 2.9V
+	PWR->CR = 	pwrCR;  // overwrites VOS (default 2) -- all other fields default to 0
+
+	PWR->CSR |= PWR_CSR_BRE;			// enable Backup Domain regulator
+	
+	// calculate proper flash wait states for this CPU speed ( at TBrev2b 3.3V supply )
+	//														0WS  1WS  2WS  3WS    -- RM402 3.4.1 Table 6
+	uint8_t currws, ws, flash_wait_maxMHz[] = { 30,  64,  90,  100 };	// max speed for waitstates at 3.3V operation
+	for ( ws=0; ws<4; ws++ ) 
+		if ( mHz <= flash_wait_maxMHz[ ws ] ) break;
+	currws = (FLASH->ACR & FLASH_ACR_LATENCY_Msk);   // current setting of wait states
+	if ( ws > currws ){	// going to more wait states (slower clock) -- switch before changing speeds
+		FLASH->ACR = (FLASH->ACR & ~FLASH_ACR_LATENCY_Msk) | ws;			// set FLASH->ACR.LATENCY (bits 3_0)
+		while ( (FLASH->ACR & FLASH_ACR_LATENCY_Msk) != ws ) cnt++;		// wait till 
+	}
+
+  // wait until PLL, PLLI2S, VOS & BackupRegulator are ready
+	const int PLLS_RDY = RCC_CR_PLLRDY | RCC_CR_PLLI2SRDY;
+	while ( (RCC->CR & PLLS_RDY) != PLLS_RDY ) cnt++;		  // wait until PLL & PLLI2S are ready
+	
+	const int REGS_RDY = PWR_CSR_VOSRDY | PWR_CSR_BRR;
+	while ( (PWR->CSR & REGS_RDY) != REGS_RDY ) cnt++;		// wait until VOS & BackupRegulator are ready
+
+	// switch CPU to PLL clock running at mHz
+	RCC->CFGR |= RCC_CFGR_SW_PLL;
+	while ( (RCC->CFGR & RCC_CFGR_SWS_Msk) != RCC_CFGR_SWS_PLL ) cnt++;			// wait till switch has completed
+
+	if ( ws < currws ){	// going to fewer wait states (faster clock) -- can switch now that speed is changed
+		FLASH->ACR = (FLASH->ACR & ~FLASH_ACR_LATENCY_Msk) | ws;			// set FLASH->ACR.LATENCY (bits 3_0)
+		while ( (FLASH->ACR & FLASH_ACR_LATENCY_Msk) != ws ) cnt++;		// wait till 
+	}
+	
+  SystemCoreClockUpdate();			// derives clock speed from configured register values
+	if ( SystemCoreClock != mHz * MHZ ) // cross-check calculated value
+		__breakpoint(0);
+	
+	FLASH->ACR |= ( FLASH_ACR_DCEN | FLASH_ACR_ICEN | FLASH_ACR_PRFTEN );		// enable flash DataCache, InstructionCache & Prefetch
+}
+
 //
 // fault handlers *****************************************************
 int divTst(int lho, int rho){	// for div/0 testing

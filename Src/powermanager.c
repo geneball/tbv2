@@ -36,6 +36,23 @@ const int ADC_VBAT_chan 				= 18;   		// VBAT = ADC1_18  if ADC_CCR.VBATE = 1
 const int ADC_TEMP_chan 				= 18;   		// TEMP = ADC1_18  if ADC_CCR.TSVREFE = 1
 const int gADC_THERM_chan				= 12;				// PC2 = ADC_THERM = ADC1_12
 
+typedef struct {
+	uint32_t							chkCnt;
+	enum PwrStat					Stat;								// stat1 stat2 pgn
+	uint32_t							VRefMV;							// should be 1200 
+	uint32_t							VBatMV;							// Backup CR2032 voltage: 2000..3300
+	uint32_t							LiMV;								// liIon voltage: 2000..3900
+	uint32_t							PrimaryMV;					// Primary (disposables) battery: 2000..2800
+	uint32_t							MpuTempMV;					// ADC_CHANNEL_TEMPSENSOR in ADC_IN18 
+	uint32_t							LiThermMV;					// LiIon thermister 
+	
+	enum PwrStat					prvStat;						// previous saved by startPowerCheck()
+	bool									hadVBat;						// previous was > 2000: saved by startPowerCheck()
+	bool									hadLi;							// previous was > 2000: saved by startPowerCheck()
+	bool									hadPrimary;					// previous was > 2000: saved by startPowerCheck()
+} PwrState;
+static PwrState 					pS;				// state of powermanager
+
 extern void 							ADC_IRQHandler( void );					// override default (weak) ADC_Handler
 static void 							powerThreadProc( void *arg );		// forward
 static void 							initPwrSignals( void );					// forward
@@ -288,10 +305,39 @@ char 											RngChar( int lo, int hi, int val ){   // => '-', '0', ... '9', '
 	return ( (val-lo)/stp + '0' );
 }
 
-bool HaveUsbPower = false, HaveLithium = false, HavePrimary = false, HaveBackup = false, firstCheck = true, pwrChanged;
-enum PwrStat oldState;
+//bool HaveUsbPower = false, HaveLithium = false, HavePrimary = false, HaveBackup = false, firstCheck = true, pwrChanged;
+//enum PwrStat oldState;
+void											startPowerCheck( enum PwrStat pstat ){
+	// save previous values
+	pS.prvStat		= pS.Stat;
+	pS.hadLi 			= pS.LiMV > 2000;
+	pS.hadPrimary = pS.PrimaryMV > 2000;
+	pS.hadVBat		= pS.VBatMV > 2000;
 
-void 											checkPowerChange( char *nm, int newVal, bool *pSvVal ){
+	pS.chkCnt++;
+	pS.Stat = pstat;
+}
+bool											powerChanged(){
+	bool changed = pS.chkCnt==1;
+	if ( pS.prvStat != pS.Stat ){ 
+		dbgLog("pwrStat %d => %d \n", pS.prvStat, pS.Stat );
+		changed = true;
+	}
+	if ( (pS.LiMV > 2000) 			!= pS.hadLi ){
+		dbgLog("LiIon %d \n", pS.LiMV );
+		changed = true;
+	}
+	if ( (pS.VBatMV > 2000)			!= pS.hadVBat ){
+		dbgLog("VBat %d \n", pS.VBatMV );
+		changed = true;
+	}
+	if ( (pS.PrimaryMV > 2000)	!= pS.hadPrimary ){
+		dbgLog("Primary %d \n", pS.PrimaryMV );
+		changed = true;
+	}
+	return changed;
+}
+/*void 											checkPowerChange( char *nm, int newVal, bool *pSvVal ){
 	if ( !firstCheck ){
 		if ( newVal == *pSvVal ) return;  // no change
 		pwrChanged = true;
@@ -301,7 +347,7 @@ void 											checkPowerChange( char *nm, int newVal, bool *pSvVal ){
 			dbgLog( " Lost %s\n", nm);
 	}	
 	*pSvVal = newVal; 
-}
+} */
 void 											checkPower( ){				// check and report power status
 	//  check gPWR_FAIL_N & MCP73871: gBAT_PG_N, gBAT_STAT1, gBAT_STAT2
 	bool PwrFail 			= gGet( gPWR_FAIL_N );	// PD0 -- input power fail signal
@@ -324,11 +370,7 @@ void 											checkPower( ){				// check and report power status
 	// 		L			L			L		0-- temperature (or timer) fault
 
 	enum PwrStat pstat = (enum PwrStat) ((BatStat1? 4:0) + (BatStat2? 2:0) + (PwrGood_N? 1:0));
-	pwrChanged = ( firstCheck || pstat != oldState );
-	oldState = pstat;
-	
-	bool hvUsb = PwrGood_N==0;
-	bool hvLith = (pstat!=NOLITH);
+	startPowerCheck( pstat );
 	
 	EnableADC( true );			// enable AnalogEN power & ADC clock & power, & ADC INTQ 
 
@@ -336,93 +378,55 @@ void 											checkPower( ){				// check and report power status
 	const int VREF 		= 3300;		// mV of VREF input pin
 	
 	int VRefIntCnt = readADC( ADC_VREFINT_chan, ADC_CCR_TSVREFE );	// enable RefInt on channel 17 -- typically 1.21V (1.18..1.24V)
-  int VRefMV = VRefIntCnt * VREF/MAXCNT;			// should be 1200
+  pS.VRefMV = VRefIntCnt * VREF/MAXCNT;			// should be 1200
 	
 	int MpuTempCnt = readADC( ADC_TEMP_chan, ADC_CCR_TSVREFE ); // ADC_CHANNEL_TEMPSENSOR in ADC_IN18 
-  int MpuTempMV = MpuTempCnt * VREF/MAXCNT;			
+  pS.MpuTempMV = MpuTempCnt * VREF/MAXCNT;			
 
 	int VBatCnt = readADC( ADC_VBAT_chan, ADC_CCR_VBATE ); 		// enable VBAT on channel 18
-  int VBatMV = VBatCnt * 4 * VREF/MAXCNT;		
-	bool hvBack = VBatMV > 2000;														  // ~2V is where end-of-life drop-off occurs
+  pS.VBatMV = VBatCnt * 4 * VREF/MAXCNT;		
 
 	int LiThermCnt = readADC( gADC_THERM_chan, 0 );	
-  int LiThermMV = LiThermCnt * VREF/MAXCNT;		
+  pS.LiThermMV = LiThermCnt * VREF/MAXCNT;		
 	
 	int LiCnt = readADC( ADC_LI_ION_chan, 0 );	
-  int LiMV = LiCnt * 2 * VREF/MAXCNT;			
+  pS.LiMV = LiCnt * 2 * VREF/MAXCNT;			
 
 	int PrimaryCnt = readADC( ADC_PRIMARY_chan, 0 );
-  int PrimaryMV = PrimaryCnt * 2 * VREF/MAXCNT;	
-	bool hvPri = PrimaryMV > 1600;
+  pS.PrimaryMV = PrimaryCnt * 2 * VREF/MAXCNT;	
 	
 	EnableADC( false );		// turn ADC off
 	
-	char sUsb = pstat==NOUSBPWR? 'u' : 'U';
-	char sLi = RngChar( 3400, 4200, LiMV ); 				// range from charge=0 to charge=9
-	char sPr = RngChar( 2000, 3000, PrimaryMV ); 
-	char sBk = RngChar( 2400, 3100, VBatMV ); 
-	char sMt = RngChar(  200, 1200, MpuTempMV ); 
-	char sLt = RngChar(  200, 1200, LiThermMV ); 
-	char sCh = ' ';
-	if (pstat==CHARGING) 	sCh = 'c';
-	if (pstat==CHARGED) 	sCh = 'C';
-	if (pstat==TEMPFAULT) sCh = 'X';
+	if ( powerChanged() ){	// update pS state & => true if significant change
+	
+		char sUsb = PwrGood_N==0? 'U' : 'u';
+		char sLi = RngChar( 2000, 4000, pS.LiMV ); 				// range from charge='0' to charge='9'
+		char sPr = RngChar( 2000, 4000, pS.PrimaryMV ); 	// 2000..2200 = '0', 3800..4000 = '9'
+		char sBk = RngChar( 2000, 4000, pS.VBatMV ); 
+		char sMt = RngChar(  200, 1200, pS.MpuTempMV ); 	// 200..300 = '0'  1000..1200 = '9'
+		char sLt = RngChar(  200, 1200, pS.LiThermMV ); 
+		char sCh = ' ';
+		if (pstat==CHARGING) 	sCh = 'c';
+		if (pstat==CHARGED) 	sCh = 'C';
+		if (pstat==TEMPFAULT) sCh = 'X';
 
-	// report changes & update state
-	checkPowerChange( "USB", 		 	hvUsb, 	&HaveUsbPower );
-	checkPowerChange( "Lithium", 	hvLith, &HaveLithium );
-	checkPowerChange( "Primary", 	hvPri, 	&HavePrimary );
-	checkPowerChange( "Backup", 	hvBack, &HaveBackup );
-	firstCheck = false;
-	
-	char pwrStat[10];
-	sprintf(pwrStat, "%c L%c%c%c P%c B%c T%c", sUsb, sLi,sCh,sLt, sPr, sBk, sMt); 
-	if ( pwrChanged )	
+		char pwrStat[10];
+		sprintf(pwrStat, "%c L%c%c%c P%c B%c T%c", sUsb, sLi,sCh,sLt, sPr, sBk, sMt); 
 		logEvtNS( "PwrCheck","Stat",	pwrStat ); 
+
+		dbgLog( "srTB: %d %4d %3d %4d\n", pstat, pS.VRefMV, pS.MpuTempMV, pS.VBatMV );
+		dbgLog( "LtLP: %3d %4d %4d\n", pS.LiThermMV, pS.LiMV, pS.PrimaryMV );
+		if ( pS.MpuTempMV > 1000 ) sendEvent( MpuHot, pS.MpuTempMV );
+		if ( pS.LiThermMV > 1000 ) sendEvent( LithiumHot, pS.LiThermMV );
 	
-  dbgLog( "srTB: %d %4d %3d %4d\n", pstat, VRefMV, MpuTempMV, VBatMV );
-	dbgLog( "LtLP: %3d %4d %4d\n", LiThermMV, LiMV, PrimaryMV );
-	if ( MpuTempMV > 1000 ) sendEvent( MpuHot, MpuTempMV );
-	if ( LiThermMV > 1000 ) sendEvent( LithiumHot, LiThermMV );
-	
-	if ( pwrChanged ){
 		switch ( pstat ){
 			case CHARGED:				sendEvent( BattCharged, 0 ); 			break; 		// CHARGING complete
-			case CHARGING: 			sendEvent( BattCharging, LiMV );	break;		// started charging
-			case TEMPFAULT:			sendEvent( ChargeFault,  LiMV );	break;		// LiIon charging fault (temp?)
-			case LOWBATT:				sendEvent( LowBattery,  LiMV );		break;		// LiIon is low  (no USB)
+			case CHARGING: 			sendEvent( BattCharging, pS.LiMV );	break;		// started charging
+			case TEMPFAULT:			sendEvent( ChargeFault,  pS.LiMV );	break;		// LiIon charging fault (temp?)
+			case LOWBATT:				sendEvent( LowBattery,  pS.LiMV );		break;		// LiIon is low  (no USB)
 			default: break;
 		}
 	}
-	
-
-/* old
-//	const int BATT_DROPPING_VOLTAGE	= 2200;			// https://www.powerstream.com/AA-tests.htm discharge graph for AA cells
-	const int LOW_BATT_VOLTAGE	= 2000;				// ~2V is where end-of-life drop-off occurs
-//	bool shouldChargeCap = 0;  
-	switch ( pstat ){
-		case CHARGED:		
-			sendEvent( BattCharged, 0 ); 
-			break;
-		
-		case CHARGING:		
-			sendEvent( BattCharging, LiMV );	
-			break;
-		
-		case NOUSBPWR:
-		case NOLITH:		
-		case LOWBATT:	// rechargeable is low or missing -- report disposable status
-//			shouldChargeCap = PrimaryMV < BATT_DROPPING_VOLTAGE? 1 : 0; 		// charge superCap when disposable battery starts to drop	
-//			logEvtS( "PwrCheck Cap? ", shouldChargeCap?"Y":"N" );
-			if ( PrimaryMV < LOW_BATT_VOLTAGE )						// goes south quickly from here	
-				sendEvent( LowBattery,  PrimaryMV );  
-			break;
-			
-		default:
-			break;
-	}
-//	gSet( gSC_ENABLE, shouldChargeCap );
-*/
 }
 /*   // *************  Handler for PowerFail interrupt
 void 											EXTI4_IRQHandler(void){  				// NOPWR ISR

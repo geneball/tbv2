@@ -142,7 +142,7 @@ void						closeLog(){
 }
 
 void dateStr( char *s, fsTime dttm ){
-	sprintf( s, "%d-%d-%d %d:%d", dttm.year, dttm.mon, dttm.day, dttm.hr, dttm.min );
+	sprintf( s, "%d-%d-%d %02d:%02d", dttm.year, dttm.mon, dttm.day, dttm.hr, dttm.min );
 }
 void						logPowerUp( bool reboot ){											// re-init logger after reboot, USB or sleeping
 	char line[200];
@@ -154,7 +154,7 @@ void						logPowerUp( bool reboot ){											// re-init logger after reboot, U
 	//if ( !openLog(false) ) return;
 	
 	char * boot = loadLine( line, TBP[ pBOOTCNT ], &bootDt ); 
-	int bootcnt = 0;
+	int bootcnt = 1;		// if file not there-- first boot
 	if ( boot!=NULL ) sscanf( boot, " %d", &bootcnt );
 	
 	if ( bootcnt==1 ){  // FirstBoot after install
@@ -175,6 +175,8 @@ void						logPowerUp( bool reboot ){											// re-init logger after reboot, U
 		logEvtNS( "TB_V2", "Firmware", TBV2_Version );
 		logEvtS(  "CPU",  CPU_ID );
 		logEvtS(  "TB_ID",  TB_ID );
+		logEvtNI( "CPU_CLK", "MHz", SystemCoreClock/1000000 );
+		logEvtNINI("BUS_CLKS", "APB2", APB2_clock, "APB1", APB1_clock );
 	} else
 		logEvt(   "RESUME--");
 	
@@ -572,12 +574,16 @@ void						copyNorLog( const char * fpath ){								// copy curr Nor log into fil
 	
 	for ( int p = NLg.logBase; p < NLg.Nxt; p+= NLg.PGSZ ){
 		stat = NLg.pNor->ReadData( p, NLg.pg, NLg.PGSZ );
-		if ( stat != NLg.PGSZ ) tbErr(" pNor read => %d", stat );
+		if ( stat != NLg.PGSZ ) tbErr("cpyNor read => %d", stat );
 		
 		int cnt = NLg.Nxt-p;
 		if ( cnt > NLg.PGSZ ) cnt = NLg.PGSZ;
 		stat = fwrite( NLg.pg, 1, cnt, f );
-		if ( stat != cnt ) tbErr("cpyNor fwrite => %d", stat );
+		if ( stat != cnt ){ 
+			dbgLog("cpyNor fwrite => %d  totcnt=%d", stat, totcnt );
+			fclose( f );
+			return;
+		}
 		totcnt += cnt;
 	}
 	fclose( f );

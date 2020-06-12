@@ -258,10 +258,8 @@ static void		 								I2S3_ClockEnable( bool enab ){ 								// enable/disable I
 	spi->I2SCFGR 	&= ~I2S_MODE_ENAB;			// disable I2S3 device (0x200)
 	
 	if ( enab ){
-		// make sure the RCC->PLLI2S is running & ready
-		RCC->CR |= RCC_CR_PLLI2SON;					// enable the I2S_clk generator PLLI2S 
-		while ( (RCC->CR & RCC_CR_PLLI2SRDY)== 0 )
-			tbDelay_ms( 1 );
+		if ( (RCC->CR & RCC_CR_PLLI2SRDY)== 0 )		// make sure the RCC->PLLI2S is running & ready
+			__breakpoint( 0 );
 		
 		// RM0402  STM32F412xx Reference Manual
 		//  I2SCLK from PLLI2S = 48MHz
@@ -284,7 +282,7 @@ static void		 								I2S3_ClockEnable( bool enab ){ 								// enable/disable I
 static int32_t 								I2S_Configure( I2S_RESOURCES *i2s, uint32_t freq, bool monoMode, bool slaveMode, bool xmt ){ 		// set audio frequency
 #ifdef TBOOKREV2B
 		// RM0402  STM32F412xx Reference Manual
-		//  I2SCLK from PLLI2S = 96MHz by default
+		//  I2SCLK from PLLI2S = 48MHz by default
 		//  	fs = PLLI2S/ (256*( 2*I2SDIV + ODD )
 		//  
 		I2S3_ClockEnable( true );			// configure & start I2S3 to generate 12MHz on I2S3_MCK
@@ -441,31 +439,31 @@ dbgEvt( TB_saiInit, 0,0,0,0);
 	
 #ifdef TBOOKREV2B
 	// RM0402  STM32F412xx Reference Manual  6.3.23
-  //  I2SCLK comes from PLLI2S = 96MHz from HSI by default
+  //  I2SCLK comes from PLLI2S 
+	//  set to 48 MHz from HSE by setCpuClk()
+	/*
 	//  RCC_PLLI2SCFGR configuration register:
 	// 		PLLI2S_R  2..7  		( << 28)
 	// 		PLLI2S_Q  2..15 		( << 24)
 	// 		PLLI2_SRC 0..1   		0: same as PLL  1: CK_I2S_EXT	( << 22 )
 	// 		PLLI2S_N  2..432 		( << 6 )
 	// 		PLLI2S_M	2..63			( << 0 ) 
-	//  VCO_in = SRC / M 			// ( should be 2MHz as recommended by 26.3.23 )
-	//  VCO_clk = VCO_in * N 	
+	//  VCO_in = SRC / M 			// ( should be 2MHz as recommended by 6.3.23 )
+	//  VCO_clk = VCO_in * N 	// = 192MHz
 	//  USB/SDIO clk = VCO_clk / Q	
 	// 	I2S_clk = VCO_clk / R		
 	
   // I22_clk = (HSE * PLLI2S_N / PLLI2S_M) / PLLI2S_R 
-	int I2S_N = 0x60;
-	int I2S_M = 4;
-	int I2S_R = 4; // (was 2)	
-	int I2S_Q = 4;
+	int I2S_M = 4; 		// 8HHz external HSE => 2MHz VCOin
+	int I2S_N = 96;		// => VCOclk = 192MHz
+	int I2S_R = 4; 		// => I2S3 = 48MHz	
+	int I2S_Q = 4;		// => USB/SDIO = 48MHz
 	// configure to: 48MHz as expected by I2S3_ClockEnable() = (8000000 * 96 / 4)/ 4 = 48000000 
 	int cfg = 0;																		// SRC=0 == input from same as PLL (HSE 8MHz crystal clock)
-	cfg |= (I2S_R << RCC_PLLI2SCFGR_PLLI2SR_Pos);		// R == 4
-	cfg |= (I2S_Q << RCC_PLLI2SCFGR_PLLI2SQ_Pos);		// Q == 4  // set to default for USB
-	cfg |= (I2S_N << RCC_PLLI2SCFGR_PLLI2SN_Pos);		// N == 96
-	cfg |= (I2S_M << RCC_PLLI2SCFGR_PLLI2SM_Pos);		// M == 16
-	// PLLI2SCFGR: _RRR QQQQ _S__ ____ _NNN NNNN NNMM MMMM
-	// 0x24001804  0100 1000 0000 0000 0001 1000 0000 0100 R=4 Q=4 S=0 N=0x60 M=4
+	cfg |= (I2S_R << RCC_PLLI2SCFGR_PLLI2SR_Pos);		
+	cfg |= (I2S_Q << RCC_PLLI2SCFGR_PLLI2SQ_Pos);		
+	cfg |= (I2S_N << RCC_PLLI2SCFGR_PLLI2SN_Pos);		
+	cfg |= (I2S_M << RCC_PLLI2SCFGR_PLLI2SM_Pos);		
 	RCC->PLLI2SCFGR = cfg;
 
   // set APB1 peripherals to use PLLI2S_clock -- i.e. I2S3 == SPI3 
@@ -473,6 +471,8 @@ dbgEvt( TB_saiInit, 0,0,0,0);
 
 	RCC->CR |= RCC_CR_PLLI2SON;					// enable the I2S_clk generator PLLI2S 
 	//	I2S_clk = 192000000 / I2S_R;		// PLLI2S configuration -- default: 96MHz 
+	*/
+	
 	
 	RCC->APB1RSTR |= 	RCC_APB1RSTR_SPI2RST;		// reset spi2 
 	RCC->APB1RSTR &= ~RCC_APB1RSTR_SPI2RST;	// un-reset spi2
@@ -519,8 +519,9 @@ static int32_t 								I2S_Uninitialize( I2S_RESOURCES *i2s ) {																	
   // Unconfigure MCK Pin 
 */
 
-	RCC->CR &= ~RCC_CR_PLLI2SON;			// disable the I2S_clk generator PLLI2S 
+/*	RCC->CR &= ~RCC_CR_PLLI2SON;			// disable the I2S_clk generator PLLI2S 
 	RCC->PLLI2SCFGR = 0x24003010;			// reset to default
+*/
 	
 	gUnconfig( gI2S2_CK );  	// Unconfigure SCK Pin 
 	gUnconfig( gI2S2_WS );  	// Unconfigure WS Pin 

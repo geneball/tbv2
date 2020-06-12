@@ -58,7 +58,10 @@ extern void				gConfigADC( GPIO_ID led );											// configure GPIO as ANALOG 
 extern void				gConfigIn( GPIO_ID key, bool pulldown );				// configure GPIO as low speed input, either pulldown or pullup (pwr fail, battery indicators)
 extern void				gConfigKey( GPIO_ID key );											// configure GPIO as low speed pulldown input ( keys )
 extern void 			RebootToDFU( void );														// reboot into SystemMemory -- Device Firmware Update bootloader
-
+extern uint32_t 	AHB_clock;																			// freq in MHz of AHB == CPU == HCLK
+extern uint32_t 	APB2_clock;																			// freq in MHz of APB2 (fast) peripheral bus
+extern uint32_t 	APB1_clock;																			// freq in MHz of APB1 (slow) peripheral bus
+extern void 			setCpuClock( int mHz, int apbshift2, int apbshift1 );													// config & enable PLL & PLLI2S, bus dividers, flash latency & switch HCLK to PLL at 'mHz' MHz 
 extern void 			LED_Init( GPIO_ID led );												// ledManager-- for debugging
 extern bool 			ledMgrActive;
 

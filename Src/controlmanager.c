@@ -86,6 +86,7 @@ static void 	playSubjAudio( char *arg ){				// play current Subject: arg must be
 	char path[MAX_PATH];
 	char *nm = NULL;
 	MsgStats *stats = NULL;
+	resetAudio();
 	if ( strcasecmp( arg, "nm" )==0 ){
 		nm = tbS->audioName;
 		logEvtNSNS( "PlayNm", "Subj", tbS->name, "nm", nm ); 
@@ -102,11 +103,13 @@ static void 	playSubjAudio( char *arg ){				// play current Subject: arg must be
 }
 static void 	playSysAudio( char *arg ){				// play system file 'arg'
 	char path[MAX_PATH];
+	resetAudio();
 	buildPath( path, TB_Config.systemAudio, arg, ".wav" ); //".ogg" );
 	playAudio( path, NULL );
 	logEvtNS( "PlaySys", "file", arg );
 }
 static void		startRecAudio( char *arg ){
+	resetAudio();
 	tbSubject * tbS = TBookSubj[ TBook.iSubj ];
 	char path[MAX_PATH];
 	buildPath( path, TB_Config.systemAudio, arg, ".wav" ); //".ogg" );
@@ -575,7 +578,7 @@ static void 	controlTest(  ){					// CSM test procedure
 				
 				case starCircle:
 					saveWriteMsg( "Clean power down" );
-					ledFg("O_9O_9O_9O_9O_9 G_9G_9G_9G_9G_9 R_3R_3R_3R_3R_3R_3");
+					ledFg("R_3R_3R_9R_3R_9R_3"); //  R R R   R R  R
 					tbDelay_ms( 15000 );
 					powerDownTBook();
 				  break;
@@ -586,7 +589,9 @@ static void 	controlTest(  ){					// CSM test procedure
 					break;
 					
 				case starMinus: 
+					ledFg( "R8_5!");
 					measureSystick();
+					ledFg( "_" );
 					ak_SetVolume(99);		//Debug test +db volume settings
 					//executeCSM();
 					break;

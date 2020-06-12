@@ -241,7 +241,7 @@ void 						Codec_WrReg( uint8_t Reg, uint8_t Value){										// write codec reg
 	if ( waitCnt > MaxBusyWaitCnt ) MaxBusyWaitCnt = waitCnt;
 	cntErr( I2C_Xmt, ARM_I2C_EVENT_TRANSFER_DONE, I2C_Event, 0, 7 );  // err if any other bits set
 	
-	//  dbgLog( "W%x:%02x ", Reg, Value );
+	dbgLog( "W%x:%02x ", Reg, Value );
 	#ifdef VERIFY_WRITTENDATA
 		/* Verify that the data has been correctly written */  
 		int chkVal = Codec_RdReg( Reg );
@@ -285,46 +285,60 @@ void						ak_RecordEnable( bool enable ){
 		// from AK4637 datasheet:
 		//ENABLE
 		// done by ak_SetMasterFreq()			//   1)  Clock set up & sampling frequency  FS3_0
-		akR.R.SigSel1.MGAIN2_0 = 0x6;			//   2)  setup mic Amp & Power  0x02: 
+		akR.R.SigSel1.MGAIN3 = 0;					//   2)  setup mic Amp & Power  0x02: 
+		akR.R.SigSel1.MGAIN2_0 = 0x2; 		//DEBUG 6;	//   2)  setup mic Amp & Power  0x02: 
+		akR.R.SigSel1.PMMP = 1;						//   2)  MicAmp power
+		akUpd();
 		akR.R.SigSel2.MDIF = 1;						//   3)  input signal -- Differential from Electret mic	
+		akR.R.SigSel2.MICL = 1;						//   3)  mic power	
+		akUpd();
 																			//   4)  FRN, FRATT, ADRST1_0  0x09: TimSel
-		akR.R.TimSel.FRN = 0;								//   4)  TimSel.FRN
-		akR.R.TimSel.RFATT = 0;							//   4)  TimSel.RFATT
-		akR.R.TimSel.ADRST1_0 = 0x0;				//   4)  TimSel.ADRST1_0
+		akR.R.TimSel.FRN = 0;							//   4)  TimSel.FRN
+		akR.R.TimSel.RFATT = 0;						//   4)  TimSel.RFATT
+		akR.R.TimSel.ADRST1_0 = 0x0;			//   4)  TimSel.ADRST1_0
+		akUpd();
 																			//   5)  ALC mode   0x0A, 0x0B: AlcTimSel, AlcMdCtr1
-		akR.R.AlcTimSel.RFST1_0 = 0x0;			//   5)  AlcTimSel.RFST1_0
-		akR.R.AlcTimSel.WTM1_0 = 0x0;				//   5)  AlcTimSel.ADRST1_0
-		akR.R.AlcTimSel.EQFC1_0 = 0x2;			//   5)  AlcTimSel.EQFC1_0
-		akR.R.AlcTimSel.IVTM = 1;						//   5)  AlcTimSel.IVTM
-		akR.R.AlcMdCtr1.LMTH1_0 = 0x0;			//   5)  AlcMdCtr1.LMTH1_0
-		akR.R.AlcMdCtr1.RGAIN2_0 = 0x0;			//   5)  AlcMdCtr1.RGAIN2_0					
-		akR.R.AlcMdCtr1.LMTH2 = 0;					//   5)  AlcMdCtr1.LMTH2	
-		akR.R.AlcMdCtr1.ALCEQN = 0;					//   5)  AlcMdCtr1.ALCEQN	
-		akR.R.AlcMdCtr1.ALC = 1;						//   5)  AlcMdCtr1.ALC
+		akR.R.AlcTimSel.RFST1_0 = 0x3;		//   5)  AlcTimSel.RFST1_0
+		akR.R.AlcTimSel.WTM1_0 = 0x01;		//   5)  AlcTimSel.ADRST1_0
+		akR.R.AlcTimSel.EQFC1_0 = 0x0;		//   5)  AlcTimSel.EQFC1_0
+		akR.R.AlcTimSel.IVTM = 1;					//   5)  AlcTimSel.IVTM
+		akR.R.AlcMdCtr1.LMTH1_0 = 0x0;		//   5)  AlcMdCtr1.LMTH1_0
+		akR.R.AlcMdCtr1.RGAIN2_0 = 0x0;		//   5)  AlcMdCtr1.RGAIN2_0					
+		akR.R.AlcMdCtr1.LMTH1_0 = 0x2;		//   5)  AlcMdCtr1.LMTH1_0	
+		akR.R.AlcMdCtr1.LMTH2 = 0;				//   5)  AlcMdCtr1.LMTH2	
+		akR.R.AlcMdCtr1.ALCEQN = 0;				//   5)  AlcMdCtr1.ALCEQN	
+		akR.R.AlcMdCtr1.ALC = 1;					//   5)  AlcMdCtr1.ALC
+		akUpd();
 		akR.R.AlcMdCtr2.REF7_0 = 0xE1;		//   6)  REF value  0x0C: AlcMdCtr2
+		akUpd();
 		akR.R.InVolCtr.IVOL7_0 = 0xE1;		//   7)  IVOL value  0x0D: InVolCtr
+		akUpd();
 																			//   8)  ProgFilter on/off  0x016,17,21: DigFilSel1, DigFilSel2, DigFilSel3
-		akR.R.DigFilSel1.HPFAD = 1;					//   8) DigFilSel1.HPFAD
-		akR.R.DigFilSel1.HPFC1_0 = 0x0;			//   8) DigFilSel1.HPFC1_0
-		akR.R.DigFilSel2.HPF = 0;						//   8) DigFilSel2.HPF
-		akR.R.DigFilSel2.LPF = 0;						//   8) DigFilSel2.LPF
-		akR.R.DigFilSel3.EQ5_1 = 0x0;				//   8) DigFilSel3.EQ5_1
+		akR.R.DigFilSel1.HPFAD = 1;				//   8) DigFilSel1.HPFAD
+		akR.R.DigFilSel1.HPFC1_0 = 0x0;		//   8) DigFilSel1.HPFC1_0
+		akR.R.DigFilSel2.HPF = 0;					//   8) DigFilSel2.HPF
+		akR.R.DigFilSel2.LPF = 0;					//   8) DigFilSel2.LPF
+		akR.R.DigFilSel3.EQ5_1 = 0x0;			//   8) DigFilSel3.EQ5_1
+		akUpd();
 																			//   9)  ProgFilter path  0x18: DigFilMd
-		akR.R.DigFilMd.PFDAC1_0 = 0x0;			//   9)  DigFilMd.PFDAC1_0
-		akR.R.DigFilMd.PFVOL1_0 = 0x0;			//   9)  DigFilMd.PFVOL1_0
+		akR.R.DigFilMd.PFDAC1_0 = 0x0;		//   9)  DigFilMd.PFDAC1_0
+		akR.R.DigFilMd.PFVOL1_0 = 0x0;		//   9)  DigFilMd.PFVOL1_0
+		akR.R.DigFilMd.PFSDO = 1;					//   9)  DigFilMd.PFSDO
+		akR.R.DigFilMd.ADCPF = 1;					//   9)  DigFilMd.ADCPF
+		akUpd();
 																			//	10)	 CoefFilter:  0x19..20, 0x22..3F: HpfC0..3, LpfC0..3 E1C0..5 E2C0..5 E3C0..5 E4C0..5 E5C0..5
-		akR.R.HpfC0.F1A7_0 	= 0xB0;					//	10)	 Hpf.F1A13_0 low
-		akR.R.HpfC1.F1A13_8 = 0x1F;					//	10)	 Hpf.F1A13_0 high
-		akR.R.HpfC2.F1B7_0 	= 0x9F;					//	10)	 Hpf.F1B13_0 low
-		akR.R.HpfC3.F1B13_8 = 0x02;					//	10)	 Hpf.F1B13_0 high
-		akR.R.LpfC0.F2A7_0 	= 0x0;					//	10)	 Lpf.F2A13_0 low
-		akR.R.LpfC1.F2A13_8 = 0x0;					//	10)	 Lpf.F2A13_0 high
-		akR.R.LpfC2.F2B7_0 	= 0x0;					//	10)	 Lpf.F2B13_0 low
-		akR.R.LpfC3.F2B13_8 = 0x0;					//	10)	 Lpf.F2B13_0 high
+		akR.R.HpfC0.F1A7_0 	= 0xB0;				//	10)	 Hpf.F1A13_0 low
+		akR.R.HpfC1.F1A13_8 = 0x1F;				//	10)	 Hpf.F1A13_0 high
+		akR.R.HpfC2.F1B7_0 	= 0x9F;				//	10)	 Hpf.F1B13_0 low
+		akR.R.HpfC3.F1B13_8 = 0x02;				//	10)	 Hpf.F1B13_0 high
+		akR.R.LpfC0.F2A7_0 	= 0x0;				//	10)	 Lpf.F2A13_0 low
+		akR.R.LpfC1.F2A13_8 = 0x0;				//	10)	 Lpf.F2A13_0 high
+		akR.R.LpfC2.F2B7_0 	= 0x0;				//	10)	 Lpf.F2B13_0 low
+		akR.R.LpfC3.F2B13_8 = 0x0;				//	10)	 Lpf.F2B13_0 high
+		akUpd();
 																			//  11)  power up MicAmp, ADC, ProgFilter: 
-		akR.R.SigSel1.PMMP = 1;							//  11)  MicAmp 
-		akR.R.PwrMgmt1.PMADC = 1;						//  11)  ADC
-		akR.R.PwrMgmt1.PMPFIL = 1;					//  11)  ProgFilter 
+		akR.R.PwrMgmt1.PMADC = 1;					//  11)  ADC
+		akR.R.PwrMgmt1.PMPFIL = 1;				//  11)  ProgFilter 
 		akUpd();
 	} else {
 		//DISABLE	

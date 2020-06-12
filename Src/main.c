@@ -20,8 +20,14 @@ int  										main( void ){
 	 | SCB_SHCSR_MEMFAULTENA_Msk; // enable Usage-/Bus-/MPU Fault
 	SCB->CCR |= SCB_CCR_DIV_0_TRP_Msk;					// set trap on div by 0
 //	SCB->CCR |= SCB_CCR_UNALIGN_TRP_Msk;				// set trap on unaligned access -- CAN'T because RTX TRAPS
-
 //	int c = divTst( 10, 0 );	// TEST fault handler
+	
+	volatile int CpuMhz = 24, apbsh2 = 0, apbsh1 = 1;
+	const int MHZ=1000000;
+	setCpuClock( CpuMhz, apbsh2, apbsh1 );						// generate HCLK (CPU_clock) from PLL based on 8MHz HSE  & PLLI2S_Q at 48MHz
+  SystemCoreClockUpdate();			// derives clock speed from configured register values-- cross-check calculated value
+	if ( SystemCoreClock != CpuMhz * MHZ )
+		__breakpoint(0);
 
 	GPIO_DefineSignals( gpioSignals );   // create GPIO_Def_t entries { id, port, pin, intq, signm, pressed } for each GPIO signal in use
 	// main.h defines gpioSignals[] for this platform configuration,  e.g.  { gRED, "PF8" } for STM3210E eval board RED LED
