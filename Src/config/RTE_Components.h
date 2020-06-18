@@ -28,6 +28,7 @@
           #define RTE_Compiler_IO_File_FS         /* Compiler I/O: File (File System) */
 /*  Keil.ARM Compiler::Compiler:I/O:STDOUT:User:1.2.0 */
 #define RTE_Compiler_IO_STDOUT          /* Compiler I/O: STDOUT */
+//          #define RTE_Compiler_IO_STDOUT_ITM      /* Compiler I/O: STDOUT ITM */
           #define RTE_Compiler_IO_STDOUT_User     /* Compiler I/O: STDOUT User */
 /*  Keil.MDK-Plus::File System:CORE:LFN Debug:6.13.0 */
 #define RTE_FileSystem_Core             /* File System Core */

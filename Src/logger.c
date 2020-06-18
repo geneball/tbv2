@@ -8,8 +8,6 @@ static FILE *		logF = NULL;			// file ptr for open log file
 static int			totLogCh = 0;
 static char			statFileNm[60];		// local storage for computing .stat filepaths
 
-void						setupRTC( fsTime time );	// from PowerManager
-
 const osMutexAttr_t 	logMutex = { "logF_lock", osMutexRecursive, NULL, 0 };
 osMutexId_t						logLock;
 
@@ -182,7 +180,7 @@ void						logPowerUp( bool reboot ){											// re-init logger after reboot, U
 	
 	logEvtNI( "BOOT", "cnt", bootcnt );
 	dbgEvt( TB_bootCnt, bootcnt, 0,0,0);
-	logEvtNINI( "NorLog", "Idx", NLg.currLogIdx, "Sz", NLg.Nxt-NLg.logBase );
+	logEvtNININI( "NorLog", "Idx", NLg.currLogIdx, "Sz", NLg.Nxt-NLg.logBase, "FreeK", (NLg.MAX_ADDR-NLg.Nxt)/1000 );
 	
 	fsFileInfo fAttr;
 	fAttr.fileID = 0;

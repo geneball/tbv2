@@ -432,15 +432,9 @@ void 										dbgEvtD( int id, const void *d, int len ){ EventRecordData( id, d
 void 										dbgEvtS( int id, const char *d ){ EventRecordData( id, d, strlen(d) ); }
 const int xMAX = dbgChs; 				// typedef in tbook.h
 const int yMAX = dbgLns;
+#define PRINTF_DBG_SCR
+#if defined( PRINTF_DBG_SCR )
 static int  cX = 0, cY = 0;
-void 										initPrintf( const char *hdr ){
-	for (int i=0; i<dbgLns; i++)
-		Dbg.Scr[i][0] = 0;
-	cX = 0; 
-	cY = 0;
-	InitLCD( hdr );					// eval_LCD if STM3210E
-	printf( "%s\n", hdr );
-}
 void 										stdout_putchar( char ch ){
 	if ( ch=='\n' || cX >= xMAX ){ // end of line
 		LCDwriteln( &Dbg.Scr[cY][0] );
@@ -453,6 +447,19 @@ void 										stdout_putchar( char ch ){
 	Dbg.Scr[cY][cX++] = ch;
 	Dbg.Scr[cY][cX] = 0;
 }	
+#endif
+
+void 										initPrintf( const char *hdr ){
+#if defined( PRINTF_DBG_SCR )
+	for (int i=0; i<dbgLns; i++)
+		Dbg.Scr[i][0] = 0;
+	cX = 0; 
+	cY = 0;
+	InitLCD( hdr );					// eval_LCD if STM3210E
+	printf( "%s\n", hdr );
+#endif
+}
+
 //
 //  system clock configuration *********************************************
 uint32_t AHB_clock;

@@ -216,7 +216,6 @@ void								ledBg( const char *def ){						// install 'def' as background patter
 		osEventFlagsSet( osFlag_LedThr, LED_EVT );		// wakeup ledThread
 	}
 }
-
 void 								initLedManager(){				// initialize & spawn LED thread
 	handlePowerEvent( POWER_UP );
 //	registerPowerEventHandler( handlePowerEvent );

@@ -25,7 +25,7 @@ typedef enum { 	// Action -- TBook actions
 				playSys, 	playSubj,	pausePlay,	resumePlay,		stopPlay,	volAdj,		spdAdj,		posAdj,
 				startRec,	pauseRec,	resumeRec,	finishRec,		writeMsg,
 				goPrevSt,	saveSt,		goSavedSt,
-				subjAdj, 	msgAdj,		setTimer,	showCharge,
+				subjAdj, 	msgAdj,		setTimer,		showCharge,
 				startUSB,	endUSB,		powerDown,	sysBoot
 }	Action;
 

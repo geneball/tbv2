@@ -51,10 +51,10 @@ struct {			// CSM state variables
 extern void			 							printHdr( int x, int y, const char *s );
 extern void										clearHdr( void );
 void 										showCSM(){
-	clearHdr();
+//	clearHdr();
 	
-	if (TBook.lastEventName != NULL) printHdr( 2, 1, TBook.lastEventName );
-	printHdr( 2, 16, TBook.currStateName );
+//	if (TBook.lastEventName != NULL) printHdr( 2, 1, TBook.lastEventName );
+//	printHdr( 2, 16, TBook.currStateName );
 }
 
 
@@ -147,9 +147,10 @@ static int		stIdx( int iSt ){
 		tbErr("invalid iSt");
 	return iSt;
 }
+static void 	controlTest( void );  //DEBUG
 static void 	doAction( Action act, char *arg, int iarg ){	// execute one csmAction
 	dbgEvt( TB_csmDoAct, act, arg[0],arg[1],iarg );
-	logEvtNSNS( "Action", "nm", actionNm(act), "arg", arg );
+	logEvtNSNS( "Action", "nm", actionNm(act), "arg", arg ); //DEBUG
 	if (isMassStorageEnabled()){		// if USB MassStorage running: ignore actions referencing files
 		switch ( act ){
 			case playSys:			
@@ -210,7 +211,10 @@ static void 	doAction( Action act, char *arg, int iarg ){	// execute one csmActi
 			adjPlayPosition( iarg );
 			break;
 		case startUSB:
-			USBmode( true );
+			if ( !haveUSBpower() )
+				ledFg( "_3R3_3R3_3R3_5" ); // no USB cable!
+			else
+				USBmode( true );
 			break;
 		case endUSB:
 			USBmode( false );
@@ -236,10 +240,13 @@ static void 	doAction( Action act, char *arg, int iarg ){	// execute one csmActi
 			osTimerStart( timers[2], iarg );
 			break;
 		case showCharge:
-			ledFg( "G3_G3_G3_R3_R3_" );	
+			showBattCharge();
 			break;
 		case powerDown:		
 			powerDownTBook();
+			break;
+	  case sysBoot:
+			controlTest();
 			break;
 		default:				break; 
 	}
@@ -249,7 +256,7 @@ static void 	doAction( Action act, char *arg, int iarg ){	// execute one csmActi
 static void		changeCSMstate( short nSt, short lastEvtTyp ){
 	dbgEvt( TB_csmChSt, nSt, 0,0,0 );
 	if (nSt==TBook.iCurrSt)
-		logEvtNSNS( "No-op_evt", "state",TBook.cSt->nm, "evt", eventNm( (Event)lastEvtTyp) );
+		logEvtNSNS( "No-op_evt", "state",TBook.cSt->nm, "evt", eventNm( (Event)lastEvtTyp) ); //DEBUG
 	while ( nSt != TBook.iCurrSt ){
 		TBook.iPrevSt = stIdx( TBook.iCurrSt );
 		TBook.iCurrSt = stIdx( nSt );
@@ -336,139 +343,6 @@ static void 	executeCSM( void ){						// execute TBook control state machine
 		changeCSMstate( nSt, lastEvtTyp );	// only changes if different
 	}
 }
-static void 	runCSM(  ){								// CSM thread -- called by tbook after everything is initialized
-	initTknTable();
-	readControlDef( );
-	readContent( );
-	executeCSM();
-}
-/* debug power signals
-const int numPwrSig = 7;
-GPIO_ID pwrID[] = { gADC_ENABLE, gSC_ENABLE, g3V3_SW_EN, gEN_5V, gEN1V8, gBOOT1_PDN, gPA_EN };
-								//				PA2		PD1		PD6			PD4		PD5		PB2			PD3
-const char * pwrNm[] = { "ADC", "SC", "3V3", "5V", "1V8", "PDN", "PA" };
-char pwrVal[] = { '-', '-', '-', '-', '-', '-', '-', 0 };	// => '+' if signal is active
-void chkPwrState(){
-	for ( int i=0; i<numPwrSig; i++ ){
-		bool active = gOutVal( pwrID[ i ] );
-		//dbgLog( " %s:%d \n", gpio_def[ pwrID[i] ].signal, active );
-		pwrVal[i] = (active? '+' : '-' );
-	}
-}
-void showSig( char * enm, int idx ){	// 	8/4/2/1 bits 		R/g															2,2,2,2_2  	3,3,3,3_8
-	chkPwrState();
-	char *pin = gpio_def[ pwrID[idx] ].signal;
-	pwrVal[idx] = (pwrVal[idx]=='-'? '_' : '*' );
-	dbgLog( "%s: %s %s %s\n", enm, pwrNm[idx], pin, pwrVal );  // e.g. "05T: P1 SC PD1=+ -+++----"
-	const char * codeFmt = "%c4_2%c4_2%c4_2%c4_5%c5_5";   // 8_4_2_1_VV__ == bits either r or g
-	char fg[30];
-	sprintf(fg, codeFmt, (idx&8)?'r':'g', (idx&4)?'r':'g', (idx&2)?'r':'g', (idx&1)?'r':'g', pwrVal[idx]=='+'? 'R':'G' );
-	ledFg( fg );
-}
-void dbgTgl( char * enm,  int i ){
-	chkPwrState();
-	char v = pwrVal[i];
-	v = ( v=='-'? '+' : '-' );
-	pwrVal[i] = v;
-	GPIO_ID id = pwrID[i];
-	gSet( id, v=='+'? 1 : 0 );
-	showSig( enm, i );
-}
-void dbgLED( char * enm, int i ){		// 0: flash/pulse, 1: nxt colors, 2: nxt speed
-	if ( i==0 ) cFlash = !cFlash;
-	if ( i==1 ) cClr = cClr==mxClr? 0 : cClr+1; 
-	if ( i==2 ) cSpd = cSpd==mxSpd? 0 : cSpd+1;
-
-	dbgLog( "%s: %s%s@%d \n", enm, cFlash? "F_":"P:", clrs[cClr], cSpd  );
-	ledSig( cFlash, cClr, cSpd );
-}
-		
-char * eNm[] = {	
-	"00N","01H", "02C", "03+", "04-", "05T", "06L", "07R", "08P", "09S", "10t",
-				"11_H","12_C","13_+","14_-","15_T","16_L","17_R","18_P","19_S","20_t",
-				"21*H","22*C","23*+","24*-","25*T","26*L","27*R","28*P","29*S","30*t",
-				"31aD","32sI","33LI","34lB","35Bc","36BC","37FU","38Tm","39ak","40ud" 
-};
-
-static void 	debugTest(  ){						// hardware test without FS
-	TB_Event *evt;
-	osStatus_t status;
-	
-	dbgLog( "TB_Dbg:  \n" );
-	while (true) {
-	  status = osMessageQueueGet( osMsg_TBEvents, &evt, NULL, osWaitForever );  // wait for next TB_Event
-		if (status != osOK) 
-			tbErr(" EvtQGet error");
-		
-		FILE * f = NULL;
-		char str[30] = {0};
-		int stat, stat1, stat2;
-		char * enm = eNm[ evt->typ ];
-		//  Plus		LED			Home
-		// Minus		Tree		 Circle
-		//   LHand	Pot	 RHand
-		// Star    Table
-		switch (evt->typ){
-				case Home:  		dbgLog( "%s: finit() *H='M0:' _H='F0' \n", enm );	break;
-				case Home__: 		dbgLog( "%s: finit('F0:') = %d \n", enm, finit("F0:") ); break;
-				case starHome: 	dbgLog( "%s: finit('M0:') = %d \n", enm, finit("M0:") ); break;
-
-				case Plus:  		dbgLog( "%s:  *+: WFI() \n", enm );	break;
-			//	case Plus__: 		dbgLog( "%s:  \n", enm );  break;
-				case starPlus: 	dbgLog( "%s: WFI() \n", enm ); enableSleep(); break;
-				
-				case Minus:			showSig( enm, 0 ); 	break;
-				case Minus__:		dbgLED(  enm, 0 ); 	break;
-				case starMinus:	dbgTgl(  enm, 0 ); 	break;
-			
-				case Tree:			showSig( enm, 1 ); 	break;
-				case Tree__:		dbgLED(  enm, 1 ); 	break;
-				case starTree:	dbgTgl(  enm, 1 ); 	break;
-
-				case Circle:		showSig( enm, 2 ); 	break;
-				case Circle__:	dbgLED(  enm, 2 ); 	break;
-				case starCircle: dbgTgl( enm, 2 ); 	break;
-
-				case Lhand:			showSig( enm, 3 ); 	break;
-				case Lhand__:		
-					stat = finit( "F0:" );
-				  stat1 = fmount( "F0:" );
-					f = fopen( "F0:test.txt", "a" ); 
-					fprintf( f, "test\n" );
-					stat2 = fclose( f );
-					dbgLog( "%s: Wr %d %d %d %d \n", enm, stat, stat1, f==NULL?1:0, stat2 );
-					break;
-				case starLhand:	dbgTgl(  enm, 3 ); 	break;
-
-				case Pot:				showSig( enm, 4 ); 	break;
-				case Pot__:			dbgLog( "%s: welcome \n", enm ); playSysAudio( "welcome" );	break;
-				case starPot:		dbgTgl(  enm, 4 ); 	break;
-
-				case Rhand:			showSig( enm, 5 ); 	break;
-				case Rhand__:		
-					f = fopen( "F0:test.txt", "r" ); 
-					stat = fscanf( f, "%s", str );
-					stat2 = fclose( f );
-					dbgLog( "%s: Rd %s %d %d %s \n", enm, f==NULL?"null":"ok", stat, stat2, str );
-					break;
-				case starRhand:	dbgTgl(  enm, 5 ); 	break;
-				
-				case Table:			showSig( enm, 6 ); 	break;
-			//	case Table__:		dbgLED(  enm, 6 ); 	break;
-				case starTable:	dbgTgl(  enm, 6 ); 	break;
-
-			//	case Star:			dbgLED( enm, 7 );	break;
-			//	case Star__:		dbgLED( enm, 8 );	break;
-			
-				
-				case FirmwareUpdate:	dbgLog( "*%s:  DFU \n", enm );			break;
-				default:							dbgLog( "%s: ?? \n", enm );	  break;
-			}
-		osMemoryPoolFree( TBEvent_pool, evt );
-	}
-}
-*/
-
 static void 	eventTest(  ){					// report Events until DFU (pot table)
 	TB_Event *evt;
 	osStatus_t status;
@@ -482,6 +356,7 @@ static void 	eventTest(  ){					// report Events until DFU (pot table)
 	  TBook.lastEventName = eventNm( evt->typ );
 		dbgLog( " %s \n", eventNm( evt->typ ));
 		dbgEvt( TB_csmEvt, evt->typ, tbTimeStamp(), 0, 0);
+		logEvtNS( "evtTest", "nm",eventNm( evt->typ) );
 
 		if ( evt->typ == Tree ) 
 			osTimerStart( timers[0], TB_Config.shortIdleMS );
@@ -502,7 +377,6 @@ static void 	controlTest(  ){					// CSM test procedure
 	TBook.cSt = TBookCSM[ TBook.iCurrSt ];
 	TBook.currStateName = TBook.cSt->nm;	//DEBUG -- update currSt string
   bool playforever = false;
-	
 	
 	dbgLog( "CTest: \n" );
 	while (true) {
@@ -589,11 +463,12 @@ static void 	controlTest(  ){					// CSM test procedure
 					break;
 					
 				case starMinus: 
-					ledFg( "R8_5!");
-					measureSystick();
+					//ledFg( "R8_5!");
+					//measureSystick();
+					ledBg( "_" );
 					ledFg( "_" );
-					ak_SetVolume(99);		//Debug test +db volume settings
-					//executeCSM();
+					//ak_SetVolume(99);		//Debug test +db volume settings
+					executeCSM();
 					break;
 				
 				case starPlus:			
@@ -614,48 +489,6 @@ static void 	controlTest(  ){					// CSM test procedure
 	}
 }
 
-/* Debug LED patterns
-const int  mxClr = 8, mxSpd = 4;
-const char* clrs[ mxClr+1 ] = { "Rr","Gg","Oo", "Rg", "Gr", "RGR", "RGO", "GRG", "GRO" };
-
-void ledSig( bool flash, int iClrs, int iSpd ){  // flash/pulse,  clrs 0..8, spd 0..4
-	// 																	5Hz	    3Hz	   2Hz			1Hz					.5Hz
-	//								period in .1sec:	 2				3			5		 		10					20	
-	// 1 clr pulse dim/bright  	R/G/O		1,1			2,1		 3,2	 		5,5	 				10,10
-	// 1 clr flash color/off    R/G/O  	1,1			2_1		 3_2	 		3_7	  			5_15
-	// 2 clr pulse							RG/GR  	1,1		  2,1		 3,2	 		5,5	 				0,10	
-	// 2 clr flash		 					RG/GR   				1,1_1	 2,2_1 		3,3_4 			5,5,10
-	// 3 clr pulse							RGO/GRO 				1,1,1	 1,2,2 		3,3,4 			7,7,8 
-	// 3 clr flash							rGr/GrG/rgO 					 1,1,1_2	2,2,2_4			4,4,4_8
-	const char* clrs[ mxClr+1 ] = { "Rr","Gg","Oo", "Rg", "Gr", "RGR", "RGO", "GRG", "GRO" };
-	
-	//  speed/period:				 sHalf=20				sOne=10					sTwo=5					sThree=3			sFive=2
-	const char* f1Fmt[] = { "%c5_15!", 			"%c3_7!", 			"%c3_2!", 			"%c2_1!", 		"%c1_1!" };
-	const char* p2Fmt[] = { "%c10%c10!", 		"%c5%c5!", 			"%c3%c2!", 			"%c2%c1!", 		"%c1%c1!" };
-	const char* f2Fmt[] = { "%c5%c5_10!", 	"%c3%c3_4!", 		"%c1%c2_2!", 		"%c1%c1_1!", 	"" };
-	const char* p3Fmt[] = { "%c7%c7%c8!", 	"%c3%c3%c4!", 	"%c1%c2%c2!", 	"%c1%c1%c1!", "" };
-	const char* f3Fmt[] = { "%c4%c4%c4_8!", "%c2%c2%c2_4!", "%c1%c1%c1_2!", NULL, 				NULL };
-
-	iClrs =  iClrs < 0? 0 : (iClrs > mxClr? mxClr : iClrs);
-	const char* clr = clrs[ iClrs ];
-
-	char fg[20];
-  fg[0] = 0;
-	iSpd = iSpd < 0? 0 : (iSpd > mxSpd? mxSpd : iSpd);
-	switch ( strlen( clr ) ){
-		default:
-		case 0: break;
-		case 1: sprintf( fg, f1Fmt[ iSpd ], clr[0] ); break;
-		case 2: sprintf( fg, flash? f2Fmt[ iSpd ] : p2Fmt[ iSpd ], clr[0], clr[1] ); break;
-		case 3: sprintf( fg, flash? f3Fmt[ iSpd ] : p3Fmt[ iSpd ], clr[0], clr[1], clr[2] ); break;
-	}
-	if ( strlen(fg) > 0 )
-		ledFg( fg );
-}
-
-static int cClr = 0, cSpd = 0;
-bool cFlash = false;
-*/
 
 void 					initControlManager( void ){				// initialize control manager 	
 	// init to odd values so changes are visible
@@ -694,7 +527,7 @@ void 					initControlManager( void ){				// initialize control manager
 				tbErr( "timer not alloc'd" );
 		}
 		controlTest();  //DEBUG
-		runCSM( );	
+		//executeCSM();	
 		
 	} else if ( FileSysOK ) {		// FS but no data, go into USB mode
 		logEvt( "NoFS USBmode" );

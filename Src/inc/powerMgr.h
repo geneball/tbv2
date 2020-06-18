@@ -14,6 +14,10 @@ extern void 	enableSleep( void );							// low power mode -- CPU stops till inte
 extern void		powerDownTBook( void );						// shut down TBook
 extern void		wakeup( void );
 extern void		setPowerCheckTimer( int timerMs );	// set delay in msec between power checks
+extern void		setupRTC( fsTime time );					// init RTC to time
+extern void		showBattCharge( void );						// generate ledFG to signal power state
+extern bool		haveUSBpower( void );							// true if USB plugged in (PwrGood_N = 0)
+
 
 #endif	/* POWER_MGR_H */
 

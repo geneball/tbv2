@@ -47,6 +47,7 @@ typedef struct {
 	uint32_t							LiThermMV;					// LiIon thermister 
 	
 	enum PwrStat					prvStat;						// previous saved by startPowerCheck()
+	bool									haveUSB; 						// USB pwrGood signal
 	bool									hadVBat;						// previous was > 2000: saved by startPowerCheck()
 	bool									hadLi;							// previous was > 2000: saved by startPowerCheck()
 	bool									hadPrimary;					// previous was > 2000: saved by startPowerCheck()
@@ -316,6 +317,7 @@ void											startPowerCheck( enum PwrStat pstat ){
 
 	pS.chkCnt++;
 	pS.Stat = pstat;
+	pS.haveUSB = (pstat & 1) == 0;
 }
 bool											powerChanged(){
 	bool changed = pS.chkCnt==1;
@@ -428,6 +430,64 @@ void 											checkPower( ){				// check and report power status
 		}
 	}
 }
+bool											haveUSBpower(){				// true if USB plugged in (PwrGood_N = 0)
+	if ( pS.chkCnt==0 )		checkPower();
+	return pS.haveUSB;
+}
+void 											showBattCharge(){			// generate ledFG to signal power state
+	char fg[20] = {0};
+	const char *fmt = "_5%c5_5%c5_5%c5_15";		// 3 .5sec flashes
+	char c1, c2, c3;
+	
+	if ( pS.chkCnt==0 )		checkPower();
+	
+  // if haveUSB power & not NOLITH:  report charging status
+	// R R R -- temp fault
+	// G O R -- low liIon pre-charging
+	// G O O -- charging & LiMV < 3300
+	// G O G -- charging & LiMV > 3300
+	// G G G -- charged
+  if ( pS.LiMV > 2000 ){
+		if ( pS.haveUSB ){ // report Li charge status
+			c1 = 'G';
+			c2 = 'O';
+			switch ( pS.Stat ){
+				case TEMPFAULT:		c1='R'; c2='R', c3='R'; break;	// R R R   - temp fault
+				case LOWBATT:			c3='R';	break;									// G O R -- low, pre-charge
+				case CHARGING:		
+					c3 = pS.LiMV < 3300? 'O' : 'G';									// G O O or G O G
+				  break;
+				case CHARGED:			c2='G'; c3='G';	break;  				// G G G  -- charged
+				
+				default: 			// incl NOLITH-- shouldn't get here
+					break;
+			}
+		} else
+		// if no USB, but LiMV > 2000 : report LiIon level
+		// O O R -- LiMV < 3000
+		// O O O -- LiMV < 3300
+		// O O G -- LiMV < 3600
+		// O G G -- LiMV > 3600
+		{	
+			c1 = 'O'; 
+			c2 = pS.LiMV < 3600? 'O' : 'G';
+			c3 = pS.LiMV < 3000? 'R' : pS.LiMV < 3300? 'O' : 'G';
+		}
+	} else 
+	// if no USB & no Lith:  report primary level
+	// R O R -- primary < 2.2V
+	// R O O -- primary < 2.4V
+	// R O G -- primary < 2.6V
+	// R G G -- primary > 2.6V
+	{
+		c1 = 'R'; 
+		c2 = pS.PrimaryMV < 2600? 'O' : 'G';
+		c3 = pS.PrimaryMV < 2200? 'R' : pS.PrimaryMV < 2400? 'O' : 'G';
+	}
+	sprintf( fg, fmt, c1,c2,c3 );
+	ledFg( fg );
+}
+
 /*   // *************  Handler for PowerFail interrupt
 void 											EXTI4_IRQHandler(void){  				// NOPWR ISR
   	if ( __HAL_GPIO_EXTI_GET_IT( NOPWR_pin ) != RESET ){
