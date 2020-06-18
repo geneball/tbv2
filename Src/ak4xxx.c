@@ -279,67 +279,83 @@ void 						ak_CheckRegs(){																							// Debug -- read main AK4343 re
 		ak_ReportErrors();
 	#endif
 }
+static int RecordTestCnt = 0;
 void						ak_RecordEnable( bool enable ){
 #if defined( AK4637 )
 	if ( enable ){
 		// from AK4637 datasheet:
 		//ENABLE
 		// done by ak_SetMasterFreq()			//   1)  Clock set up & sampling frequency  FS3_0
-		akR.R.SigSel1.MGAIN3 = 0;					//   2)  setup mic Amp & Power  0x02: 
-		akR.R.SigSel1.MGAIN2_0 = 0x2; 		//DEBUG 6;	//   2)  setup mic Amp & Power  0x02: 
+		//  05: 51, 06: 0E, 00: 40, 01:08 then 0C
+		akR.R.SigSel1.MGAIN3 = 0;					//   2)  setup mic gain  0x02: 
+		akR.R.SigSel1.MGAIN2_0 = 0x6;			//   2)  setup mic gain  0x02: 0x6 = +18db
+if (RecordTestCnt==0) akR.R.SigSel1.MGAIN2_0 = 0x4;
+if (RecordTestCnt==1) akR.R.SigSel1.MGAIN2_0 = 0x2;
+if (RecordTestCnt==2) akR.R.SigSel1.MGAIN2_0 = 0x0;
 		akR.R.SigSel1.PMMP = 1;						//   2)  MicAmp power
-		akUpd();
-		akR.R.SigSel2.MDIF = 1;						//   3)  input signal -- Differential from Electret mic	
-		akR.R.SigSel2.MICL = 1;						//   3)  mic power	
-		akUpd();
+		akUpd();  // 02:0E 
+		akR.R.SigSel2.MDIF = 1;						//   3)  input signal	 			Differential from Electret mic	
+if (RecordTestCnt==8) akR.R.SigSel2.MDIF = 0;
+		akR.R.SigSel2.MICL = 0;						//   3)  mic power					Mic power 2.4V 
+if (RecordTestCnt==3) akR.R.SigSel2.MICL = 1;
+		akUpd();  // 03: 01
 																			//   4)  FRN, FRATT, ADRST1_0  0x09: TimSel
-		akR.R.TimSel.FRN = 0;							//   4)  TimSel.FRN
-		akR.R.TimSel.RFATT = 0;						//   4)  TimSel.RFATT
-		akR.R.TimSel.ADRST1_0 = 0x0;			//   4)  TimSel.ADRST1_0
-		akUpd();
+		akR.R.TimSel.FRN = 0;							//   4)  TimSel.FRN   			FastRecovery = Enabled (def)
+		akR.R.TimSel.RFATT = 0;						//   4)  TimSel.RFATT  			FastRecovRefAtten = -.00106dB (def)
+		akR.R.TimSel.ADRST1_0 = 0x0;			//   4)  TimSel.ADRST1_0  	ADCInitCycle = 66.2ms @ 16kHz (def)
+if (RecordTestCnt==4) akR.R.TimSel.ADRST1_0 = 0x1;
+if (RecordTestCnt==5) akR.R.TimSel.ADRST1_0 = 0x2;
+if (RecordTestCnt==6) akR.R.TimSel.ADRST1_0 = 0x3;
+		akUpd();  // --
 																			//   5)  ALC mode   0x0A, 0x0B: AlcTimSel, AlcMdCtr1
-		akR.R.AlcTimSel.RFST1_0 = 0x3;		//   5)  AlcTimSel.RFST1_0
-		akR.R.AlcTimSel.WTM1_0 = 0x01;		//   5)  AlcTimSel.ADRST1_0
-		akR.R.AlcTimSel.EQFC1_0 = 0x0;		//   5)  AlcTimSel.EQFC1_0
-		akR.R.AlcTimSel.IVTM = 1;					//   5)  AlcTimSel.IVTM
-		akR.R.AlcMdCtr1.LMTH1_0 = 0x0;		//   5)  AlcMdCtr1.LMTH1_0
-		akR.R.AlcMdCtr1.RGAIN2_0 = 0x0;		//   5)  AlcMdCtr1.RGAIN2_0					
-		akR.R.AlcMdCtr1.LMTH1_0 = 0x2;		//   5)  AlcMdCtr1.LMTH1_0	
+		akR.R.AlcTimSel.RFST1_0 = 0x3;		//   5)  AlcTimSel.RFST1_0  FastRecoveryGainStep = .0127db
+		akR.R.AlcTimSel.WTM1_0 = 0x01;		//   5)  AlcTimSel.WTM1_0   WaitTime = 16ms @ 16kHz
+		akR.R.AlcTimSel.EQFC1_0 = 0x1;		//   5)  AlcTimSel.EQFC1_0  ALCEQ Frequency = 12kHz..24kHz
+		akR.R.AlcTimSel.IVTM = 1;					//   5)  AlcTimSel.IVTM     InputDigVolSoftTransitionTime = 944/fs (def)
+		akR.R.AlcMdCtr1.RGAIN2_0 = 0x0;		//   5)  AlcMdCtr1.RGAIN2_0	RecoveryGainStep = .00424db	(def)			
+		akR.R.AlcMdCtr1.LMTH1_0 = 0x2;		//   5)  AlcMdCtr1.LMTH1_0	ALC LimiterDetectionLevel = Detect>-2.5dBFS Reset> -2.5..-4.1dBFS (def)
 		akR.R.AlcMdCtr1.LMTH2 = 0;				//   5)  AlcMdCtr1.LMTH2	
-		akR.R.AlcMdCtr1.ALCEQN = 0;				//   5)  AlcMdCtr1.ALCEQN	
-		akR.R.AlcMdCtr1.ALC = 1;					//   5)  AlcMdCtr1.ALC
-		akUpd();
-		akR.R.AlcMdCtr2.REF7_0 = 0xE1;		//   6)  REF value  0x0C: AlcMdCtr2
-		akUpd();
-		akR.R.InVolCtr.IVOL7_0 = 0xE1;		//   7)  IVOL value  0x0D: InVolCtr
-		akUpd();
+		akR.R.AlcMdCtr1.ALCEQN = 0;				//   5)  AlcMdCtr1.ALCEQN		ALC Equalizer = Enabled (def)
+		akR.R.AlcMdCtr1.ALC = 1;					//   5)  AlcMdCtr1.ALC			ALC = Enabled 
+if (RecordTestCnt==7) akR.R.AlcMdCtr1.ALC = 0;
+		akUpd();	// 0A: 47   0B: 22
+		akR.R.AlcMdCtr2.REF7_0 = 0xE1;		//   6)  REF value  0x0C: AlcMdCtr2 ALCRefLevel = +30dB (def)
+		akUpd();	// nc
+		akR.R.InVolCtr.IVOL7_0 = 0xE1;		//   7)  IVOL value  0x0D:  InputDigitalVolume = +30db (def)
+if (RecordTestCnt==9) akR.R.InVolCtr.IVOL7_0 = 0x0;
+		akUpd();  // nc
 																			//   8)  ProgFilter on/off  0x016,17,21: DigFilSel1, DigFilSel2, DigFilSel3
-		akR.R.DigFilSel1.HPFAD = 1;				//   8) DigFilSel1.HPFAD
-		akR.R.DigFilSel1.HPFC1_0 = 0x0;		//   8) DigFilSel1.HPFC1_0
-		akR.R.DigFilSel2.HPF = 0;					//   8) DigFilSel2.HPF
-		akR.R.DigFilSel2.LPF = 0;					//   8) DigFilSel2.LPF
-		akR.R.DigFilSel3.EQ5_1 = 0x0;			//   8) DigFilSel3.EQ5_1
-		akUpd();
+		akR.R.DigFilSel1.HPFAD = 1;				//   8) DigFilSel1.HPFAD		HPF1 Control after ADC = ON (def)
+		akR.R.DigFilSel1.HPFC1_0 = 0x1;		//   8) DigFilSel1.HPFC1_0  HPF1 cut-off = 4.9Hz @ 16kHz
+		akR.R.DigFilSel2.HPF = 0;					//   8) DigFilSel2.HPF			HPF F1A & F1B Coef Setting = Disabled (def)
+		akR.R.DigFilSel2.LPF = 0;					//   8) DigFilSel2.LPF			LPF F2A & F2B Coef Setting = Disabled (def)
+		akR.R.DigFilSel3.EQ5_1 = 0x0;			//   8) DigFilSel3.EQ5_1		Equalizer Coefficient 1..5 Setting = Disabled (def)
+		akUpd();		// 16: 03
 																			//   9)  ProgFilter path  0x18: DigFilMd
-		akR.R.DigFilMd.PFDAC1_0 = 0x0;		//   9)  DigFilMd.PFDAC1_0
-		akR.R.DigFilMd.PFVOL1_0 = 0x0;		//   9)  DigFilMd.PFVOL1_0
-		akR.R.DigFilMd.PFSDO = 1;					//   9)  DigFilMd.PFSDO
-		akR.R.DigFilMd.ADCPF = 1;					//   9)  DigFilMd.ADCPF
-		akUpd();
+		akR.R.DigFilMd.PFDAC1_0 = 0x0;		//   9)  DigFilMd.PFDAC1_0	DAC input selector = SDTI (def)
+		akR.R.DigFilMd.PFVOL1_0 = 0x0;		//   9)  DigFilMd.PFVOL1_0	Sidetone digital volume = 0db (def)
+		akR.R.DigFilMd.PFSDO = 1;					//   9)  DigFilMd.PFSDO			SDTO output signal select = ALC output (def)
+		akR.R.DigFilMd.ADCPF = 1;					//   9)  DigFilMd.ADCPF			ALC input signal select = ADC output (def)
+		akUpd();		// nc
 																			//	10)	 CoefFilter:  0x19..20, 0x22..3F: HpfC0..3, LpfC0..3 E1C0..5 E2C0..5 E3C0..5 E4C0..5 E5C0..5
-		akR.R.HpfC0.F1A7_0 	= 0xB0;				//	10)	 Hpf.F1A13_0 low
-		akR.R.HpfC1.F1A13_8 = 0x1F;				//	10)	 Hpf.F1A13_0 high
-		akR.R.HpfC2.F1B7_0 	= 0x9F;				//	10)	 Hpf.F1B13_0 low
-		akR.R.HpfC3.F1B13_8 = 0x02;				//	10)	 Hpf.F1B13_0 high
-		akR.R.LpfC0.F2A7_0 	= 0x0;				//	10)	 Lpf.F2A13_0 low
-		akR.R.LpfC1.F2A13_8 = 0x0;				//	10)	 Lpf.F2A13_0 high
-		akR.R.LpfC2.F2B7_0 	= 0x0;				//	10)	 Lpf.F2B13_0 low
-		akR.R.LpfC3.F2B13_8 = 0x0;				//	10)	 Lpf.F2B13_0 high
-		akUpd();
+		akR.R.HpfC0.F1A7_0 	= 0xB0;				//	10)	 Hpf.F1A13_0 low  (def)  //DISABLED by DigFilSel2.HPF
+		akR.R.HpfC1.F1A13_8 = 0x1F;				//	10)	 Hpf.F1A13_0 high (def)  //DISABLED by DigFilSel2.HPF
+		akR.R.HpfC2.F1B7_0 	= 0x9F;				//	10)	 Hpf.F1B13_0 low  (def)  //DISABLED by DigFilSel2.HPF
+		akR.R.HpfC3.F1B13_8 = 0x02;				//	10)	 Hpf.F1B13_0 high (def)  //DISABLED by DigFilSel2.HPF
+		akR.R.LpfC0.F2A7_0 	= 0x0;				//	10)	 Lpf.F2A13_0 low  (def)  //DISABLED by DigFilSel2.LPF
+		akR.R.LpfC1.F2A13_8 = 0x0;				//	10)	 Lpf.F2A13_0 high (def)  //DISABLED by DigFilSel2.LPF
+		akR.R.LpfC2.F2B7_0 	= 0x0;				//	10)	 Lpf.F2B13_0 low  (def)  //DISABLED by DigFilSel2.LPF
+		akR.R.LpfC3.F2B13_8 = 0x0;				//	10)	 Lpf.F2B13_0 high (def)  //DISABLED by DigFilSel2.LPF
+		akUpd();		// 19: B0  1A: 1F  1B: 9F 1C: 02
 																			//  11)  power up MicAmp, ADC, ProgFilter: 
-		akR.R.PwrMgmt1.PMADC = 1;					//  11)  ADC
-		akR.R.PwrMgmt1.PMPFIL = 1;				//  11)  ProgFilter 
-		akUpd();
+if (RecordTestCnt==10) { akR.R.DMIC.PMDM = 1;  akR.R.DMIC.DMIC = 1; }
+		akR.R.PwrMgmt1.PMADC = 1;					//  11)  ADC								Microphone Amp & ADC = Power-up  (starts init sequence, then output data)
+		akR.R.PwrMgmt1.PMPFIL = 1;				//  11)  ProgFilter 				Programmable Filter Block = Power up
+		akUpd();		
+		
+logEvtNI("RecTst", "cnt", RecordTestCnt );
+RecordTestCnt++;
+
 	} else {
 		//DISABLE	
 		//  12)  power down MicAmp, ADC, ProgFilter:  SigSel1.PMMP, PwrMgmt1.PMADC, .PMPFIL
