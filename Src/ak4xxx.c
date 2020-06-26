@@ -279,7 +279,7 @@ void 						ak_CheckRegs(){																							// Debug -- read main AK4343 re
 		ak_ReportErrors();
 	#endif
 }
-static int RecordTestCnt = 0;
+static int RecordTestCnt = 20; //-1;
 void						ak_RecordEnable( bool enable ){
 #if defined( AK4637 )
 	if ( enable ){

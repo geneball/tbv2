@@ -5,8 +5,9 @@
 #include "controlMgr.h"			// runs on initialization thread
 #include "mediaPlyr.h"			// thread to watch audio status
 #include "fs_evr.h"					// FileSys components
+#include "encAudio.h"				// encrypt audio
 
-const char * 	TBV2_Version 				= "V2.06 of 18-Jun-2020";
+const char * 	TBV2_Version 				= "V2.06 of 26-Jun-2020";
 
 //
 // Thread stack sizes
@@ -172,6 +173,7 @@ void debugLoop( ){
 		if ( gGet( gRHAND )){			//  RHAND =>  Reboot to Device Firmware Update
 			gSet( gGREEN, 1 );
 			gSet( gRED, 1 );
+		//	testEncrypt();
 			RebootToDFU();
 		}
 
