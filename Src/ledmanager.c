@@ -189,7 +189,7 @@ void								ledThread( void *arg ){
 }
 //PUBLIC
 void 								ledFg( const char *def ){						// install 'def' as foreground pattern
-	if ( def[0]==0 ){  	// "" => switch to background pattern
+	if ( def==NULL || def[0]==0 ){  	// "" => switch to background pattern
 		currSeq = bgSeq;
 		dbgLog( "ledFg: off \n", def );
 	} else {

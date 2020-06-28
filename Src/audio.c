@@ -93,10 +93,6 @@ void								audInitState( void ){													// set up playback State in pSt
   pSt.audType = audUNDEF;
   memset( pSt.wavHdr, 0x00, WaveHdrBytes );
 	
-	if ( pSt.audF != NULL ){	// previous playback was paused?
-		fclose( pSt.audF );
-		dbgEvt( TB_clAud, 0,0,0,0 );
-	}
 	pSt.audF = NULL;
 	
 	pSt.samplesPerSec = 1;		// avoid /0 if never set
@@ -258,7 +254,7 @@ void 								audStartRecording( FILE *outFP, MsgStats *stats ){	// start recordi
 	pSt.monoMode = (pSt.wavHdr->NbrChannels == 1);
 
 	uint32_t ctrl = ARM_SAI_CONFIGURE_RX | ARM_SAI_MODE_SLAVE  | ARM_SAI_ASYNCHRONOUS | ARM_SAI_PROTOCOL_I2S | ARM_SAI_DATA_SIZE(16);
-	Driver_SAI0.Control( ctrl, 0, audioFreq );	// set sample rate, init codec clock
+	Driver_SAI0.Control( ctrl, 0, pSt.samplesPerSec );	// set sample rate, init codec clock
 	
 	pSt.bytesPerSample = pSt.wavHdr->NbrChannels * pSt.wavHdr->BitPerSample/8;  // = 4 bytes per stereo sample -- same as ->BlockAlign
 	pSt.nSamples = 0;
@@ -267,10 +263,16 @@ void 								audStartRecording( FILE *outFP, MsgStats *stats ){	// start recordi
 	startRecord();	
 }
 void 								audRequestRecStop( void ){										// signal record loop to stop
-	pSt.state = pbRecStop;		// handled by SaiEvent on next buffer complete
+	if ( pSt.state == pbRecording )
+		pSt.state = pbRecStop;		// handled by SaiEvent on next buffer complete
+	else if ( pSt.state == pbRecPaused ){
+		ledFg( NULL );
+		audRecordComplete();			// already paused-- just finish up
+	}
 }
 void 								audPauseResumeAudio( void ){									// signal playback to request Pause or Resume
 	int pct = 0;
+	uint32_t ctrl;
 	switch ( pSt.state ){
 		case pbPlaying:
 			// pausing '
@@ -310,7 +312,10 @@ void 								audPauseResumeAudio( void ){									// signal playback to request 
 			dbgEvt( TB_recResume, pSt.msRecorded, 0,0,0);
 			logEvt( "recResume" );
 			pSt.stats->RecResume++;
-			startRecord();
+			Driver_SAI0.PowerControl( ARM_POWER_FULL );		// power audio back up
+			ctrl = ARM_SAI_CONFIGURE_RX | ARM_SAI_MODE_SLAVE  | ARM_SAI_ASYNCHRONOUS | ARM_SAI_PROTOCOL_I2S | ARM_SAI_DATA_SIZE(16);
+			Driver_SAI0.Control( ctrl, 0, pSt.samplesPerSec );	// set sample rate, init codec clock
+			startRecord(); // restart recording
 			break;
 		
 		default:
@@ -348,7 +353,7 @@ void 								audPlaybackComplete( void ){									// shut down after completed p
 	int pct = pSt.msPlayed * 100 / pSt.msecLength;
 	dbgEvt( TB_audDone, pSt.msPlayed, pct, 0,0 );
 
-	ledFg( "" );				// Turn off foreground LED: no longer playing  
+	ledFg( NULL );				// Turn off foreground LED: no longer playing  
 	sendEvent( AudioDone, pct );				// end of file playback-- generate CSM event 
 	pSt.stats->Finish++;
 	logEvtNININI( "playDn", "ms", pSt.msPlayed, "pct", pct, "nS", pSt.nPlayed );
@@ -529,12 +534,12 @@ static void 				haltRecord( void ){														// ISR callable: stop audio inp
 	Driver_SAI0.Control( ARM_SAI_ABORT_RECEIVE, 0, 0 );	// shut down I2S device
 	Driver_SAI0.PowerControl( ARM_POWER_OFF );					// shut off I2S & I2C devices entirely
 	
-	pSt.state = pbIdle;
+	pSt.state = pbIdle;   // might get switched back to pbRecPaused
 	pSt.tsPause = tbTimeStamp();
 	pSt.msRecorded += (pSt.tsPause - pSt.tsResume);  		// (tsResume == tsRecord, if never paused)
 	dbgEvt( TB_audRecDn, pSt.msRecorded, 0, 0,0 );
 	
-	ledFg( "_" );				// Turn off foreground LED: no longer recording  
+	ledFg( NULL );				// Turn off foreground LED: no longer recording  
 }
 
 static void					setWavPos( int msec ){
@@ -600,7 +605,7 @@ static Buffer_t * 	loadBuff( ){																	// read next block of audio into
 	pB->state = bFull;
 	return pB;
 }
-			 void 				playWave( const char *fname ){ 								// play the WAV file -- also DebugLoop
+extern void 				playWave( const char *fname ){ 								// play the WAV file -- (extern for DebugLoop)
 	dbgEvtD( TB_playWv, fname, strlen(fname) );
 
 	audInitState();
@@ -636,7 +641,10 @@ static Buffer_t * 	loadBuff( ){																	// read next block of audio into
 }
 
 
-			 void 				saiEvent( uint32_t event ){										// called by ISR on buffer complete or error -- chain next, or report error -- also DebugLoop
+
+extern void 				saiEvent( uint32_t event ){										// called by ISR on buffer complete or error -- chain next, or report error -- also DebugLoop
+				 // calls: Driver_SAI0.Send .Receive .Control haltRecord releaseBuff  freeBuffs
+				 //  dbgEvt, osEventFlagsSet, tbTimestamp
 	dbgEvt( TB_saiEvt, event, 0,0,0);
 	const uint32_t ERR_EVENTS = ~(ARM_SAI_EVENT_SEND_COMPLETE | ARM_SAI_EVENT_RECEIVE_COMPLETE );
 	if ( (event & ARM_SAI_EVENT_SEND_COMPLETE) != 0 ){

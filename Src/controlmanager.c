@@ -377,6 +377,7 @@ static void 	controlTest(  ){					// CSM test procedure
 	TBook.cSt = TBookCSM[ TBook.iCurrSt ];
 	TBook.currStateName = TBook.cSt->nm;	//DEBUG -- update currSt string
   bool playforever = false;
+	MediaState audSt;
 	
 	dbgLog( "CTest: \n" );
 	while (true) {
@@ -440,14 +441,22 @@ static void 	controlTest(  ){					// CSM test procedure
 					break;
 				
 				case Star:
-					pauseResume();
+					audSt = audGetState();
+					if ( audSt==Recording || audSt==Playing )
+						pauseResume();
 					break;
 					
 				case Table:		// Record
-					startRecAudio( NULL );
+					audSt = audGetState();
+					if ( audSt==Recording )
+						stopRecording( );
+					else 
+						startRecAudio( NULL );
 					break;
 				case starTable:
-					stopRecording( );
+					audSt = audGetState();
+					if ( audSt==Recording )
+						stopRecording( );
 					break;
 				
 				case starCircle:

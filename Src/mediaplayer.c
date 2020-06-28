@@ -145,10 +145,10 @@ static void 	mediaThread( void *arg ){						// communicates with audio codec for
 		} 
 		
 		if ( (flags & MEDIA_RECORD_START) != 0 ){	// request to start recording
+			resetAudio();			// clean up anything in progress 
 			FILE* outFP = fopen( (const char *)mRecordFilePath, "wb" );
 			if ( outFP != NULL ){
 				dbgLog("Rec fnm: %s \n", (char *)mRecordFilePath );
-				resetAudio();			// clean up anything in progress 
 				audStartRecording( outFP, (MsgStats *) mRecordStats );
 			} else {
 				printf ("Cannot open record file to write\n\r");
