@@ -148,11 +148,14 @@ typedef struct _I2S_INFO {
 // I2S Resource definitions
 typedef struct _I2S_RESOURCES {
   ARM_SAI_CAPABILITIES    capabilities;  // Capabilities
-  SPI_TypeDef		          *instance;     // Pointer to I2S peripheral
+  SPI_TypeDef		          *xmt_inst;     // Pointer to I2S peripheral for playback
+	SPI_TypeDef							*rcv_inst;		 // I2S peripheral for recording
 	SPI_TypeDef							*clock;				 // I2S peripheral used to generate clock
 	DMA_TypeDef							*dma;					 // DMA controller for tx & rx streams
 	DMA_Stream_TypeDef			*tx_dma;			 // DMA stream for TX
+	uint16_t 								tx_dma_chan;	 // tx_dma_chan  channel corresponding to tx stream
 	DMA_Stream_TypeDef			*rx_dma;			 // DMA stream for RX
+	uint16_t 								rx_dma_chan;	 // rx_dma_chan  channel corresponding to rx stream
 	
 	//REPLACED:  I2S_PINS                rxtx_pins;     // I2S receive pins configuration
 	// pins used are  gI2S2_SD,	gI2S2_WS,	gI2S2_CK,	gI2S2_MCK

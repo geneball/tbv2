@@ -40,7 +40,7 @@ static PlaybackFile_t 			pSt;							// audio player state
 const int MxBuffs 					= 10;					// number of audio buffers in audioBuffs[] pool 
 static Buffer_t 						audio_buffers[ MxBuffs ];
 static MsgStats *						sysStats;
-
+const int SAI_OutOfBuffs		= 1 << 8;			// bigger than ARM_SAI_EVENT_FRAME_ERROR
 // forward decls for internal functions
 void 								initBuffs( void );														// create audio buffers
 Buffer_t * 					allocBuff( bool frISR );											// get a buffer for use
@@ -99,6 +99,7 @@ void								audInitState( void ){													// set up playback State in pSt
 	pSt.bytesPerSample = 0; 	// eg. 4 for 16bit stereo
 	pSt.nSamples = 0;					// total samples in file
 	pSt.msecLength = 0;				// length of file in msec
+	pSt.samplesPerBuff = 0;		// num mono samples per stereo buff at curr freq
 	
 	pSt.tsOpen = tbTimeStamp();		// before fopen
 	pSt.tsPlay = 0;
@@ -129,6 +130,7 @@ void								audInitState( void ){													// set up playback State in pSt
 	
 	// recording
 	pSt.msRecorded	= 0;			// elapsed msec while recording
+	pSt.nRecorded	= 0;				// n samples in filled record buffers
 	pSt.nSaved			= 0;			// recorded samples sent to file so far
 	
 	// don't initialize SqrWAVE fields
@@ -227,6 +229,7 @@ void 								audStartRecording( FILE *outFP, MsgStats *stats ){	// start recordi
 //	EventRecorderEnable( evrEAO, 		EvtFsFAT_No,   EvtFsFAT_No );  	
 //	EventRecorderEnable( evrEAO, 		EvtFsMcSPI_No, EvtFsMcSPI_No );  	
 	EventRecorderEnable( evrEAO, 		TBAud_no, TBAud_no );  	
+	EventRecorderEnable( evrEAO, 		TBsai_no, TBsai_no ); 	 					//SAI: 	codec & I2S drivers
 
 //	testSaveWave( );		//DEBUG
 
@@ -259,7 +262,7 @@ void 								audStartRecording( FILE *outFP, MsgStats *stats ){	// start recordi
 	pSt.bytesPerSample = pSt.wavHdr->NbrChannels * pSt.wavHdr->BitPerSample/8;  // = 4 bytes per stereo sample -- same as ->BlockAlign
 	pSt.nSamples = 0;
 	pSt.msecLength = pSt.nSamples*1000 / pSt.samplesPerSec;
-	
+	pSt.samplesPerBuff = BuffWds/2;
 	startRecord();	
 }
 void 								audRequestRecStop( void ){										// signal record loop to stop
@@ -368,7 +371,10 @@ void 								audRecordComplete( void ){										// last buff recorded, finish s
 	logEvtNINI( "recMsg", "ms", pSt.msRecorded, "nSamp", pSt.nSaved );
 
 	if ( pSt.ErrCnt > 0 ){ 
-		dbgLog( "%d record errs, Lst=0x%x \n", pSt.ErrCnt, pSt.LastError );
+		if (pSt.LastError == SAI_OutOfBuffs )
+			dbgLog( "%d record errs, out of buffs \n", pSt.ErrCnt );
+		else
+			dbgLog( "%d record errs, Lst=0x%x \n", pSt.ErrCnt, pSt.LastError );
 		logEvtNINI( "RecErr", "cnt", pSt.ErrCnt, "last", pSt.LastError );
 	}
 	pSt.state = pbIdle;
@@ -676,13 +682,17 @@ extern void 				saiEvent( uint32_t event ){										// called by ISR on buffer 
 	if ( (event & ARM_SAI_EVENT_RECEIVE_COMPLETE) != 0 ){
 		Buffer_t * pB = pSt.Buff[2];		// next record buffer
 		if ( pSt.state == pbRecording && pB != NULL ){
+			  pSt.nRecorded += pSt.samplesPerBuff;
 				pB->state = bRecording;
+			  pB->firstSample = pSt.nRecorded+1;
 				Driver_SAI0.Receive( pSt.Buff[2]->data, BuffWds );	// next buff ready for reception
 	  }
 		
 		pSt.buffNum++;										// received 1 more buffer
 		Buffer_t * pFull = pSt.Buff[0];		// filled buffer
 		pFull->state = bRecorded;
+		pFull->cntBytes = tbTimeStamp();
+		
 		for ( int i=0; i < nPlyBuffs-1; i++ )  // shift receive buffer ptrs down
 			pSt.Buff[i] = pSt.Buff[i+1];
 		pSt.Buff[ nPlyBuffs-1 ] = NULL;
@@ -703,7 +713,7 @@ extern void 				saiEvent( uint32_t event ){										// called by ISR on buffer 
 			pSt.Buff[ nPlyBuffs-1 ] = allocBuff( true );		// add new empty buff for reception
 			if ( pSt.Buff[ nPlyBuffs-1 ]==NULL ){	// out of buffers-- try to shut down
 				pSt.state = pbRecStop;	
-				pSt.LastError = 0x80000000;
+				pSt.LastError = SAI_OutOfBuffs;
 				pSt.ErrCnt++;
 			}
 		}

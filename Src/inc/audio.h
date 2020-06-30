@@ -36,7 +36,7 @@ typedef struct{				// WAV file header
 
 } WAVE_FormatTypeDef;
 
-typedef enum {			// audType
+typedef enum {				// audType
   audUNDEF,
 	audWave,
 	audMP3,
@@ -54,9 +54,9 @@ typedef enum {				// BuffState					-- audio buffer states
 
 typedef struct { 			// Buffer_t						-- audio buffer
 	BuffState state;
-	int firstSample;
-	int cntBytes;
-	uint16_t * data;		// buffer of 16bit samples
+	uint32_t 		firstSample;
+	uint32_t 		cntBytes;			// or timestamp for bRecorded
+	uint16_t 	* data;					// buffer of 16bit samples
 } Buffer_t;
 
 #define N_AUDIO_BUFFS			8
@@ -117,7 +117,9 @@ typedef struct { 			// PlaybackFile_t			-- audio state block
 //	uint32_t 							msPos;					// msec position in file
 	
 	// recording
+	uint32_t 							samplesPerBuff;	// number of mono samples in BuffLen (stereo) buffer
 	uint32_t 							msRecorded;			// elapsed msec recording file
+	uint32_t							nRecorded;			// n samples in filled record buffers
 	uint32_t 							nSaved;					// recorded samples sent to file so far
 
 	// simulated square wave data

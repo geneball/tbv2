@@ -7,13 +7,15 @@
 //         1) SPI3 is used to generate an accurate 12MHz clock to the AK4637 on I2S3_MCK
 //         2) AK4637 is configured to generate I2S clocks at the desired audio frequency
 //               (on I2S2_CK & I2S2_WS)
-//         3) SPI2 is operated in I2S slave mode with double-buffer DMA, to send/receive stereo samples
+//         3) I2S2 (SPI2) is operated in I2S slave mode with double-buffer DMA, to send stereo samples
+//         4) I2S2ext is operated in I2S slave mode with double-buffer DMA, to receive stereo samples
 //     see RM0402, STM32F412xx Reference Manual, Section 26.6
-//      uses 4 GPIO pins:
+//      uses 5 GPIO pins:
 //				SD: Serial Data (mapped on MOSI pin     I2S2_SD )
 //				WS: Word Select (mapped on NSS pin as   I2S2_WS )
 //				CK: Serial Clock (mapped on SCK pin as  I2S2_CK )
 //				MCK: Master Clock (mapped separately as I2S3_MCK )  12MHz reference clock to codec
+//				extSD: Serial full-duplex data 					I2S2ext_SD
 //	Usage: 
 //		Driver_SAI0.Initialize( cb_func ) -- allocate & initialize I2S & codec hardware, register event callback fn
 //		Driver_SAI0.PowerControl( ARM_POWER_FULL );		// power up audio
@@ -144,7 +146,8 @@ static const I2S_RESOURCES I2S2_Resources = {		// capabilities & hardware links
     1,   ///< supports MCLK (Master Clock) pin
     0,   ///< supports Frame error event: \ref ARM_SAI_EVENT_FRAME_ERROR
   },
-  I2S2,    					// instance: Pointer to I2S device-- SPI2 == I2S2
+  I2S2,    					// xmt_inst: Pointer to I2S device-- SPI2 == I2S2
+	I2S2ext,					// rcv_inst: Pointer to I2S device-- I2S2ext
 	I2S3,							// I2S device for clock
 /* REMOVED: RTE_Device based pin config
 //  {  // I2S0 RX&TX Pin configuration
@@ -155,8 +158,10 @@ static const I2S_RESOURCES I2S2_Resources = {		// capabilities & hardware links
 //  },
 */
 	DMA1,							// DMA controller for both TX & RX
-	DMA1_Stream4, 		// DMA Stream for SPI2==I2S2 TX 
-	DMA1_Stream3,			// DMA Stream for SPI2==I2S2 RX
+	DMA1_Stream4, 		// tx_dma DMA Stream for SPI2==I2S2 TX 
+	0,								// tx_dma_chan  RM0402 Table 30: SPI2_TX = stream 4, channel 0
+	DMA1_Stream3,			// rx_dma DMA Stream for I2S2ext_RX  (RM0402 Table 30, pg 198) 
+	3,								// rx_dma_chan  RM0402 Table 30: I2S2ext_RX = stream 3, channel 3
   I2S2_IRQn,				// intq_num
   &I2S2_Info				// I2S_INFO
 };
@@ -191,7 +196,7 @@ void													abortTXMT( I2S_RESOURCES *i2s ){  											// abort I2S Trans
   // stop DMA transmission
 	
 	I2S_INFO *info = i2s->info;
-	DMA_Stream_TypeDef * dma = DMA1_Stream4;				// DMA stream for TX
+	DMA_Stream_TypeDef * dma = i2s->tx_dma;					// DMA stream for TX
 	
 	dma->CR &= ~DMA_SxCR_TCIE;											// reset interrupt on complete-- since disabling will cause one
 	
@@ -202,8 +207,8 @@ void													abortTXMT( I2S_RESOURCES *i2s ){  											// abort I2S Trans
 	DMA1->HIFCR &= ~( DMA_HISR_TCIF4 |DMA_HISR_HTIF4 |DMA_HISR_TEIF4 |DMA_HISR_DMEIF4 | DMA_HISR_FEIF4  );
   NVIC_ClearPendingIRQ( DMA1_Stream4_IRQn );  	// Clear pending I2S_TX DMA interrupts
 	
-	i2s->instance->I2SCFGR &= ~I2S_MODE_ENAB;			// disable I2S device
-	i2s->instance->CR2 &= ~I2S_CR2_TXDMAEN;				// disable I2S TXDMA
+	i2s->xmt_inst->I2SCFGR &= ~I2S_MODE_ENAB;			// disable I2S device
+	i2s->xmt_inst->CR2 &= ~I2S_CR2_TXDMAEN;				// disable I2S TXDMA
 	dma->NDTR = 0;
 	dma->PAR = 0;
 	dma->M0AR = 0;
@@ -215,7 +220,7 @@ void													abortRCV( I2S_RESOURCES *i2s ){  																			// abort I2
   // stop DMA transmission
 	
 	I2S_INFO *info = i2s->info;
-	DMA_Stream_TypeDef * dma = DMA1_Stream3;				// DMA stream for RX
+	DMA_Stream_TypeDef * dma = i2s->rx_dma;				// DMA stream for RX
 	
 	dma->CR &= ~DMA_SxCR_TCIE;											// reset interrupt on complete-- since disabling will cause one
 	
@@ -226,8 +231,8 @@ void													abortRCV( I2S_RESOURCES *i2s ){  																			// abort I2
 	DMA1->HIFCR &= ~( DMA_LISR_TCIF3 |DMA_LISR_HTIF3 |DMA_LISR_TEIF3 |DMA_LISR_DMEIF3 | DMA_LISR_FEIF3  );
   NVIC_ClearPendingIRQ( DMA1_Stream3_IRQn );  	// Clear pending I2S_RX DMA interrupts
 	
-	i2s->instance->I2SCFGR &= ~I2S_MODE_ENAB;			// disable I2S device
-	i2s->instance->CR2 &= ~I2S_CR2_RXDMAEN;				// disable I2S TXDMA
+	i2s->rcv_inst->I2SCFGR &= ~I2S_MODE_ENAB;			// disable I2S2ext device
+	i2s->rcv_inst->CR2 &= ~I2S_CR2_RXDMAEN;				// disable I2S2ext RXDMA
 	dma->NDTR = 0;
 	dma->PAR = 0;
 	dma->M0AR = 0;
@@ -287,18 +292,20 @@ static int32_t 								I2S_Configure( I2S_RESOURCES *i2s, uint32_t freq, bool mo
 		//  
 		I2S3_ClockEnable( true );			// configure & start I2S3 to generate 12MHz on I2S3_MCK
 
-		i2s->instance->I2SCFGR &=  ~I2S_MODE_ENAB;						// make sure I2S is disabled while changing config
+		SPI_TypeDef *i2s_inst = xmt? i2s->xmt_inst : i2s->rcv_inst;
+		i2s_inst->I2SCFGR &=  ~I2S_MODE_ENAB;						// make sure I2S is disabled while changing config
 		
 	if ( slaveMode ){ // USE AK4637 PLL to generate accurate clock -- I2S3 generates 12MHz ref clock on I2S3_MCK
 		// set SPI2 I2SCFGR & I2SPR registers
-		i2s->instance->I2SCFGR = I2S_MODE | (xmt? I2S_CFG_SLAVE_TX : I2S_CFG_SLAVE_RX);  // I2SMode & I2SCFG = Slave xmt or rcv
+		i2s_inst->I2SCFGR = I2S_MODE | (xmt? I2S_CFG_SLAVE_TX : I2S_CFG_SLAVE_RX);  // I2SMode & I2SCFG = Slave xmt or rcv
 		// defaults:  I2SSTD = 00 = Phillips, DATLEN = 00, CHLEN = 0  16bits/channel
 
-		i2s->instance->I2SPR   = 0;		// reset unused PreScaler
+		i2s_inst->I2SPR   = 0;		// reset unused PreScaler
 		
 		// MUST be AFTER SPI2->I2SCFGR.I2SCFG is set to SLAVE_TX
 		ak_SetMasterFreq( freq );			// set AK4637 to MasterMode, 12MHz ref input to PLL, audio @ 'freq'
-	} else {
+	} else {	// NOT USED
+		/*
 		// configure to generate MCK at freq -- for master mode transmission
 		// requires board jumped to send I2S2_MCK (instead of I2S3_MCK) to AK4637
 		i2s->instance->I2SCFGR = I2S_MODE | (xmt? I2S_CFG_MASTER_TX : I2S_CFG_MASTER_RX);  // I2SMode & I2SCFG = slave xmt or rcv
@@ -333,9 +340,9 @@ static int32_t 								I2S_Configure( I2S_RESOURCES *i2s, uint32_t freq, bool mo
 
 		// set SPI2 I2SCFGR & I2SPR registers
 		i2s->instance->I2SCFGR = I2S_MODE;  // set I2S Mode, but reset rest ( esp. I2SE = 0 )
-	
 		i2s->instance->I2SPR   = i2s_pr;		// store PreScaler  (while I2S disabled)
 		i2s->instance->I2SCFGR = i2s_cfg;		// store I2S config (while disabled)
+*/	
 	}
 	i2s->info->flags |= I2S_FLAG_CONFIGURED;
 #endif
@@ -473,21 +480,12 @@ dbgEvt( TB_saiInit, 0,0,0,0);
 	//	I2S_clk = 192000000 / I2S_R;		// PLLI2S configuration -- default: 96MHz 
 	*/
 	
-	
-	RCC->APB1RSTR |= 	RCC_APB1RSTR_SPI2RST;		// reset spi2 
+	RCC->APB1RSTR |= 	RCC_APB1RSTR_SPI2RST;		// reset spi2  (i2s2 & i2s2_ext)
 	RCC->APB1RSTR &= ~RCC_APB1RSTR_SPI2RST;	// un-reset spi2
 
-	RCC->APB1RSTR |= 	RCC_APB1RSTR_SPI3RST;		// reset spi3
-	RCC->APB1RSTR &= ~RCC_APB1RSTR_SPI3RST;	// un-reset spi3
+	RCC->APB1RSTR |= 	RCC_APB1RSTR_SPI3RST;		// reset spi3 (i2s3 & i2s3_ext)
+	RCC->APB1RSTR &= ~RCC_APB1RSTR_SPI3RST;	// un-reset spi3 
 #endif	
-
-/* REMOVED: RTE_Device based configuration
-	//GPIO_AFConfigure();	no alternate configurations are required-- using SPI2: SCK,NSS,MOSI & PC6
-  //GPIO_PinConfigure(i2s->rxtx_pins.sck->port, i2s->rxtx_pins.sck->pin, GPIO_MODE_OUT, GPIO_OTYP_PUSHPULL, GPIO_SPD_FAST, GPIO_PUPD_NONE );
-	//  GPIO_PinConfigure(i2s->rxtx_pins.sd->port, i2s->rxtx_pins.sd->pin, GPIO_MODE_OUT, GPIO_OTYP_PUSHPULL, GPIO_SPD_FAST, GPIO_PUPD_NONE );
-	//  GPIO_PinConfigure(i2s->rxtx_pins.ws->port, i2s->rxtx_pins.ws->pin, GPIO_MODE_OUT, GPIO_OTYP_PUSHPULL, GPIO_SPD_FAST, GPIO_PUPD_NONE );
-	//  GPIO_PinConfigure(i2s->rxtx_pins.mck->port, i2s->rxtx_pins.mck->pin, GPIO_MODE_OUT, GPIO_OTYP_PUSHPULL, GPIO_SPD_FAST, GPIO_PUPD_NONE );
-*/
 
 	// configure GPIOs using gpio_id's from main.h -- also specifies AFn for STM32F412
 	// Configure SCK Pin (stm32F103zg: PB13 (SPI2_SCK / I2S2_CK ))  
@@ -508,20 +506,6 @@ dbgEvt( TB_saiInit, 0,0,0,0);
 
 static int32_t 								I2S_Uninitialize( I2S_RESOURCES *i2s ) {																						// release I2S hardware resources
 	I2S_PowerControl( ARM_POWER_OFF, i2s );		// shut down I2S & AK
-	
-/* REMOVED: RTE_Device based configuration
-  // Unconfigure SCK Pin                
-  GPIO_PinConfigure( i2s->rxtx_pins.sck->port, i2s->rxtx_pins.sck->pin, GPIO_MODE_ANALOG,  GPIO_OTYP_PUSHPULL,  GPIO_SPD_LOW,  GPIO_PUPD_NONE );												
-  // Unconfigure WS Pin 
-  GPIO_PinConfigure( i2s->rxtx_pins.ws->port, i2s->rxtx_pins.ws->pin, GPIO_MODE_ANALOG,  GPIO_OTYP_PUSHPULL,  GPIO_SPD_LOW,  GPIO_PUPD_NONE );
-  // Unconfigure SD Pin 
-  GPIO_PinConfigure( i2s->rxtx_pins.sd->port, i2s->rxtx_pins.sd->pin, GPIO_MODE_ANALOG,  GPIO_OTYP_PUSHPULL,  GPIO_SPD_LOW,  GPIO_PUPD_NONE );
-  // Unconfigure MCK Pin 
-*/
-
-/*	RCC->CR &= ~RCC_CR_PLLI2SON;			// disable the I2S_clk generator PLLI2S 
-	RCC->PLLI2SCFGR = 0x24003010;			// reset to default
-*/
 	
 	gUnconfig( gI2S2_CK );  	// Unconfigure SCK Pin 
 	gUnconfig( gI2S2_WS );  	// Unconfigure WS Pin 
@@ -552,7 +536,7 @@ dbgEvt( TB_saiPower, state, 0,0,0);
 			ak_PowerDown();					// power down AK4637 & I2C1 device
  //     RCC->APB1ENR &= ~RCC_APB1ENR_I2C1EN; 	// disable I2C1 device
 
-      RCC->APB1ENR &= ~RCC_APB1ENR_SPI2EN; 	// disable SPI2 device
+      RCC->APB1ENR &= ~RCC_APB1ENR_SPI2EN; 	// disable SPI2 device (i2s2 & i2s2_ext) 
       RCC->APB1ENR &= ~RCC_APB1ENR_SPI3EN; 	// disable SPI3 device (for codec clock)
 			RCC->AHB1ENR &= ~RCC_AHB1ENR_DMA1EN;	// disable clock for DMA1
 		
@@ -575,15 +559,15 @@ dbgEvt( TB_saiPower, state, 0,0,0);
 			reset_I2S_Info( i2s );
       i2s->info->flags |= I2S_FLAG_POWERED;
 
-      RCC->APB1ENR |= RCC_APB1ENR_SPI2EN; 	// start clocking SPI2 (==I2S)
+      RCC->APB1ENR |= RCC_APB1ENR_SPI2EN; 	// start clocking SPI2 (== i2s2 & i2s2_ext)
       RCC->APB1ENR |= RCC_APB1ENR_SPI3EN; 	// enable SPI3 device -- for clock generation
 			RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;		// enable clock for DMA1
 			
-      // Clear and Enable SPI2_TX DMA IRQ
+      // Clear and Enable I2S2_TX DMA IRQ
       NVIC_ClearPendingIRQ( DMA1_Stream4_IRQn ); 
       NVIC_EnableIRQ( DMA1_Stream4_IRQn ); 
 			
-      // Clear and Enable SPI2_RX DMA IRQ		
+      // Clear and Enable I2S2ext_RX DMA IRQ		
       NVIC_ClearPendingIRQ( DMA1_Stream3_IRQn );
       NVIC_EnableIRQ( DMA1_Stream3_IRQn ); 
      break;
@@ -641,7 +625,7 @@ static int32_t 								I2S2only_Send( const void *data, uint32_t nSamples, I2S_R
 	// CHSEL, PFCTRL, PL, FIFO, BURST at defaults
 	int cfg = DMA_SxCR_MSIZE_0 | DMA_SxCR_PSIZE_0 | DMA_SxCR_MINC | DMA_SxCR_DIR_0;   // mem->codec, 16bit words
   cfg |= DMA_SxCR_TCIE | DMA_SxCR_TEIE | DMA_SxCR_DMEIE;          // interrupt on complete, error, direct mode error
-	cfg |= 0 << DMA_SxCR_CHSEL_Pos;							// SPI2_TX is in DMA1 (Table 30) row for Channel 0, as Stream4
+	cfg |= i2s->tx_dma_chan << DMA_SxCR_CHSEL_Pos;									// SPI2_TX is in DMA1 (Table 30) row for Channel 0, as Stream4
 	cfg |= DMA_SxCR_DBM;																						// double buffer, M0AR first
 	dma->CR = cfg;
 	
@@ -650,15 +634,15 @@ static int32_t 								I2S2only_Send( const void *data, uint32_t nSamples, I2S_R
 
 	// clocks from codec are stable at selected frequency-- from ak_SetMasterFreq()
 	dma->CR |= DMA_SxCR_EN;											// enable DMA
-	i2s->instance->CR2 |= I2S_CR2_TXDMAEN;			// enable TXDMA for I2S device
-	i2s->instance->I2SCFGR |= I2S_MODE_ENAB;		// enable I2S device-- starts transmitting audio
+	i2s->xmt_inst->CR2 |= I2S_CR2_TXDMAEN;			// enable TXDMA for I2S device
+	i2s->xmt_inst->I2SCFGR |= I2S_MODE_ENAB;		// enable I2S device-- starts transmitting audio
   return ARM_DRIVER_OK;
 }
 
 static int Call2Marker = 0;
 
-static int32_t 								I2S2only_Receive( void *data, uint32_t nSamples, I2S_RESOURCES *i2s){													// start data receive
-// ONLY for I2S2 (SPI2) using DMA1_Stream3
+static int32_t 								I2S2ext_Receive( void *data, uint32_t nSamples, I2S_RESOURCES *i2s){													// start data receive
+// ONLY for I2S2ext (SPI2) using DMA1_Stream3
 //   Set up buffer for accepting data from I2S receiver.  
 //	   data  Pointer to buffer for data from I2S receiver.
 //	   num   Number of data items to receive ( #stereo samples )
@@ -677,25 +661,25 @@ static int32_t 								I2S2only_Receive( void *data, uint32_t nSamples, I2S_RESO
   if ((info->flags & I2S_FLAG_CONFIGURED) == 0U) 		// I2S is not configured (mode not selected)
 			return ARM_DRIVER_ERROR; 
 	
-	DMA_Stream_TypeDef * dma = DMA1_Stream3;				// DMA stream for RX
+	DMA_Stream_TypeDef * dma = i2s->rx_dma;				// DMA stream for RX
 
   // FOR DMA Double Buffering:  requires 2 setup calls to Receive, to set M0AR & M1AR
 //      **********************      CALL 1      **********************
-  if ( !info->status.rx_busy ){		// CALL 1?  just save buff0 as M0AR
-	// set up DMA for codec -> Mem0 
-	while ( (dma->CR & DMA_SxCR_EN) != 0 )		// reset DMA CR.EN to make sure it's disabled
-		dma->CR &= 	~DMA_SxCR_EN;								// keep trying till its true
-	
-	dma->PAR = (uint32_t) &SPI2->DR;		// periph is SPI2 DataRegister
-	dma->M0AR = (uint32_t) data;				// load M0AR -- 1st buff
-	dma->NDTR = nSamples;
+  if ( !info->status.rx_busy ){		// if CALL 1:  just save buff0 as M0AR
+		// set up DMA for codec -> Mem0 
+		while ( (dma->CR & DMA_SxCR_EN) != 0 )		// reset DMA CR.EN to make sure it's disabled
+			dma->CR &= 	~DMA_SxCR_EN;								// keep trying till its true
+		
+		dma->PAR = (uint32_t) &SPI2->DR;		// periph is SPI2 DataRegister
+		dma->M0AR = (uint32_t) data;				// load M0AR -- 1st buff
+		dma->NDTR = nSamples;
 
-	dma->M1AR = (uint32_t) &Call2Marker;		// CALL 2 MARKER that M1AR hasn't been provided yet
-	// clocks from codec are stable at selected frequency-- from ak_SetMasterFreq()
+		dma->M1AR = (uint32_t) &Call2Marker;		// CALL 2 MARKER that M1AR hasn't been provided yet
+		// clocks from codec are stable at selected frequency-- from ak_SetMasterFreq()
 
-	info->status.rx_busy = 1U;  							// Set Send active flag
-	info->status.rx_overflow = 0U;  					// Clear RX overflow flag
-	return ARM_DRIVER_OK;
+		info->status.rx_busy = 1U;  							// Set Send active flag
+		info->status.rx_overflow = 0U;  					// Clear RX overflow flag
+		return ARM_DRIVER_OK;
   }
 
 //      **********************      CALL S 3..N      **********************
@@ -723,7 +707,7 @@ static int32_t 								I2S2only_Receive( void *data, uint32_t nSamples, I2S_RESO
 	// CHSEL, PFCTRL, PL, FIFO, BURST at defaults
 	int cfg = DMA_SxCR_MSIZE_0 | DMA_SxCR_PSIZE_0 | DMA_SxCR_MINC;  // codec->mem, 16bit words
   cfg |= DMA_SxCR_TCIE | DMA_SxCR_TEIE | DMA_SxCR_DMEIE;          // interrupt on complete, error, direct mode error
-	cfg |= 0 << DMA_SxCR_CHSEL_Pos;							// SPI2_RX is in DMA1 (Table 30) row for Channel 0, as Stream3
+	cfg |= i2s->rx_dma_chan << DMA_SxCR_CHSEL_Pos;							// SPI2ext_RX is in DMA1 (Table 30) row for Channel 3, as Stream3
 	cfg |= DMA_SxCR_DBM;											// double buffer, M0AR first
 	dma->CR = cfg;
 
@@ -731,8 +715,8 @@ static int32_t 								I2S2only_Receive( void *data, uint32_t nSamples, I2S_RESO
 	ak_RecordEnable( true );									// power up mic, ADC, ALC, filters
 	
 	dma->CR |= DMA_SxCR_EN;											// enable DMA
-	i2s->instance->CR2 |= I2S_CR2_RXDMAEN;			// enable RXDMA for I2S device
-	i2s->instance->I2SCFGR |= I2S_MODE_ENAB;		// enable I2S device-- starts receiving audio
+	i2s->rcv_inst->CR2 |= I2S_CR2_RXDMAEN;			// enable RXDMA for I2S device
+	i2s->rcv_inst->I2SCFGR |= I2S_MODE_ENAB;		// enable I2S device-- starts receiving audio
   return ARM_DRIVER_OK;
 }
 
@@ -835,7 +819,7 @@ static int32_t 								I2S2_Send (const void *data, uint32_t num) {
   return I2S2only_Send( data, num, &I2S2_Resources );
 }
 static int32_t 								I2S2_Receive (void *data, uint32_t num) { 
-  return I2S2only_Receive( data, num, &I2S2_Resources );
+  return I2S2ext_Receive( data, num, &I2S2_Resources );
 }
 static uint32_t 							I2S2_GetTxCount (void) {
   return I2S_GetTxCount (&I2S2_Resources);
@@ -860,7 +844,7 @@ void 													DMA1_Stream4_IRQHandler( void ){				// I2S2 TX DMA interrupt
 	
 	I2S_TX_DMA_Complete( events, &I2S2_Resources );		// pass flags shifted into Stream0 position
 }
-void 													DMA1_Stream3_IRQHandler( void ){				// I2S2 RX DMA interrupt
+void 													DMA1_Stream3_IRQHandler( void ){				// I2S2ext RX DMA interrupt
 	// get values of Stream3 interrupt flags
 	int events = DMA1->LISR & (DMA_LISR_TCIF3 | DMA_LISR_HTIF3 | DMA_LISR_TEIF3 | DMA_LISR_DMEIF3 | DMA_LISR_FEIF3 );
   DMA1->LIFCR |= events;		// clear all

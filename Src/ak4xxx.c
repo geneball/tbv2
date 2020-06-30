@@ -353,7 +353,7 @@ if (RecordTestCnt==10) { akR.R.DMIC.PMDM = 1;  akR.R.DMIC.DMIC = 1; }
 		akR.R.PwrMgmt1.PMPFIL = 1;				//  11)  ProgFilter 				Programmable Filter Block = Power up
 		akUpd();		
 		
-logEvtNI("RecTst", "cnt", RecordTestCnt );
+//logEvtNI("RecTst", "cnt", RecordTestCnt );
 RecordTestCnt++;
 
 	} else {
