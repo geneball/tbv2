@@ -670,8 +670,8 @@ static int32_t 								I2S2ext_Receive( void *data, uint32_t nSamples, I2S_RESOU
 		while ( (dma->CR & DMA_SxCR_EN) != 0 )		// reset DMA CR.EN to make sure it's disabled
 			dma->CR &= 	~DMA_SxCR_EN;								// keep trying till its true
 		
-		dma->PAR = (uint32_t) &SPI2->DR;		// periph is SPI2 DataRegister
-		dma->M0AR = (uint32_t) data;				// load M0AR -- 1st buff
+		dma->PAR = (uint32_t) &i2s->rcv_inst->DR;		// periph is I2S2ext DataRegister
+		dma->M0AR = (uint32_t) data;								// load M0AR -- 1st buff
 		dma->NDTR = nSamples;
 
 		dma->M1AR = (uint32_t) &Call2Marker;		// CALL 2 MARKER that M1AR hasn't been provided yet

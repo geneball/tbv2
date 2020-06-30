@@ -591,7 +591,7 @@ I (.\Keil\inc\cmsis_compiler.h)(0x5D2671B6)
 I (.\Keil\inc\cmsis_armcc.h)(0x5D2671B6)
 I (.\Keil\inc\mpu_armv7.h)(0x5C902ED4)
 I (C:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include\system_stm32f4xx.h)(0x5A906654)
-F (.\Src\Rev2b\I2S_stm32F4xx.c)(0x5EFB73BA)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc -I .\Keil\mbedtls-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000" -D_RTE_-o .\objects\i2s_stm32f4xx.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\i2s_stm32f4xx.crf --depend .\objects\i2s_stm32f4xx.d)
+F (.\Src\Rev2b\I2S_stm32F4xx.c)(0x5EFB7F14)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\inc -I .\Src\config -I .\Keil\inc -I .\Src\Rev2b\inc -I .\Keil\mbedtls-I.\RTE\_TBv2b-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F412Vx -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000" -D_RTE_-o .\objects\i2s_stm32f4xx.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\i2s_stm32f4xx.crf --depend .\objects\i2s_stm32f4xx.d)
 I (.\Src\inc\tbook.h)(0x5EE2D1FC)
 I (.\Src\inc\main.h)(0x5EB36188)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9BB318)

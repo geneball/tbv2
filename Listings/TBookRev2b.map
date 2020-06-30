@@ -6931,7 +6931,7 @@ Image Symbol Table
     i.I2S2_Uninitialize                      0x08007df4   Section        0  i2s_stm32f4xx.o(i.I2S2_Uninitialize)
     I2S2_Uninitialize                        0x08007df5   Thumb Code    10  i2s_stm32f4xx.o(i.I2S2_Uninitialize)
     i.I2S2ext_Receive                        0x08007e04   Section        0  i2s_stm32f4xx.o(i.I2S2ext_Receive)
-    I2S2ext_Receive                          0x08007e05   Thumb Code   308  i2s_stm32f4xx.o(i.I2S2ext_Receive)
+    I2S2ext_Receive                          0x08007e05   Thumb Code   310  i2s_stm32f4xx.o(i.I2S2ext_Receive)
     i.I2S2only_Send                          0x08007f48   Section        0  i2s_stm32f4xx.o(i.I2S2only_Send)
     I2S2only_Send                            0x08007f49   Thumb Code   234  i2s_stm32f4xx.o(i.I2S2only_Send)
     i.I2S3_ClockEnable                       0x08008040   Section        0  i2s_stm32f4xx.o(i.I2S3_ClockEnable)
@@ -11162,7 +11162,7 @@ Image component sizes
        646         66          0          0          0       3453   gpio_stm32f4xx.o
         24          0          0          0          0        244   hardfault.o
       5350        162        104          0         36      45320   i2c_stm32f4xx.o
-      2342        168         88        564         28      53217   i2s_stm32f4xx.o
+      2342        166         88        564         28      53217   i2s_stm32f4xx.o
       2756        586        119        996         84      47935   inputmanager.o
        196         12          1          0          0        524   irq_cm4f.o
       1166        260          0        616        336       7585   ledmanager.o
@@ -11206,7 +11206,7 @@ Image component sizes
       1828        162         76         12          0      12370   w25q64jv.o
 
     ----------------------------------------------------------------------
-     85412      11352       4636      34852     101756    1470223   Object Totals
+     85412      11350       4636      34852     101756    1470223   Object Totals
          0          0         48          0          0          0   (incl. Generated)
        100          0         21         12          4          0   (incl. Padding)
 
@@ -11399,9 +11399,9 @@ Image component sizes
 
       Code (inc. data)   RO Data    RW Data    ZI Data      Debug   
 
-    134992      13746       6404      34916     102104    1407843   Grand Totals
-    134992      13746       6404       5876     102104    1407843   ELF Image Totals (compressed)
-    134992      13746       6404       5876          0          0   ROM Totals
+    134992      13744       6404      34916     102104    1407843   Grand Totals
+    134992      13744       6404       5876     102104    1407843   ELF Image Totals (compressed)
+    134992      13744       6404       5876          0          0   ROM Totals
 
 ==============================================================================
 

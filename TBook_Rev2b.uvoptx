@@ -159,7 +159,7 @@
           <Type>0</Type>
           <LineNumber>319</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134289336</Address>
+          <Address>134289400</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -175,7 +175,7 @@
           <Type>0</Type>
           <LineNumber>315</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134289284</Address>
+          <Address>134289348</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -191,7 +191,7 @@
           <Type>0</Type>
           <LineNumber>320</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134289338</Address>
+          <Address>134289402</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -207,7 +207,7 @@
           <Type>0</Type>
           <LineNumber>316</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134289306</Address>
+          <Address>134289370</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -223,7 +223,7 @@
           <Type>0</Type>
           <LineNumber>214</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134297842</Address>
+          <Address>134297906</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -239,7 +239,7 @@
           <Type>0</Type>
           <LineNumber>249</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134297988</Address>
+          <Address>134298052</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -255,7 +255,7 @@
           <Type>0</Type>
           <LineNumber>407</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134350660</Address>
+          <Address>134350724</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -265,22 +265,6 @@
           <Filename>.\Src\tbUtil.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression>\\TBookRev2b\Src/tbUtil.c\407</Expression>
-        </Bp>
-        <Bp>
-          <Number>7</Number>
-          <Type>0</Type>
-          <LineNumber>715</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>134340358</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\Src\audio.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\\Src/audio.c\715</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -459,7 +443,7 @@
         <Mm>
           <WinNumber>1</WinNumber>
           <SubType>10</SubType>
-          <ItemText>0x20018F78</ItemText>
+          <ItemText>0x20013f50</ItemText>
           <AccSizeX>0</AccSizeX>
         </Mm>
       </MemoryWindow1>
@@ -537,6 +521,10 @@
         <Entry>
           <Name>System Viewer\RCC</Name>
           <WinId>35905</WinId>
+        </Entry>
+        <Entry>
+          <Name>System Viewer\SPI2</Name>
+          <WinId>35902</WinId>
         </Entry>
       </SystemViewers>
       <DebugDescription>
