@@ -712,11 +712,22 @@ static int32_t 								I2S2ext_Receive( void *data, uint32_t nSamples, I2S_RESOU
 	dma->CR = cfg;
 
 	// 2nd buffer ready, start transfer into M0AR
-	ak_RecordEnable( true );									// power up mic, ADC, ALC, filters
+	ak_RecordEnable( true );															// power up mic, ADC, ALC, filters
+		
+	i2s->xmt_inst->I2SCFGR &=  ~I2S_MODE_ENAB;						// make sure I2S is disabled while changing config
+	i2s->xmt_inst->I2SCFGR = I2S_MODE | I2S_CFG_SLAVE_TX; // set I2S2 into I2SMode & I2SCFG = Slave xmt --- INSURE THAT EXTERNAL CK GETS ROUTED TO I2S2ext
+	i2s->xmt_inst->I2SPR   = 0;														// reset unused PreScaler
 	
-	dma->CR |= DMA_SxCR_EN;											// enable DMA
-	i2s->rcv_inst->CR2 |= I2S_CR2_RXDMAEN;			// enable RXDMA for I2S device
-	i2s->rcv_inst->I2SCFGR |= I2S_MODE_ENAB;		// enable I2S device-- starts receiving audio
+	i2s->rcv_inst->I2SCFGR &=  ~I2S_MODE_ENAB;						// make sure I2S is disabled while changing config
+	i2s->rcv_inst->I2SCFGR = I2S_MODE | I2S_CFG_SLAVE_RX; // set I2S2ext into I2SMode & I2SCFG = Slave receive
+	i2s->rcv_inst->I2SPR   = 0;														// reset unused PreScaler
+	
+	dma->CR 								|= DMA_SxCR_EN;								// enable DMA receive stream
+	
+	i2s->xmt_inst->I2SCFGR 	|= I2S_MODE_ENAB;							// enable I2S2 device as xmt-- necessary for full duplex mode?
+
+	i2s->rcv_inst->CR2 			|= I2S_CR2_RXDMAEN;						// enable RXDMA for I2S2ext device
+	i2s->rcv_inst->I2SCFGR 	|= I2S_MODE_ENAB;							// enable I2S2ext device-- starts receiving audio
   return ARM_DRIVER_OK;
 }
 
