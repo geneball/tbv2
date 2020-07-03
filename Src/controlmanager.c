@@ -444,6 +444,8 @@ static void 	controlTest(  ){					// CSM test procedure
 					audSt = audGetState();
 					if ( audSt==Recording || audSt==Playing )
 						pauseResume();
+					else
+						showBattCharge();
 					break;
 					
 				case Table:		// Record
@@ -461,7 +463,8 @@ static void 	controlTest(  ){					// CSM test procedure
 				
 				case starCircle:
 					saveWriteMsg( "Clean power down" );
-					ledFg("R_3R_3R_9R_3R_9R_3"); //  R R R   R R  R
+				  ledBg( NULL );
+					ledFg("R_3R_3R_9R_3R_9R_3"); //  R R R   R R   R
 					tbDelay_ms( 15000 );
 					powerDownTBook();
 				  break;

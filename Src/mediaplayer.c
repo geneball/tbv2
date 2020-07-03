@@ -2,6 +2,7 @@
 //  Apr2018
 
 #include "mediaPlyr.h"
+#include "fileOps.h"
 
 const int 									CODEC_DATA_TX_DN   =	0x01; 			// signal sent by SAI callback when an buffer completes
 const int 									CODEC_PLAYBACK_DN	 =  0x02;				// signal from SAI on playback done
@@ -135,8 +136,10 @@ static void 	mediaThread( void *arg ){						// communicates with audio codec for
 		if ( (flags & CODEC_PLAYBACK_DN) != 0 )		// playback complete
 			audPlaybackComplete();
 			
-		if ( (flags & CODEC_RECORD_DN) != 0 )			// recording complete
+		if ( (flags & CODEC_RECORD_DN) != 0 ){			// recording complete
 			audRecordComplete();
+			copyEncrypted( (char *) mRecordFilePath );
+		}
 
 		if ( (flags & MEDIA_PLAY_EVENT) != 0 ){		// request to start playback
 			if ( mPlaybackFilePath[0] == 0 ) continue;

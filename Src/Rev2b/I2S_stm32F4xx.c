@@ -442,6 +442,11 @@ dbgEvt( TB_saiInit, 0,0,0,0);
 	// RCC_CFGR2 bit I2S2SRC -- should be configured to 0, to select SYSCLOCK as basis of I2S MCLK
 	//   not done explicitly, as this is the default (and stm32f10x.h RCC_TypeDef doesn't include CFGR2)
 	I2S_clk = SystemCoreClock;		// 72MHz on STM32F103xx of STM3210E_EVAL
+
+	// configure GPIOs using gpio_id's from main.h 
+	// Configure SCK Pin (stm32F103zg: PB13 (SPI2_SCK / I2S2_CK ))  
+	// Configure SD Pin  (stm32F103zg: PB15 (SPI2_MOSI / I2S2_SD))
+  // Configure WS Pin  (stm32F103zg: PB12 (SPI2_NSS / I2S2_WS))
 #endif
 	
 #ifdef TBOOKREV2B
@@ -487,17 +492,14 @@ dbgEvt( TB_saiInit, 0,0,0,0);
 	RCC->APB1RSTR &= ~RCC_APB1RSTR_SPI3RST;	// un-reset spi3 
 #endif	
 
-	// configure GPIOs using gpio_id's from main.h -- also specifies AFn for STM32F412
-	// Configure SCK Pin (stm32F103zg: PB13 (SPI2_SCK / I2S2_CK ))  
-	gConfigI2S( gI2S2_CK );  // TBookV2B 	{ gI2S2_CK,			"PB13|5"		},	// AK4637 BICK == CK == SCK 			(RTE_I2SDevice.h I2S0==SPI2 altFn=5) 
-	// Configure SD Pin  (stm32F103zg: PB15 (SPI2_MOSI / I2S2_SD))
-	gConfigI2S( gI2S2_SD );  // TBookV2B { gI2S2_SD,			"PB15|5"		},	// AK4637 SDTI == MOSI 						(RTE_I2SDevice.h I2S0==SPI2 altFn=5)
-  // Configure WS Pin  (stm32F103zg: PB12 (SPI2_NSS / I2S2_WS))
-	gConfigI2S( gI2S2_WS );  // TBookV2B { gI2S2_WS,			"PB12|5"		},	// AK4637 FCK  == NSS == WS 			(RTE_I2SDevice.h I2S0==SPI2 altFn=5)
+	// configure GPIOs using gpio_id's from tbook_rev2b.h -- also specifies AFn for STM32F412
+	gConfigI2S( gI2S2_CK );  		// TBookV2B { gI2S2_CK,			"PB13|5"	},	// AK4637 BICK == CK == SCK 			(RTE_I2SDevice.h I2S0==SPI2 altFn=5) 
+	gConfigI2S( gI2S2_SD );  		// TBookV2B { gI2S2_SD,			"PB15|5"	},	// AK4637 SDTI == MOSI 						(RTE_I2SDevice.h I2S0==SPI2 altFn=5)
+	gConfigI2S( gI2S2ext_SD );  // TBookV2B { gI2S2ext_SD,	"PB14|6"	},	// AK4637 SDTO  									(RTE_I2SDevice.h I2S0==SPI2 altFn=6)
+	gConfigI2S( gI2S2_WS );  		// TBookV2B { gI2S2_WS,			"PB12|5"	},	// AK4637 FCK  == NSS == WS 			(RTE_I2SDevice.h I2S0==SPI2 altFn=5)
 
 	// Configure MCK Pin  (using I2S3_MCK on TBookRev2B)
 	gConfigI2S( gI2S3_MCK ); // TBookV2B { gI2S3_MCK,		"PC7|6"			},	// AK4637 MCLK 	 									(RTE_I2SDevice.h I2S3==SPI2 altFn=6)
-	//gConfigI2S( gI2S2_MCK ); // TBookV2B { gI2S2_MCK,		"PC6|5"			},	// AK4637 MCLK   									(RTE_I2SDevice.h I2S0==SPI2 altFn=5)
 
 	i2s->info->flags = I2S_FLAG_INITIALIZED;
 	
@@ -509,7 +511,8 @@ static int32_t 								I2S_Uninitialize( I2S_RESOURCES *i2s ) {																	
 	
 	gUnconfig( gI2S2_CK );  	// Unconfigure SCK Pin 
 	gUnconfig( gI2S2_WS );  	// Unconfigure WS Pin 
-	gUnconfig( gI2S2_SD );  	// Unconfigure SD Pin 
+	gUnconfig( gI2S2_SD );  	// Unconfigure SD TX Pin 
+	gUnconfig( gI2S2ext_SD );	// Unconfigure extSD RX Pin   
 	gUnconfig( gI2S2_MCK );  	// Unconfigure MCK Pin 
 
   i2s->info->flags = 0U;

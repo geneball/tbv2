@@ -191,7 +191,7 @@
 	  <event id="0x020d" level="API"   		property="audAdjSpd"    value="by %d[val1]"     							 				info="audio adj speed"  />
       <event id="0x020e" level="API"   		property="audRecord"   	value=""		       	 											info="start audio record"  />
       <event id="0x020f" level="Op"   		property="stRecord"   	value="pB0=%x[val1] pB1=%x[val2]"		       	 					info="activate recording"  />
-      <event id="0x0210" level="Op"   		property="AudRecClose"  value="nSv=%d[val1] buffNm=%d[val2]"     								            info="audio record file close"  />
+      <event id="0x0210" level="Op"   		property="AudRecClose"  value="nSv=%d[val1] buffNm=%d[val2] minFrBf=%d[val3]"     								            info="audio record file close"  />
       <event id="0x0211" level="Op"   		property="AudRecDone"   value="rec ms=%d[val1]"		      	  			info="audio record done"  />
       <event id="0x0212" level="Detail"		property="wrRecBuff"   	value="nS=%d[val1] nSv=%d[val2] nB=%d[val3] pB=%x[val4]"     	info="write record buff"  />
       <event id="0x0213" level="Error"   	property="FtchSk"   	value="f=%x[val1] idx=%d[val2] err=%d[val3]" 						info="fixed line fetch seek"  />
@@ -202,6 +202,7 @@
       <event id="0x0218" level="Op"   		property="chkLog"  		value="nLns=%d[val1] nChs=%d[val2] err=%d[val3]" 				    info="check logFile"  />
       <event id="0x0219" level="Op"   		property="recPause"  	value="" 				    										info="recording pause"  />
       <event id="0x021A" level="Op"   		property="recResume"  	value="msec=%d[val1]" 				    							info="recording resume"  />
+      <event id="0x0220" level="Detail"		property="svBuffs"   	value=""     	info="call saveBuffs"  />
 
 <!-- TBsai -->
 	  <event id="0x0304" level="Detail"		property="saiEvent"   	value="evt=%x[val1]"     											info="saiEvent"  />
@@ -219,9 +220,10 @@
       <event id="0x0310" level="Detail"   	property="saiPLYDN"  	value="saiPLYDN"     												info="SAI file done"  />
       <event id="0x0311" level="Op"   		property="akSpkEn"    	value="spkrEn=%d[val1]"     										info="akSpeaker enable"  />
       <event id="0x0312" level="Detail"		property="saiRcv "   	value="nBytes=%d[val1]"     										info="saiReceive"  />
-      <event id="0x0313" level="Detail"   	property="saiRXDN"  	value="pFull=%x[val1]"     												info="SAI buffer rcv done"  />
-      <event id="0x0314" level="Detail"   	property="relBuf"  		value="pB=0x%x[val1]"     											info="SAI release buffer"  />
+      <event id="0x0313" level="Detail"   	property="saiRXDN"  	value="pFull=%x[val1]"     											info="SAI buffer rcv done"  />
+      <event id="0x0314" level="Detail"   	property="relBuf"  		value="pB=0x%x[val1] nFr=%d[val2] cntFr=%d[val3]"     				info="SAI release buffer"  />
       <event id="0x0315" level="Error"   	property="i2cErr"   	value="call:grp=%x[val1] exp=%x[val2] got=%x[val3] reg=%d[val4]" 	info="I2C error"  />
+      <event id="0x0316" level="Detail"   	property="allocBuf"  	value="pB=0x%x[val1] nFr=%d[val2] cntFr=%d[val3]"     				info="SAI alloc buffer"  />
 
 <!-- TBcsm -->
 	  <event id="0x0400" level="Op"   		property="chgState"   	value="%t[val1]"     												info="CSM change state"  />

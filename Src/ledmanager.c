@@ -84,6 +84,8 @@ void								convertSeq( ledSeq *seq, const char *def ){		// fill 'seq' based on 
 	seq->repeat = false;
 	seq->repeatCnt = 0;
 	short i = 0;
+	if ( def==NULL ) return;
+	
 	//  convert string of Color char, duration in 1/10ths sec to color[] & msec[] for shades
 	//  "R G8" => shade R for 0.1sec, G for 0.8sec, repeat=false
 	//  "R20 G O _10" => R 2.0sec, G 0.1, O 0.1, off 1.0, repeat=false
@@ -191,9 +193,9 @@ void								ledThread( void *arg ){
 void 								ledFg( const char *def ){						// install 'def' as foreground pattern
 	if ( def==NULL || def[0]==0 ){  	// "" => switch to background pattern
 		currSeq = bgSeq;
-		dbgLog( "ledFg: off \n", def );
+//		dbgLog( "ledFg: off \n", def );
 	} else {
-		dbgLog( "ledFg: %s \n", def );
+//		dbgLog( "ledFg: %s \n", def );
 		convertSeq( prepSeq, def );	// convert into prep
 		ledSeq *sv = fgSeq;			// swap prep with fg
 		fgSeq = prepSeq;
@@ -203,7 +205,7 @@ void 								ledFg( const char *def ){						// install 'def' as foreground patte
 	}
 }
 void								ledBg( const char *def ){						// install 'def' as background pattern
-	dbgLog( "ledBg: %s \n", def );
+//	dbgLog( "ledBg: %s \n", def );
 	convertSeq( prepSeq, def );		// convert into prep
 	prepSeq->repeat = true;
 	

@@ -10,10 +10,10 @@ typedef struct {
 } csmAction;
 
 
-#define		MAX_SUBJ_MSGS		20		// allocates: (array of ptrs) per subject
-#define		MAX_SUBJS			20		// allocates: (array of ptrs)
-#define		MAX_ACTIONS			6		// max # actions per state -- allocs (array of csmAction)
-#define		MAX_CSM_STATES		80		// max # csm states -- (allocs array of ptrs)
+#define		MAX_SUBJ_MSGS			 20		// allocates: (array of ptrs) per subject
+#define		MAX_SUBJS					 20		// allocates: (array of ptrs)
+#define		MAX_ACTIONS					6		// max # actions per state -- allocs (array of csmAction)
+#define		MAX_CSM_STATES		120		// max # csm states -- (allocs array of ptrs)
 
 // ---------TBook Control State Machine
 typedef struct {	// csmState

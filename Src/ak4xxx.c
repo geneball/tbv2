@@ -241,7 +241,7 @@ void 						Codec_WrReg( uint8_t Reg, uint8_t Value){										// write codec reg
 	if ( waitCnt > MaxBusyWaitCnt ) MaxBusyWaitCnt = waitCnt;
 	cntErr( I2C_Xmt, ARM_I2C_EVENT_TRANSFER_DONE, I2C_Event, 0, 7 );  // err if any other bits set
 	
-	dbgLog( "W%x:%02x ", Reg, Value );
+//	dbgLog( "W%x:%02x ", Reg, Value );
 	#ifdef VERIFY_WRITTENDATA
 		/* Verify that the data has been correctly written */  
 		int chkVal = Codec_RdReg( Reg );

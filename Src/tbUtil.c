@@ -432,6 +432,7 @@ void 										dbgEvtD( int id, const void *d, int len ){ EventRecordData( id, d
 void 										dbgEvtS( int id, const char *d ){ EventRecordData( id, d, strlen(d) ); }
 const int xMAX = dbgChs; 				// typedef in tbook.h
 const int yMAX = dbgLns;
+// define PRINTF_DBG_SCR to keep local array of recent printf (& dbgLog) ops
 #define PRINTF_DBG_SCR
 #if defined( PRINTF_DBG_SCR )
 static int  cX = 0, cY = 0;

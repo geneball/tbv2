@@ -111,8 +111,8 @@ void 											enableStandby( void ){					// power off-- reboot on wakeup from 
 void											powerDownTBook( void ){					// shut down TBook
 	logEvt( "Standby" );
 	logPowerDown();		// flush & close logs
-//	ledBg("_");
-	ledFg("_");
+	ledBg( NULL );
+	ledFg( NULL );
 	enableStandby();		// shut down
 }
 

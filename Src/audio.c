@@ -37,10 +37,12 @@ const WAVE_FormatTypeDef WaveRecordHdr = {
 
 static PlaybackFile_t 			pSt;							// audio player state
 
-const int MxBuffs 					= 10;					// number of audio buffers in audioBuffs[] pool 
+const int MxBuffs 					= 20;					// number of audio buffers in audioBuffs[] pool 
 static Buffer_t 						audio_buffers[ MxBuffs ];
 static MsgStats *						sysStats;
 const int SAI_OutOfBuffs		= 1 << 8;			// bigger than ARM_SAI_EVENT_FRAME_ERROR
+static int nFreeBuffs = 0, cntFreeBuffs = 0, minFreeBuffs = MxBuffs;
+
 // forward decls for internal functions
 void 								initBuffs( void );														// create audio buffers
 Buffer_t * 					allocBuff( bool frISR );											// get a buffer for use
@@ -228,11 +230,12 @@ void 								audStartRecording( FILE *outFP, MsgStats *stats ){	// start recordi
 //	EventRecorderEnable( evrEAO, 		EvtFsCore_No,  EvtFsCore_No );  
 //	EventRecorderEnable( evrEAO, 		EvtFsFAT_No,   EvtFsFAT_No );  	
 //	EventRecorderEnable( evrEAO, 		EvtFsMcSPI_No, EvtFsMcSPI_No );  	
-	EventRecorderEnable( evrEAO, 		TBAud_no, TBAud_no );  	
-	EventRecorderEnable( evrEAO, 		TBsai_no, TBsai_no ); 	 					//SAI: 	codec & I2S drivers
+//	EventRecorderEnable( evrEAOD, 		TBAud_no, TBAud_no );  	
+//	EventRecorderEnable( evrEAOD, 		TBsai_no, TBsai_no ); 	 					//SAI: 	codec & I2S drivers
 
 //	testSaveWave( );		//DEBUG
 
+	minFreeBuffs = MxBuffs;
 	audInitState();
 	pSt.audType = audWave;
 	
@@ -327,6 +330,7 @@ void 								audPauseResumeAudio( void ){									// signal playback to request 
 }
 
 void 								audSaveBuffs(){																// called on mediaThread to save full recorded buffers
+	  dbgEvt( TB_svBuffs, 0,0,0,0);
 		while ( pSt.SvBuff[0] != NULL ){		// save and free all filled buffs
 			Buffer_t * pB = pSt.SvBuff[0];
 			saveBuff( pB );
@@ -367,7 +371,7 @@ void 								audRecordComplete( void ){										// last buff recorded, finish s
 	int err = fclose( pSt.audF );
 	if ( err != fsOK ) tbErr("rec fclose => %d", err );
 	
-	dbgEvt( TB_audRecClose, pSt.nSaved, pSt.buffNum, 0, 0);
+	dbgEvt( TB_audRecClose, pSt.nSaved, pSt.buffNum, minFreeBuffs, 0);
 	logEvtNINI( "recMsg", "ms", pSt.msRecorded, "nSamp", pSt.nSaved );
 
 	if ( pSt.ErrCnt > 0 ){ 
@@ -382,6 +386,17 @@ void 								audRecordComplete( void ){										// last buff recorded, finish s
 
 //
 // INTERNAL functions
+static void adjBuffCnt( int adj ){
+	nFreeBuffs += adj;
+	int cnt = 0;
+	for ( int i=0; i<MxBuffs; i++ ) 
+		if ( audio_buffers[i].state == bFree ) cnt++;
+	cntFreeBuffs = cnt;
+	if ( nFreeBuffs != cntFreeBuffs ) 
+		tbErr("buff mismatch nFr=%d cnt=%d", nFreeBuffs, cntFreeBuffs );
+	if ( nFreeBuffs < minFreeBuffs ) 
+		minFreeBuffs = nFreeBuffs;
+}
 static void 				initBuffs(){																	// create audio buffers
 	for ( int i=0; i < MxBuffs; i++ ){
 		Buffer_t *pB = &audio_buffers[i];
@@ -389,14 +404,18 @@ static void 				initBuffs(){																	// create audio buffers
 		pB->cntBytes = 0;
 		pB->firstSample = 0;
 		pB->data = (uint16_t *) tbAlloc( BuffLen, "audio buffer" );
-		for( int j =0; j<BuffWds; j++ ) pB->data[j] = 0x33;
+//		for( int j =0; j<BuffWds; j++ ) pB->data[j] = 0x33;
 	}
+	adjBuffCnt( MxBuffs );
 }
+
 static Buffer_t * 	allocBuff( bool frISR ){											// get a buffer for use
 	for ( int i=0; i<MxBuffs; i++ ){
 		if ( audio_buffers[i].state == bFree ){ 
 			Buffer_t * pB = &audio_buffers[i];
 			pB->state = bAlloc;
+			adjBuffCnt( -1 );
+			dbgEvt( TB_allocBuff, (int)pB, nFreeBuffs, cntFreeBuffs, 0 );	
 			return pB;
 		}
 	}
@@ -444,10 +463,11 @@ static void					haltPlayback(){																// shutdown device, free buffs & 
 }
 static void 				releaseBuff( Buffer_t * pB ){									// release Buffer (unless NULL)
 	if ( pB==NULL ) return;
-	dbgEvt( TB_relBuff, (int)pB, 0, 0, 0 );	
 	pB->state = bFree;
 	pB->cntBytes = 0;
 	pB->firstSample = 0;
+	adjBuffCnt( 1 );
+	dbgEvt( TB_relBuff, (int)pB, nFreeBuffs, cntFreeBuffs, 0 );	
 }
 static void					freeBuffs(){																	// free all audio buffs from pSt->Buffs[]
 	for (int i=0; i < nPlyBuffs; i++){		// free any allocated audio buffers
@@ -697,7 +717,7 @@ extern void 				saiEvent( uint32_t event ){										// called by ISR on buffer 
 			pSt.Buff[i] = pSt.Buff[i+1];
 		pSt.Buff[ nPlyBuffs-1 ] = NULL;
 		
-		for (int i=0; i< nSvBuffs; i++)	// transfer Buff[0] to SvBuff[]
+		for (int i=0; i< nSvBuffs; i++)	// transfer pFull (Buff[0]) to SvBuff[]
 			if ( pSt.SvBuff[i]==NULL ){
 				pSt.SvBuff[i] = pFull;   // put pFull in empty slot for writing to file
 				break;

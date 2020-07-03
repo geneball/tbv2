@@ -5,9 +5,9 @@
 #include "controlMgr.h"			// runs on initialization thread
 #include "mediaPlyr.h"			// thread to watch audio status
 #include "fs_evr.h"					// FileSys components
-#include "encAudio.h"				// encrypt audio
+#include "fileOps.h"				// decode & encrypt audio files
 
-const char * 	TBV2_Version 				= "V2.06 of 30-Jun-2020";
+const char * 	TBV2_Version 				= "V2.06 of 2-Jul-2020";
 
 //
 // Thread stack sizes
@@ -15,6 +15,7 @@ const int 		TBOOK_STACK_SIZE 		= 6144;		// init, becomes control manager
 const int 		POWER_STACK_SIZE 		= 2048;
 const int 		INPUT_STACK_SIZE 		= 1024;
 const int 		MEDIA_STACK_SIZE 		= 4096;		// opens in/out files
+const int 		FILEOP_STACK_SIZE 	= 4096;		// opens in/out files
 const int 		LED_STACK_SIZE 			= 512;
 
 //const int pSTATUS 				= 0;
@@ -257,15 +258,14 @@ void talking_book( void *arg ) {
 			debugLoop( );
 	}
 
-	// signal start
-//	flashLED( "GGGGGRRRRR" );
 
 	initLogger( );
-//	logEvt( "PowerUp" );
 
 	initLedManager();									//  Setup GPIOs for LEDs
 	
 	initInputManager();								//  Initialize keypad handler & thread
+
+	initFileOps();										//  decode mp3's 
 	
 	const char* startUp = "R3_3G3";
 	ledFg( startUp );

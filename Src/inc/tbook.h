@@ -130,6 +130,7 @@ extern const int 	TBOOK_STACK_SIZE;
 extern const int 	POWER_STACK_SIZE;
 extern const int 	INPUT_STACK_SIZE;
 extern const int 	MEDIA_STACK_SIZE;		// opens in/out files
+extern const int 	FILEOP_STACK_SIZE;		// opens in/out files
 extern const int 	CONTROL_STACK_SIZE;		// opens in/out files
 extern const int 	LED_STACK_SIZE;
 
