@@ -40,10 +40,11 @@
 
 #define count(x) sizeof(x)/sizeof(x[0])
 
-extern char 			CPU_ID[20], TB_ID[20];
+extern char 			CPU_ID[20], TB_ID[20], TBookName[20];
 extern bool 			NO_OS_DEBUG;					// set in main.c, used in tbook.c
 
 extern void 			initIDs( void );
+extern void				loadTBookName( void );													// load TBookName with string matching ID from /system/tbook_names.txt
 extern void 			GPIO_DefineSignals( GPIO_Signal def[] );
 extern void 			gSet( GPIO_ID gpio, uint8_t on );								// set the state of a GPIO output pin
 extern bool			 	gOutVal( GPIO_ID gpio );												// => LOGICAL state of a GPIO OUTput, e.g. True if 'PA0_'.ODR==0 or 'PB3'.ODR==1

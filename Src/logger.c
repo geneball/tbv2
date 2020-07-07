@@ -173,6 +173,8 @@ void						logPowerUp( bool reboot ){											// re-init logger after reboot, U
 		logEvtNS( "TB_V2", "Firmware", TBV2_Version );
 		logEvtS(  "CPU",  CPU_ID );
 		logEvtS(  "TB_ID",  TB_ID );
+		loadTBookName();
+		logEvtS(  "TB_NM",  TBookName );
 		logEvtNI( "CPU_CLK", "MHz", SystemCoreClock/1000000 );
 		logEvtNINI("BUS_CLKS", "APB2", APB2_clock, "APB1", APB1_clock );
 	} else

@@ -157,25 +157,9 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>731</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>134382976</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\Src\audio.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\\Src/audio.c\731</Expression>
-        </Bp>
-        <Bp>
-          <Number>1</Number>
-          <Type>0</Type>
           <LineNumber>249</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134299856</Address>
+          <Address>134300292</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -187,27 +171,11 @@
           <Expression>\\TBookRev2b\Src/controlmanager.c\249</Expression>
         </Bp>
         <Bp>
-          <Number>2</Number>
-          <Type>0</Type>
-          <LineNumber>407</LineNumber>
-          <EnabledFlag>0</EnabledFlag>
-          <Address>134393852</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\Src\tbUtil.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Src/tbUtil.c\407</Expression>
-        </Bp>
-        <Bp>
-          <Number>3</Number>
+          <Number>1</Number>
           <Type>0</Type>
           <LineNumber>350</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134301702</Address>
+          <Address>134302194</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -219,68 +187,20 @@
           <Expression>\\TBookRev2b\Src/controlmanager.c\350</Expression>
         </Bp>
         <Bp>
-          <Number>4</Number>
+          <Number>2</Number>
           <Type>0</Type>
-          <LineNumber>735</LineNumber>
+          <LineNumber>423</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134382998</Address>
+          <Address>134395236</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\Src\audio.c</Filename>
+          <Filename>.\Src\tbUtil.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\\Src/audio.c\735</Expression>
-        </Bp>
-        <Bp>
-          <Number>5</Number>
-          <Type>0</Type>
-          <LineNumber>225</LineNumber>
-          <EnabledFlag>0</EnabledFlag>
-          <Address>134393212</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\Src\tbook.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Src/tbook.c\225</Expression>
-        </Bp>
-        <Bp>
-          <Number>6</Number>
-          <Type>0</Type>
-          <LineNumber>227</LineNumber>
-          <EnabledFlag>0</EnabledFlag>
-          <Address>134393216</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\Src\tbook.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\TBookRev2b\Src/tbook.c\227</Expression>
-        </Bp>
-        <Bp>
-          <Number>7</Number>
-          <Type>0</Type>
-          <LineNumber>236</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>0</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>0</BreakIfRCount>
-          <Filename>.\Src\audio.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression></Expression>
+          <Expression>\\TBookRev2b\Src/tbUtil.c\423</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -427,7 +347,7 @@
         <Ww>
           <count>28</count>
           <WinNumber>1</WinNumber>
-          <ItemText>pS,0x0A</ItemText>
+          <ItemText>flash_wait_maxMHz</ItemText>
         </Ww>
         <Ww>
           <count>29</count>
@@ -469,12 +389,17 @@
           <WinNumber>1</WinNumber>
           <ItemText>cntFreeBuffs</ItemText>
         </Ww>
+        <Ww>
+          <count>37</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>mFileArgPath</ItemText>
+        </Ww>
       </WatchWindow1>
       <MemoryWindow1>
         <Mm>
           <WinNumber>1</WinNumber>
-          <SubType>10</SubType>
-          <ItemText>0x20013f50</ItemText>
+          <SubType>8</SubType>
+          <ItemText>0x20004a6c</ItemText>
           <AccSizeX>0</AccSizeX>
         </Mm>
       </MemoryWindow1>
@@ -542,6 +467,14 @@
       <pMultCmdsp></pMultCmdsp>
       <SystemViewers>
         <Entry>
+          <Name>System Viewer\FLASH</Name>
+          <WinId>35903</WinId>
+        </Entry>
+        <Entry>
+          <Name>System Viewer\PWR</Name>
+          <WinId>35904</WinId>
+        </Entry>
+        <Entry>
           <Name>System Viewer\RCC</Name>
           <WinId>35905</WinId>
         </Entry>
@@ -566,7 +499,7 @@
       <GroupNumber>1</GroupNumber>
       <FileNumber>1</FileNumber>
       <FileType>1</FileType>
-      <tvExp>0</tvExp>
+      <tvExp>1</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>.\Src\main.c</PathWithFileName>

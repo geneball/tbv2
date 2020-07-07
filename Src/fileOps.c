@@ -75,7 +75,8 @@ static void 				encryptCopy( ){
 	logEvtNS("encF", "dat", basenm );
 
   basenm[ strlen(basenm)-3 ] = 'x';
- 	res = frename( (const char *)mFileArgPath, basenm );	// rename .wav => .xav
+	char * newnm = strrchr( basenm, '/' )+1;
+ 	res = frename( (const char *)mFileArgPath, newnm );	// rename .wav => .xat
 // 	res = fdelete( (const char *)mFileArgPath, NULL );		// delete wav file
 	if ( res != fsOK ) tbErr("dat fclose => %d", res );	
 }

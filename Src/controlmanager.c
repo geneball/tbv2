@@ -112,7 +112,7 @@ static void		startRecAudio( char *arg ){
 	resetAudio();
 	tbSubject * tbS = TBookSubj[ TBook.iSubj ];
 	char path[MAX_PATH];
-	buildPath( path, TB_Config.systemAudio, arg, ".wav" ); //".ogg" );
+	buildPath( path, TB_Config.systemAudio, arg, ".dat" ); // .dat is encrypted audio
 	int mCnt = 0;
 	char * fNm = logMsgName( path, tbS->name, TBook.iSubj, TBook.iMsg, ".wav", &mCnt ); //".ogg" );		// build file path for next audio msg for S<iS>M<iM>
 	logEvtNSNINI( "Record", "Subj", tbS->name, "iM", TBook.iMsg, "cnt", mCnt );

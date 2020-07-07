@@ -186,7 +186,21 @@ void										flashInit( ){																		// init keypad GPIOs for debugging
 
 //
 // MPU Identifiers
-char CPU_ID[20], TB_ID[20];
+char CPU_ID[20], TB_ID[20], TBookName[20];
+void 										loadTBookName(){
+	strcpy( TBookName, TB_ID );		// default to ID
+	FILE *f = fopen( "M0:/system/tbook_names.txt", "r" );
+	if ( f == NULL ) return;
+	
+	char fid[20], fnm[20];
+	while ( fscanf( f, "%s %s \n", fid, fnm )==2 ){
+		if ( strcmp(fid, TB_ID)==0 ){
+			strcpy( TBookName, fnm );
+			break;
+		}
+	}
+	fclose( f );
+}
 void 										initIDs(){																		// initialize CPU_ID & TB_ID strings
 	typedef struct {	// MCU device & revision
 		// Ref Man: 30.6.1 or 31.6.1: MCU device ID code
@@ -223,6 +237,8 @@ void 										initIDs(){																		// initialize CPU_ID & TB_ID strings
 	memcpy( &stmID, (const void *)UID_BASE, 12 );
 	stmID.lot[7] = 0;  // null terminate the lot string
 	sprintf( TB_ID, "%04x.%04x.%x.%s", stmID.x, stmID.y, stmID.wafer, stmID.lot );
+	
+	loadTBookName();
 }
 
 //
@@ -535,7 +551,7 @@ void 										setCpuClock( int mHz, int apbshift2, int apbshift1 ){		// config 
 	uint32_t pwrCR = (vos << PWR_CR_VOS_Pos) | (7 << PWR_CR_PLS_Pos) | PWR_CR_PVDE;	// set Voltage Scaling Output & enable VoltageDetect < 2.9V
 	PWR->CR = 	pwrCR;  // overwrites VOS (default 2) -- all other fields default to 0
 
-	PWR->CSR |= PWR_CSR_BRE;			// enable Backup Domain regulator
+	PWR->CSR |= PWR_CSR_BRE;			// enable Backup Domain regulator-- but PWR->CSR.BRR will only go true if backup power is available
 	
 	// calculate proper flash wait states for this CPU speed ( at TBrev2b 3.3V supply )
 	//														0WS  1WS  2WS  3WS    -- RM402 3.4.1 Table 6
@@ -552,8 +568,7 @@ void 										setCpuClock( int mHz, int apbshift2, int apbshift1 ){		// config 
 	const int PLLS_RDY = RCC_CR_PLLRDY | RCC_CR_PLLI2SRDY;
 	while ( (RCC->CR & PLLS_RDY) != PLLS_RDY ) cnt++;		  // wait until PLL & PLLI2S are ready
 	
-	const int REGS_RDY = PWR_CSR_VOSRDY | PWR_CSR_BRR;
-	while ( (PWR->CSR & REGS_RDY) != REGS_RDY ) cnt++;		// wait until VOS & BackupRegulator are ready
+	while ( (PWR->CSR & PWR_CSR_VOSRDY) != PWR_CSR_VOSRDY ) cnt++;		// wait until VOS ready
 
 	// switch CPU to PLL clock running at mHz
 	RCC->CFGR |= RCC_CFGR_SW_PLL;
