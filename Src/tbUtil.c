@@ -346,6 +346,19 @@ void *									tbAlloc( int nbytes, const char *msg ){					// malloc() & check f
 	}
 	return mem;
 }
+void *mp3_malloc( int size ){
+	return tbAlloc( size, "mp3" );
+}
+void mp3_free( void *ptr ){
+	free( ptr );
+}
+void *mp3_calloc( int num,int size ){
+	unsigned char *ptr;
+	ptr = tbAlloc(size*num, "mp3c" );
+	for( int i=0; i<num*size; i++ ) 
+	ptr[i]=0;
+	return ptr;
+}
 bool 										fexists( const char *fname ){										// return true if file path exists
 	fsFileInfo info;
 	info.fileID = 0;

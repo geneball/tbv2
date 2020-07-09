@@ -42,6 +42,7 @@
 
 extern char 			CPU_ID[20], TB_ID[20], TBookName[20];
 extern bool 			NO_OS_DEBUG;					// set in main.c, used in tbook.c
+extern bool 			FirstSysBoot;					// defined in logger
 
 extern void 			initIDs( void );
 extern void				loadTBookName( void );													// load TBookName with string matching ID from /system/tbook_names.txt

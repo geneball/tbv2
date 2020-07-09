@@ -7,7 +7,7 @@
 #include "fs_evr.h"					// FileSys components
 #include "fileOps.h"				// decode & encrypt audio files
 
-const char * 	TBV2_Version 				= "V2.06 of 6b-Jul-2020";
+const char * 	TBV2_Version 				= "V2.07 of 9-Jul-2020";
 
 //
 // Thread stack sizes
@@ -15,7 +15,7 @@ const int 		TBOOK_STACK_SIZE 		= 6144;		// init, becomes control manager
 const int 		POWER_STACK_SIZE 		= 2048;
 const int 		INPUT_STACK_SIZE 		= 1024;
 const int 		MEDIA_STACK_SIZE 		= 4096;		// opens in/out files
-const int 		FILEOP_STACK_SIZE 	= 4096;		// opens in/out files
+const int 		FILEOP_STACK_SIZE 	= 6144;		// opens in/out files, mp3 decode
 const int 		LED_STACK_SIZE 			= 512;
 
 //const int pSTATUS 				= 0;
@@ -220,7 +220,7 @@ void talking_book( void *arg ) {
 		debugLoop();	// no OS, so straight to debugLoop, no fileSys check & no mediaManager
 	
 	usrLog( "%s\n", CPU_ID );
-	usrLog( "%s == %s\n", TB_ID, TBookName );
+	usrLog( "%s\n", TB_ID );
 
 	initMediaPlayer( );
 	

@@ -7,6 +7,7 @@
 static FILE *		logF = NULL;			// file ptr for open log file
 static int			totLogCh = 0;
 static char			statFileNm[60];		// local storage for computing .stat filepaths
+bool 						FirstSysBoot = false;	
 
 const osMutexAttr_t 	logMutex = { "logF_lock", osMutexRecursive, NULL, 0 };
 osMutexId_t						logLock;
@@ -154,8 +155,9 @@ void						logPowerUp( bool reboot ){											// re-init logger after reboot, U
 	char * boot = loadLine( line, TBP[ pBOOTCNT ], &bootDt ); 
 	int bootcnt = 1;		// if file not there-- first boot
 	if ( boot!=NULL ) sscanf( boot, " %d", &bootcnt );
+	FirstSysBoot = (bootcnt==1);
 	
-	if ( bootcnt==1 ){  // FirstBoot after install
+	if ( FirstSysBoot ){  // FirstBoot after install
 		bool eraseNor = fexists( norEraseFile );
 		if ( eraseNor )  // if M0:/system/EraseNorLog.txt exists-- erase 
 			eraseNorFlash( false );			// CLEAR nor & create a new log
@@ -196,7 +198,7 @@ void						logPowerUp( bool reboot ){											// re-init logger after reboot, U
 	dateStr( dt, verDt );
 	logEvtNSNS( "TB_CSM", "dt", dt, "ver", status );
 		
-	if ( bootcnt==1 ){  // FirstBoot after install
+	if ( FirstSysBoot ){  // FirstBoot after install
 		logEvtNS( "setRTC", "DtTm", dt );
 		setupRTC( verDt );			// init RTC and set to date/time from version.txt
 	} else 					// read & report RTC value
