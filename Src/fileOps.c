@@ -83,8 +83,14 @@ static void 				encryptCopy( ){
 
 static void 				decodeMp3( const char *path, char *fname ){			// decode fname (.mp3) & copy to .wav
 	dbgLog("decode %s/%s \n", path, fname );
+	char fnm[60];
+	strcpy( fnm, path );
+	strcat( fnm, "/" );
+	strcat( fnm, fname );
+	mp3ToWav( fnm );
 }
 static void 				scanDecodeAudio( ){			// scan audio paths for .mp3 & copy to .wav
+
 	const char *packDirPatt = "M0:/package/*";
 	char path[ MAX_PATH ], patt[ MAX_PATH ]; 
 
@@ -117,8 +123,9 @@ static void 				scanDecodeAudio( ){			// scan audio paths for .mp3 & copy to .wa
 }
 
 static void 				fileOpThread( void *arg ){				
-	// on wakeup, scan for audio to decode
-	scanDecodeAudio();
+
+	if ( FirstSysBoot )	// on first boot, scan for audio to decode
+		scanDecodeAudio();
 	
 	while (true){		
 		uint32_t flags = osEventFlagsWait( mFileOpEventId, FILEOP_EVENTS,  osFlagsWaitAny, osWaitForever );
