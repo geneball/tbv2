@@ -13,7 +13,11 @@ const int 									MEDIA_RECORD_START =	0x20;
 const int										MEDIA_ADJ_POS 		 =  0x40;
 const int										MEDIA_SET_SPD 		 =  0x80;
 const int										MEDIA_SET_VOL 		 =  0x100;
-const int 									MEDIA_EVENTS 			 =  0x1FF;		// mask for all events
+const int										MEDIA_PLAY_RECORD	 =	0x200;
+const int										MEDIA_SAVE_RECORD	 =	0x400;
+const int										MEDIA_DEL_RECORD	 =	0x800;
+
+const int 									MEDIA_EVENTS 			 =  0xFFF;		// mask for all events
 
 static 	osThreadAttr_t 				thread_attr;
 
@@ -67,6 +71,18 @@ void					recordAudio( const char * fileName, MsgStats *stats ){	// start recordi
 	strcpy( (char *)mRecordFilePath, fileName );
 	mRecordStats = stats==NULL? sysStats : stats;
 	osEventFlagsSet( mMediaEventId, MEDIA_RECORD_START );
+}
+void					playRecording( ){	// play back just recorded audio
+	if ( mRecordFilePath[0] == 0 ) return;
+	osEventFlagsSet( mMediaEventId, MEDIA_PLAY_RECORD );	
+}
+void					saveRecording( ){	// encrypt recorded audio & delete original
+	if ( mRecordFilePath[0] == 0 ) return;
+	osEventFlagsSet( mMediaEventId, MEDIA_SAVE_RECORD );	
+}
+void					cancelRecording(){ // delete recorded message
+	if ( mRecordFilePath[0] == 0 ) return;
+	osEventFlagsSet( mMediaEventId, MEDIA_DEL_RECORD );	
 }
 void 					adjPlayPosition( int sec ){					// skip playback forward/back 'sec' seconds
 	dbgEvt( TB_audAdjPos, sec, 0, 0,0);
@@ -138,7 +154,6 @@ static void 	mediaThread( void *arg ){						// communicates with audio codec for
 			
 		if ( (flags & CODEC_RECORD_DN) != 0 ){			// recording complete
 			audRecordComplete();
-			copyEncrypted( (char *) mRecordFilePath );
 		}
 
 		if ( (flags & MEDIA_PLAY_EVENT) != 0 ){		// request to start playback
@@ -157,6 +172,21 @@ static void 	mediaThread( void *arg ){						// communicates with audio codec for
 				printf ("Cannot open record file to write\n\r");
 			}
 		} 
+		
+		if ( (flags & MEDIA_PLAY_RECORD) != 0 ){	// request to play recording
+			resetAudio();
+			audPlayAudio( (const char *)mRecordFilePath, (MsgStats *) sysStats );
+		}
+		
+		if ( (flags & MEDIA_SAVE_RECORD) != 0 ){	// request to save recording
+			copyEncrypted( (char *) mRecordFilePath );
+			mRecordFilePath[0] = 0;
+		}
+		
+		if ( (flags & MEDIA_DEL_RECORD) != 0 ){	// request to delete recording
+			int res = fdelete( (char *) mRecordFilePath, "" );
+			mRecordFilePath[0] = 0;
+		}
 		
 		if ( (flags & MEDIA_SET_VOL) != 0 ){			// request to set volume
 			logEvtNI( "setVol", "vol", mAudioVolume );
