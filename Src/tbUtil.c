@@ -440,7 +440,7 @@ void 										tbErr( const char * fmt, ... ){									// report fatal error
 	__breakpoint(0);		// halt if in debugger
 	
 	
-	ledFg( "R8_2 R8_2 R8_20!" );
+	ledFg( TB_Config.fgTB_Error ); 
 	while ( true ){ }
 }
 void										tbShw( const char *s, char **p1, char **p2 ){  	// assign p1, p2 to point into s for debugging

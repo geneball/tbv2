@@ -128,7 +128,10 @@ bool		enableMassStorage( char *drv0, char *drv1, char *drv2, char *drv3 ){	// in
 	if ( !usbIsInitialized ) 			return false;			// USB failed to initialize
 	
 	dbgEvt( TB_usbConn, 0,0,0,0);
-	ledFg( TB_Config.fgUSB_MSC );	
+	if ( !haveUSBpower() )
+		ledFg( TB_Config.fgNoUSBcable ); // no USB cable!
+	else				
+  	ledFg( TB_Config.fgUSBconnect );	
 	stat = USBD_Connect(0);													// signal connection to Host, so Host will enumerate & discover configured drives
 	return usbProvidingMassStorage;
 }
@@ -144,7 +147,7 @@ bool		disableMassStorage( void ){								// disable USB MSC & return devices to 
 		usbIsInitialized = false;
 		usbProvidingMassStorage = false;
 	}
-	ledFg( "_" );
+	ledFg( NULL );
 	return usbProvidingMassStorage;
 }
 //
@@ -250,6 +253,7 @@ void	 	USBD_MSC0_Initialize( void ){										// callback from USBD_Initialize t
   for ( int i=0; i<nLUNs; i++ )
 		initLUN( i );
 	usbProvidingMassStorage = true;
+	ledFg( TB_Config.fgUSB_MSC );			// connected
 }
 void 		USBD_MSC0_Uninitialize( void ){									// callback from USBD_Uninitialize to de-init all Logical Units of the USB MSC class instance.
 	dbgEvt( TB_usbM0Uninit, 0,0,0,0);

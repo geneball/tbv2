@@ -21,5 +21,8 @@ extern int			recordPosition( void );
 extern MediaState	getStatus( void );
 extern void			recordAudio( const char *fileName, MsgStats *stats );
 extern void			stopRecording( void );
+extern void			playRecording( void );		// play back just recorded audio
+extern void			saveRecording( void );		// encrypt recorded audio & delete original
+extern void			cancelRecording( void ); // delete recorded message
 extern void 		resetAudio( void ); 								// stop any playback/recording in progress
 #endif

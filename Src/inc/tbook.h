@@ -157,6 +157,7 @@ extern const int 	MEDIA_ALREADY_IN_USE;
 //  -----------  TBook configuration variables
 #define	MAX_PATH  80
 
+
 typedef struct TBConfig {			// TBConfig
 	short 	default_volume;
 	short 	default_speed;
@@ -167,12 +168,18 @@ typedef struct TBConfig {			// TBConfig
 	int			minShortPressMS;			// used by inputmanager.c
 	int			minLongPressMS;				// used by inputmanager.c
 	int			initState;	
-	char *  fgPlaying;					// G!
-	char *  fgPlayPaused;				// G2_3!
-	char *  fgRecording;				// R!
-	char *  fgRecordPaused;			// R2_3!
-	char *  fgUSB_MSC;					// O5o5!
-	char *  fgTB_ERR;						// R8_2 R8_2 R8_20!
+	char *	bgPulse;
+	char *	fgPlaying;
+	char *	fgPlayPaused;
+	char *	fgRecording;
+	char *	fgRecordPaused;
+	char *	fgSavingRec;
+	char *	fgUSB_MSC;
+	char *	fgTB_Error;
+	char *	fgNoUSBcable;
+	char *	fgUSBconnect;
+	char *	fgPowerDown;
+	char *	fgEnterDFU;
 	
 }	TBConfig_t;
 extern TBConfig_t 	TB_Config;		// global TBook configuration

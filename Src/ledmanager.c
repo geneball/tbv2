@@ -193,9 +193,9 @@ void								ledThread( void *arg ){
 void 								ledFg( const char *def ){						// install 'def' as foreground pattern
 	if ( def==NULL || def[0]==0 ){  	// "" => switch to background pattern
 		currSeq = bgSeq;
-//		dbgLog( "ledFg: off \n", def );
+		dbgLog( "ledFg: off \n", def );
 	} else {
-//		dbgLog( "ledFg: %s \n", def );
+		dbgLog( "ledFg: %s \n", def );
 		convertSeq( prepSeq, def );	// convert into prep
 		ledSeq *sv = fgSeq;			// swap prep with fg
 		fgSeq = prepSeq;
