@@ -23,10 +23,10 @@ typedef enum { 	// Punct -- JSONish punctuation tokens
 typedef enum { 	// Action -- TBook actions
 				aNull=0, 	LED,		bgLED,		
 				playSys, 	playSubj,	pausePlay,	resumePlay,		stopPlay,	volAdj,		spdAdj,		posAdj,
-				startRec,	pauseRec,	resumeRec,	finishRec,		writeMsg,
+				startRec,	pauseRec,	resumeRec,	finishRec, playRec,	saveRec, writeMsg,
 				goPrevSt,	saveSt,		goSavedSt,
 				subjAdj, 	msgAdj,		setTimer,		showCharge,
-				startUSB,	endUSB,		powerDown,	sysBoot
+				startUSB,	endUSB,		powerDown,	sysBoot, sysTest, playNxtPkg, changePkg
 }	Action;
 
 typedef union { 

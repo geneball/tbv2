@@ -6,28 +6,46 @@
 
 
 // ---------------   parse  /system/control.def  &  /package/list_of_subjects.txt  & /package/SUBJ*/messages.txt 
-static void		pathCat( char *path, const char * src ){  // strcat & convert '\' to '/'
+static void		pathCat( char *path, const char * src, const char * src2 ){  // strcat & convert '\' to '/'
 	short plen = strlen( path );
+	if ( path[plen-1]=='\\' ) path[plen-1] = '/';
+	if ( path[plen-1]!='/' ) path[plen++] = '/'; 
+	
 	short slen = strlen( src );
 	for( short i=0; i<slen; i++ )
 		path[ plen+i ] = src[i]=='\\'? '/' : src[i];
 	path[ plen+slen ] = 0;
+	
+	if ( src2 != NULL ){
+		plen += slen;
+		slen = strlen( src2 );
+		for( short i=0; i<slen; i++ )
+			path[ plen+i ] = src2[i]=='\\'? '/' : src2[i];
+		path[ plen+slen ] = 0;
+	}
 }
 static void		appendIf( char * path, const char *suffix ){	// append 'suffix' if not there
 	short len = strlen( path );
 	short slen = strlen( suffix );
 	if ( len<slen || strcasecmp( &path[len-slen], suffix )!=0 )
-		pathCat( path, suffix );
+		strcat( path, suffix );
 }
 void					buildPath( char *path, const char *dir, const char *nm, const char *ext ){
 	short dirlen = strlen( dir );
 	short nmlen = strlen( nm );
 	short extlen = strlen( ext );
-	path[0] = 0;
-	if ( dirlen<2 || dir[2]!=':' ) strcat( path, "M0:/" );
-	pathCat( path, dir );
-	appendIf( path, "/" );
-	pathCat( path, nm );
+	
+	strcpy( path, "M0:/" );
+	bool absNm = ( nm[0]=='/' || strcmp(nm, "M0:")==0 );		// is nm an absolute path?
+	
+	const char *p = absNm? nm : dir;
+	if ( p[2]==':' ) p += 3;
+	if ( *p=='/' ) p++;
+	pathCat( path, p, NULL );
+	if ( !absNm ){
+		appendIf( path, "/" );
+		pathCat( path, nm, NULL );
+	}
 	appendIf( path, ext );
 	if ( strlen( path ) >= MAX_PATH ) 
 		tbErr( "path too long" ); 
@@ -42,10 +60,45 @@ static char *	loadPath( TknID tknid ){	// build file path prefix from tkn in pat
 	buildPath( path, tknStr(tknid), "", "" );
 	return allocStr( path );
 }
-void 					readContent( void ){		// parse list_of_subjects.txt & messages.txt for each Subj => Content	
-	FILE *inFile = fopen( TBP[ pLIST_OF_SUBJS ], "rb" );
+char *				getStrFld( TknID listObj, const char *nm, char *defVal ){ // copy string value of fied 'nm', if present
+	TknID v = getField( listObj, nm );
+	if ( v.tknID==0 )
+		return defVal;
+	char buff[ MAX_PATH ];
+	toStr( buff, v );
+	return allocStr( buff );
+}
+void					findPackages( void ){						// scan for M0:/package*/  directories
+	const char *packageDirPatt = "M0:/package*";
+
+	fsFileInfo fInfo;
+	fInfo.fileID = 0;
+	nPackages = 0;
+	int pkgNmLen = 100;
+	while ( ffind( packageDirPatt, &fInfo )==fsOK ){		// find all package directories on device
+		char pkgPath[ MAX_PATH ];
+		buildPath( pkgPath, "M0:/", fInfo.name, "/" );
+		TBPackage[ nPackages++ ] = readContent( pkgPath );
+		if ( strlen( fInfo.name ) < pkgNmLen ){
+			pkgNmLen = strlen( fInfo.name );
+			iPkg = nPackages-1;			// shortest is the initial package
+		}
+	}
+	TBPkg = TBPackage[ iPkg ];
+}
+TBPackage_t * readContent( const char * pkgPath ){		// parse list_of_subjects.txt & messages.txt for each Subj => Content	
+	char pth[MAX_PATH];
+	buildPath( pth, pkgPath, "list_of_subjects", ".txt" );
+	
+	FILE *inFile = fopen( pth, "rb" );
 	if ( inFile==NULL )
 		tbErr( "list_of_subjects file not found" );
+	
+	TBPackage_t * Pkg = tbAlloc( sizeof(TBPackage_t), "pkg" );
+	Pkg->nSubjs = 0;
+	Pkg->path = allocStr( pkgPath );
+	buildPath( pth, pkgPath, "package", ".wav" );
+	Pkg->packageName = allocStr( pth );
 	
 	char 		line[200], dt[30];			// up to 200 characters per line
 	fsTime tm;
@@ -62,13 +115,13 @@ void 					readContent( void ){		// parse list_of_subjects.txt & messages.txt for
 		nLnTkns = tokenize( lineTkns, 20, line );		// get tokens from line
 		if ( nLnTkns>0 && asPunct( lineTkns[0] )!=Semi ){	// if not comment, tkn is file path for subj/messages.txt
 			tbSubject * sb = tbAlloc( sizeof( tbSubject ), "tbSubjects" ); 
-			TBookSubj[ nSubjs ] = sb;
-			nSubjs++;
+			Pkg->TBookSubj[ Pkg->nSubjs ] = sb;
+			Pkg->nSubjs++;
 
-			buildPath( msg_txt_fname, TBP[ pPACKAGE_DIR ], tknStr( lineTkns[0] ), "");
+			buildPath( msg_txt_fname, pkgPath, tknStr( lineTkns[0] ), "");
 			sb->path = allocStr( msg_txt_fname );
 			
-			buildPath( msg_txt_fname, sb->path, "messages.txt", ".txt" );
+			buildPath( msg_txt_fname, sb->path, "messages", ".txt" );
 			TknID msgs = parseFile( msg_txt_fname );	// parse JSONish messages.txt
 			sb->name = tknStr( getField( msgs, "Subject" ));
 			sb->audioName = tknStr( getField( msgs, "audioName" ));
@@ -82,6 +135,7 @@ void 					readContent( void ){		// parse list_of_subjects.txt & messages.txt for
 		}
 	}
 	fclose( inFile );	// done with list_of_subjects.txt
+	return Pkg;
 }
 static short	asStIdx( TknID stNm ){			// => idx of csmState with this 'stNm', or alloc
 	for( short i=0; i<nCSMstates; i++ ){
@@ -122,6 +176,19 @@ void 					readControlDef( void ){				// parse control.def => Config & TBookCSM[]
 	TB_Config.powerCheckMS = getIntFld( cfg, "powerCheckMS", 60000 );	// once/min
 	TB_Config.shortIdleMS = getIntFld( cfg, "shortIdleMS", 2000 );		// 2 sec
 	TB_Config.longIdleMS = getIntFld( cfg, "longIdleMS", 30000 );		// 30 sec
+	
+	TB_Config.bgPulse 				= getStrFld( cfg, "bgPulse", 			TB_Config.bgPulse );
+	TB_Config.fgPlaying 			= getStrFld( cfg, "fgPlaying",  	TB_Config.fgPlaying );
+	TB_Config.fgPlayPaused 		= getStrFld( cfg, "fgPlayPaused", TB_Config.fgPlayPaused );
+	TB_Config.fgRecording 		= getStrFld( cfg, "fgRecording", 	TB_Config.fgRecording );
+	TB_Config.fgRecordPaused 	= getStrFld( cfg, "fgRecordPaused", TB_Config.fgRecordPaused );
+	TB_Config.fgSavingRec 		= getStrFld( cfg, "fgSavingRec", 	TB_Config.fgSavingRec );
+	TB_Config.fgUSB_MSC 			= getStrFld( cfg, "fgUSB_MSC", 		TB_Config.fgUSB_MSC );
+	TB_Config.fgTB_Error 			= getStrFld( cfg, "fgTB_Error", 	TB_Config.fgTB_Error );
+	TB_Config.fgNoUSBcable 		= getStrFld( cfg, "fgNoUSBcable", TB_Config.fgNoUSBcable );
+	TB_Config.fgUSBconnect 		= getStrFld( cfg, "fgUSBconnect", TB_Config.fgUSBconnect );
+	TB_Config.fgPowerDown 		= getStrFld( cfg, "fgPowerDown", 	TB_Config.fgPowerDown );
+	TB_Config.fgEnterDFU 			= getStrFld( cfg, "fgEnterDFU", 	TB_Config.fgEnterDFU );
 
 	TB_Config.minShortPressMS = getIntFld( cfg, "minShortPressMS", 50 );	// extern from inputmanager.c
 	TB_Config.minLongPressMS = getIntFld( cfg, "minLongPressMS", 600 );	// extern from inputmanager.c

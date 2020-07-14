@@ -26,7 +26,7 @@ const int 				MAX_CHS_PER_LN 	= 300;						// MAX chars in a single line
 //const int 				N_LST_NDS 			= 800;						// MAX list nodes in parsed files	// after control.def(29Apr18): 381
 //const int 				N_LISTS 				= 1000;		  			// MAX # of lists in parsed files	// after control.def(29Apr18): 0
 #define N_TKN_NDS 			 500	
-#define N_STR_CHS 			2000
+#define N_STR_CHS 			2400
 #define HASH_SZ 				 103
 #define N_LST_NDS 			 800
 #define NGRPS 						 8
@@ -156,13 +156,13 @@ void 							initTknTable(){										// initialize tknTable-- (self inits on fir
 		"aNull LED bgLED playSys playSubj pausePlay resumePlay stopPlay volAdj spdAdj posAdj",
 //				aNull=0, 	LED,		bgLED,		
 //				playSys, 	playSubj,	pausePlay,	resumePlay,		stopPlay,	volAdj,		spdAdj,		posAdj,
-		"startRec pauseRec resumeRec finishRec writeMsg",
-//				startRec,	pauseRec,	resumeRec,	finishRec,		writeMsg,
+		"startRec pauseRec resumeRec finishRec playRec saveRec writeMsg",
+//				startRec,	pauseRec,	resumeRec,	finishRec, playRec,	saveRec, writeMsg,
 		"goPrevSt saveSt goSavedSt subjAdj msgAdj setTimer showCharge",
 //				goPrevSt,	saveSt,		goSavedSt,
 //				subjAdj, 	msgAdj,		setTimer,	showCharge,
-		"startUSB endUSB powerDown sysBoot", "" );
-//				startUSB,	endUSB,		powerDown,	sysBoot
+		"startUSB endUSB powerDown sysBoot sysTest", "playNxtPkg changePkg" );
+//				startUSB,	endUSB,		powerDown,	sysBoot, sysTest, playNxtPkg, changePkg
 	verifyEnum( "aNull", sysBoot );
 
 	addGroup( "gTkn", "tNull", "","","","" );	// predefine one value in group gTkns: subsequent non-predefined strings get allocated as gTkns
