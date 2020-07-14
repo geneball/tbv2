@@ -370,6 +370,7 @@ void 								audRecordComplete( void ){										// last buff recorded, finish s
 	audSaveBuffs();			// write all filled SvBuff[]
 	int err = fclose( pSt.audF );
 	if ( err != fsOK ) tbErr("rec fclose => %d", err );
+	ledFg( NULL );
 	
 	dbgEvt( TB_audRecClose, pSt.nSaved, pSt.buffNum, minFreeBuffs, 0);
 	logEvtNINI( "recMsg", "ms", pSt.msRecorded, "nSamp", pSt.nSaved );
@@ -565,7 +566,7 @@ static void 				haltRecord( void ){														// ISR callable: stop audio inp
 	pSt.msRecorded += (pSt.tsPause - pSt.tsResume);  		// (tsResume == tsRecord, if never paused)
 	dbgEvt( TB_audRecDn, pSt.msRecorded, 0, 0,0 );
 	
-	ledFg( NULL );				// Turn off foreground LED: no longer recording  
+	ledFg( TB_Config.fgSavingRec );				// Switch foreground LED to saving  
 }
 
 static void					setWavPos( int msec ){

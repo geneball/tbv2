@@ -184,7 +184,7 @@ void						logPowerUp( bool reboot ){											// re-init logger after reboot, U
 	
 	logEvtNI( "BOOT", "cnt", bootcnt );
 	dbgEvt( TB_bootCnt, bootcnt, 0,0,0);
-	logEvtNININI( "NorLog", "Idx", NLg.currLogIdx, "Sz", NLg.Nxt-NLg.logBase, "FreeK", (NLg.MAX_ADDR-NLg.Nxt)/1000 );
+	logEvtNININI( "NorLog", "Idx", NLg.currLogIdx, "Sz", NLg.Nxt-NLg.logBase, "Free%", (NLg.MAX_ADDR-NLg.Nxt)*100/NLg.MAX_ADDR );
 	
 	fsFileInfo fAttr;
 	fAttr.fileID = 0;
@@ -331,9 +331,9 @@ void						logEvtS( const char *evtID, const char *args ){		// write log entry: '
 	char 		evtBuff[ MAX_EVT_LEN1 ];
 	int tsec = ts/100, sec = tsec/10, min = sec/60, hr = min/60;
 	if ( hr > 0 )
-		sprintf( evtBuff,  "%d.%02d.%02d.%d: %8s", hr, min %60, sec % 60, tsec % 10, evtID );
+		sprintf( evtBuff,  "%d_%02d_%02d.%d: %8s", hr, min %60, sec % 60, tsec % 10, evtID );
 	else
-		sprintf( evtBuff,  "%d.%02d.%d: %8s", min %60, sec % 60, tsec % 10, evtID );
+		sprintf( evtBuff,  "%d_%02d.%d: %8s", min %60, sec % 60, tsec % 10, evtID );
 	addHist( evtBuff, args );
 	dbgLog( "%s %s\n", evtBuff, args );
 	
@@ -570,7 +570,7 @@ void						copyNorLog( const char * fpath ){								// copy curr Nor log into fil
 	
 	strcpy( fnm, fpath );
 	if ( strlen( fnm )==0 ) // generate tmp log name
-		sprintf( fnm, "%s/tbLog_%d_%d.txt", norLogPath, NLg.currLogIdx, NLg.Nxt );  // e.g. LOG/NLg0_82173.txt  .,. /NLg61_7829377.txt
+		sprintf( fnm, "%s/tbLog_%d.txt", norLogPath, NLg.currLogIdx );  // e.g. LOG/tbLog_x.txt  .,. /NLg61_7829377.txt
 	FILE * f = fopen( fnm, "w" );
 	if ( f==NULL ) tbErr("cpyNor fopen err");
 	

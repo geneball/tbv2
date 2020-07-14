@@ -7,7 +7,7 @@
 #include "fs_evr.h"					// FileSys components
 #include "fileOps.h"				// decode & encrypt audio files
 
-const char * 	TBV2_Version 				= "V2.07 of 9-Jul-2020";
+const char * 	TBV2_Version 				= "V2.07 of 13-Jul-2020";
 
 //
 // Thread stack sizes
@@ -224,6 +224,7 @@ void talking_book( void *arg ) {
 
 	initMediaPlayer( );
 	
+	EventRecorderEnable( evrEAOD, 			EvtFsCore_No, EvtFsMcSPI_No );  	//FileSys library 
 	for (int i=0; fsDevs[i]!=NULL; i++ ){
 		fsStatus stat = fsMount( fsDevs[i] );
 		if ( stat == fsOK ){	// found a formatted device
@@ -232,6 +233,7 @@ void talking_book( void *arg ) {
 		} 
 		dbgLog( "%s%d ", fsDevs[i], stat );
 	}
+	EventRecorderDisable( evrAOD, 			EvtFsCore_No, EvtFsMcSPI_No );  	//FileSys library 
 	dbgLog( " NDv=%d \n", fsNDevs );
 	if ( fsNDevs == 0 )
 		debugLoop( );
