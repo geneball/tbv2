@@ -10,7 +10,7 @@
 const int BUFF_SIZ = 4096;
 const int MAX_WAV_BYTES = 16000*2*200;
 
-struct decode_state {		// decode state passed to mp3 callbacks
+typedef struct {		// decode state passed to mp3 callbacks
   int freq;				// samples/sec from decoded pcm structure
 
   FILE *fmp3;
@@ -19,7 +19,10 @@ struct decode_state {		// decode state passed to mp3 callbacks
   FILE *fwav;
 
   unsigned char in_buff[ BUFF_SIZ ];
-} decoder_state;
+} decoder_state_t;
+
+static decoder_state_t decoder_state; 
+
 //
 static char *								wav_header( int hz, int ch, int bips, int data_bytes ){  										// => ptr to valid .wav header
     static char hdr[44] = "RIFFsizeWAVEfmt \x10\0\0\0\1\0ch_hz_abpsbabsdatasize";
@@ -43,11 +46,15 @@ static enum mad_flow 				input( void *st, struct mad_stream *stream ){										
  * This is the input callback. The purpose of this callback is to (re)fill
  * the stream buffer which is to be decoded. 
  */
-  struct decode_state *dcdr_st = st;
+  decoder_state_t *dcdr_st = st;
 
 	if ( dcdr_st->fmp3==NULL ) // file already closed, stop
 		return MAD_FLOW_STOP;
-	
+	// TODO: SAVE UNUSED PART OF BUFFER
+// if (stream->next_frame) {
+//    memmove(input->data, stream->next_frame,
+//	    input->length = &input->data[input->length] - stream->next_frame);
+//  }	
   int len = fread( &dcdr_st->in_buff, 1, BUFF_SIZ, dcdr_st->fmp3 );     // read next buffer
   if ( len==0 ){  // end of file encountered
 		memset( dcdr_st->in_buff, 0, BUFF_SIZ );	// set buff to 0
@@ -63,8 +70,6 @@ static enum mad_flow 				hdr( void *st,	struct mad_header const *stream ){						
 	printf("hdr: %x \n", (uint32_t) stream );
   return MAD_FLOW_CONTINUE;
 }
-
-
 static inline int 					scale( mad_fixed_t sample ){																								// TODO: replace with dithering?
 /*
  * The following utility routine performs simple rounding, clipping, and
@@ -92,7 +97,7 @@ static enum mad_flow 				output( void *st, struct mad_header const *header, stru
  * MPEG audio data has been completely decoded. The purpose of this callback
  * is to output (or play) the decoded PCM audio.
  */
-  struct decode_state *dcdr_st = st;
+  decoder_state_t *dcdr_st = st;
 
   unsigned int nchannels, nsamples;
   mad_fixed_t const *left_ch, *right_ch;
@@ -160,7 +165,7 @@ void 												mp3ToWav( const char *nm ){		// decode nm.mp3 to nm.wav
  * MAD_FLOW_STOP (to stop decoding) or MAD_FLOW_BREAK (to stop decoding and
  * signal an error).
  */	
-  struct decode_state *dcdr_st = &decoder_state;
+  decoder_state_t * dcdr_st = &decoder_state;
 	dcdr_st->freq = 0;
 	dcdr_st->fmp3 = NULL;
 	dcdr_st->in_pos = 0;
