@@ -350,6 +350,14 @@ bool											powerChanged(){
 	}	
 	*pSvVal = newVal; 
 } */
+
+const int LiLOW = 3400;     // mV at  ~5% capacity
+const int LiMED = 3600;			// mV at ~40%
+const int LiHI  = 3800;			// mV at ~75%
+const int ReplLOW = 2300;   // mV at ~15% capacity (for AA Alkaline)
+const int ReplMED = 2500;		// mV at ~45%  
+const int ReplHI  = 2700;		// mV at ~75%  
+
 void 											checkPower( ){				// check and report power status
 	//  check gPWR_FAIL_N & MCP73871: gBAT_PG_N, gBAT_STAT1, gBAT_STAT2
 	bool PwrFail 			= gGet( gPWR_FAIL_N );	// PD0 -- input power fail signal
@@ -400,15 +408,15 @@ void 											checkPower( ){				// check and report power status
 	EnableADC( false );		// turn ADC off
 	
 	if ( powerChanged() ){	// update pS state & => true if significant change
-	
 		char sUsb = PwrGood_N==0? 'U' : 'u';
-		char sLi = RngChar( 2000, 4000, pS.LiMV ); 				// range from charge='0' to charge='9'
+		char sLi = RngChar( 3000, 4000, pS.LiMV ); 				// range from charge='0' to charge='9' to '!' > 4000
 		char sPr = RngChar( 2000, 4000, pS.PrimaryMV ); 	// 2000..2200 = '0', 3800..4000 = '9'
 		char sBk = RngChar( 2000, 4000, pS.VBatMV ); 
 		char sMt = RngChar(  200, 1200, pS.MpuTempMV ); 	// 200..300 = '0'  1000..1200 = '9'
 		char sLt = RngChar(  200, 1200, pS.LiThermMV ); 
 		char sCh = ' ';
-		if (pstat==CHARGING) 	sCh = 'c';
+		if (pstat!=CHARGING)  sLt = ' ';		// not meaningful unless charging
+		if (pstat==CHARGING)  sCh = 'c'; 
 		if (pstat==CHARGED) 	sCh = 'C';
 		if (pstat==TEMPFAULT) sCh = 'X';
 
@@ -418,15 +426,43 @@ void 											checkPower( ){				// check and report power status
 
 		dbgLog( "srTB: %d %4d %3d %4d\n", pstat, pS.VRefMV, pS.MpuTempMV, pS.VBatMV );
 		dbgLog( "LtLP: %3d %4d %4d\n", pS.LiThermMV, pS.LiMV, pS.PrimaryMV );
-		if ( pS.MpuTempMV > 1000 ) sendEvent( MpuHot, pS.MpuTempMV );
-		if ( pS.LiThermMV > 1000 ) sendEvent( LithiumHot, pS.LiThermMV );
-	
-		switch ( pstat ){
-			case CHARGED:				sendEvent( BattCharged, 0 ); 			break; 		// CHARGING complete
-			case CHARGING: 			sendEvent( BattCharging, pS.LiMV );	break;		// started charging
-			case TEMPFAULT:			sendEvent( ChargeFault,  pS.LiMV );	break;		// LiIon charging fault (temp?)
-			case LOWBATT:				sendEvent( LowBattery,  pS.LiMV );		break;		// LiIon is low  (no USB)
-			default: break;
+		if ( pS.MpuTempMV > 500 ){
+			logEvtNI("MpuTemp", "mV", pS.MpuTempMV );
+			sendEvent( MpuHot, pS.MpuTempMV );
+		}
+	  if ( pS.haveUSB ){		// charger status is only meaningful if we haveUSB power
+			switch ( pstat ){
+				case CHARGED:						// CHARGING complete
+					logEvtNI("BattCharged", "mV", pS.LiMV ); 
+					sendEvent( BattCharged, pS.LiMV ); 			
+					break; 
+				case CHARGING: 					// started charging
+					logEvtNI("BattCharging", "mV", pS.LiMV ); 
+					sendEvent( BattCharging, pS.LiMV );	
+					if ( pS.LiThermMV > 500 ){		// lithium thermistor is only active while charging
+						logEvtNI("LiTemp", "mV", pS.LiThermMV );
+						sendEvent( LithiumHot, pS.LiThermMV );
+					}
+					break;
+				case TEMPFAULT:					// LiIon charging fault (temp?)
+					logEvtNI("ChargeFault", "LiTherm mV", pS.LiThermMV ); 
+					sendEvent( ChargeFault,  pS.LiMV );	
+					break;
+				case LOWBATT:						// LiIon is low  (no USB)
+					logEvtNI("BattLow", "mV", pS.LiMV ); 
+					sendEvent( LowBattery,  pS.LiMV );		
+					break;
+				default: break;
+			}
+		} else {  // no USB,  report if batteries are present, but low
+			if ( pS.PrimaryMV > 1000 && pS.PrimaryMV < ReplLOW ){
+				logEvtNI("ReplBattLow", "mV", pS.PrimaryMV ); 
+				sendEvent( LowBattery,  pS.PrimaryMV );		
+			}
+			if ( pS.LiMV > 1000 && pS.LiMV < LiLOW ){
+				logEvtNI("LiBattLow", "mV", pS.LiMV ); 
+				sendEvent( LowBattery,  pS.LiMV );		
+			}
 		}
 	}
 }
@@ -440,22 +476,32 @@ void 											showBattCharge(){			// generate ledFG to signal power state
 	char c1, c2, c3;
 	
 	if ( pS.chkCnt==0 )		checkPower();
+
+	if ( pS.haveUSB )
+		logEvt("PwrOnUSB" );
 	
+	logEvtNI("PwrLiIon", 		"mV", 	pS.LiMV );
+	logEvtNI("PwrPrimary", 	"mV", 	pS.PrimaryMV );
+	logEvtNI("PwrBackup", 	"mV", 	pS.VBatMV );
+	logEvtNI("Therm", 			"Mpu", 	pS.MpuTempMV );
+
   // if haveUSB power & not NOLITH:  report charging status
 	// R R R -- temp fault
-	// G O R -- low liIon pre-charging
-	// G O O -- charging & LiMV < 3300
-	// G O G -- charging & LiMV > 3300
+	// G O R -- low liIon pre-charging or LiMED
+	// G O O -- charging & LiMV < LiHI
+	// G O G -- charging & LiMV > LiHI
 	// G G G -- charged
   if ( pS.LiMV > 2000 ){
 		if ( pS.haveUSB ){ // report Li charge status
 			c1 = 'G';
 			c2 = 'O';
+			logEvtNI("Charger", "Stat", pS.Stat );
 			switch ( pS.Stat ){
 				case TEMPFAULT:		c1='R'; c2='R', c3='R'; break;	// R R R   - temp fault
 				case LOWBATT:			c3='R';	break;									// G O R -- low, pre-charge
 				case CHARGING:		
-					c3 = pS.LiMV < 3300? 'O' : 'G';									// G O O or G O G
+					logEvtNI("Charging", "LiThermMV", pS.LiThermMV );
+					c3 = pS.LiMV < LiMED? 'R' : (pS.LiMV < LiHI?'O' : 'G');		// GOR, GOO or GOG
 				  break;
 				case CHARGED:			c2='G'; c3='G';	break;  				// G G G  -- charged
 				
@@ -464,28 +510,29 @@ void 											showBattCharge(){			// generate ledFG to signal power state
 			}
 		} else
 		// if no USB, but LiMV > 2000 : report LiIon level
-		// O O R -- LiMV < 3000
-		// O O O -- LiMV < 3300
-		// O O G -- LiMV < 3600
-		// O G G -- LiMV > 3600
+		// O O R -- LiMV < LiLOW
+		// O O O -- LiMV < LiMED
+		// O O G -- LiMV < LiHI
+		// O G G -- LiMV > LiHI
 		{	
 			c1 = 'O'; 
-			c2 = pS.LiMV < 3600? 'O' : 'G';
-			c3 = pS.LiMV < 3000? 'R' : pS.LiMV < 3300? 'O' : 'G';
+			c2 = pS.LiMV < LiHI? 'O' : 'G';
+			c3 = pS.LiMV < LiLOW? 'R' : (pS.LiMV < LiMED? 'O' : 'G');
 		}
 	} else 
-	// if no USB & no Lith:  report primary level
-	// R O R -- primary < 2.2V
-	// R O O -- primary < 2.4V
-	// R O G -- primary < 2.6V
-	// R G G -- primary > 2.6V
+	// if no USB & no Lith:  report primary (replaceable) level
+	// R O R -- primary < ReplLOW
+	// R O O -- primary < ReplMED
+	// R O G -- primary < ReplHI
+	// R G G -- primary > ReplHI
 	{
 		c1 = 'R'; 
-		c2 = pS.PrimaryMV < 2600? 'O' : 'G';
-		c3 = pS.PrimaryMV < 2200? 'R' : pS.PrimaryMV < 2400? 'O' : 'G';
+		c2 = pS.PrimaryMV < ReplHI? 'O' : 'G';
+		c3 = pS.PrimaryMV < ReplLOW? 'R' : (pS.PrimaryMV < ReplMED? 'O' : 'G');
 	}
 	sprintf( fg, fmt, c1,c2,c3 );
 	ledFg( fg );
+	logEvtS("battChg", fg );
 }
 
 /*   // *************  Handler for PowerFail interrupt
