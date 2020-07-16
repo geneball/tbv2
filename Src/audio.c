@@ -95,6 +95,13 @@ void								audInitState( void ){													// set up playback State in pSt
   pSt.audType = audUNDEF;
   memset( pSt.wavHdr, 0x00, WaveHdrBytes );
 	
+	if ( nFreeBuffs != MxBuffs ) 
+		dbgLog("audInit: missing buffs %d \n", nFreeBuffs );
+	if ( pSt.audF != NULL ){
+		dbgLog("audInit close audF\n");
+		int res = fclose( pSt.audF );
+		if ( res!=fsOK ) dbgLog( "audInit fclose => %d \n", res );
+	}
 	pSt.audF = NULL;
 	
 	pSt.samplesPerSec = 1;		// avoid /0 if never set
@@ -198,15 +205,29 @@ void 								audPlayAudio( const char* audioFileName, MsgStats *stats ){ // star
 	} else
 		tbErr("NYI");
 }
+void								audPlayDone(){																// close, report errs, => idle
+	if ( pSt.audF!=NULL ){ // normally closed by loadBuff
+		int res = fclose( pSt.audF );
+		if ( res!=fsOK ) dbgLog( "PlyDn fclose => %d \n", res );
+		pSt.audF = NULL;
+	}
+	if ( pSt.ErrCnt > 0 ){
+		dbgLog( "%d audio Errs, Lst=0x%x \n", pSt.ErrCnt, pSt.LastError );
+		logEvtNINI( "PlyErr", "cnt", pSt.ErrCnt, "last", pSt.LastError );
+	}
+	pSt.state = pbIdle;
+}
 void 								audStopAudio( void ){													// abort any leftover operation
 	MediaState st = audGetState();
 	if (st == Ready ) return;
 	
 	if (st == Recording ){
 		if ( pSt.state==pbRecording ){
+			dbgLog("stopAud Rec %x\n", pSt.audF );
 			haltRecord();		// shut down dev, update timestamps
 			audRecordComplete();  // close file, report errors
 		}
+		freeBuffs();
 		pSt.state = pbIdle;
 		logEvt( "recLeft" );
 		return;
@@ -214,9 +235,10 @@ void 								audStopAudio( void ){													// abort any leftover operation
 	
 	if (st == Playing ){
 		if (pSt.state==pbPlaying ) 
-			haltPlayback();			// stop device & update timestamps
-		pSt.state = pbIdle;
-		
+			audPlayDone();
+//			haltPlayback();			// stop device & update timestamps
+//		pSt.state = pbIdle;
+		freeBuffs();
 		pSt.stats->Left++;		// update stats for interrupted operation
 		int pct = audPlayPct();
 		dbgLog( "audStop %d \n", pct );
@@ -344,18 +366,10 @@ void								audLoadBuffs(){																// called on mediaThread to preload a
 			if ( pSt.Buff[i]==NULL )
 				pSt.Buff[i] = loadBuff();	
 }
+
 void 								audPlaybackComplete( void ){									// shut down after completed playback
 	haltPlayback();
-
-	if ( pSt.audF!=NULL ){ // normally closed by loadBuff
-		fclose( pSt.audF );
-		pSt.audF = NULL;
-	}
-	if ( pSt.ErrCnt > 0 ){
-		dbgLog( "%d audio Errs, Lst=0x%x \n", pSt.ErrCnt, pSt.LastError );
-		logEvtNINI( "PlyErr", "cnt", pSt.ErrCnt, "last", pSt.LastError );
-	}
-	pSt.state = pbIdle;
+  audPlayDone();		
 
 	int pct = pSt.msPlayed * 100 / pSt.msecLength;
 	dbgEvt( TB_audDone, pSt.msPlayed, pct, 0,0 );
@@ -369,7 +383,7 @@ void 								audRecordComplete( void ){										// last buff recorded, finish s
 	freeBuffs( );
 	audSaveBuffs();			// write all filled SvBuff[]
 	int err = fclose( pSt.audF );
-	if ( err != fsOK ) tbErr("rec fclose => %d", err );
+	if ( err != fsOK ) dbgLog("recCom fclose => %d \n", err );
 	ledFg( NULL );
 	
 	dbgEvt( TB_audRecClose, pSt.nSaved, pSt.buffNum, minFreeBuffs, 0);
@@ -477,29 +491,6 @@ static void					freeBuffs(){																	// free all audio buffs from pSt->B
 	}
 }
 
-/*static void 				testSaveWave( ){															//DEBUG-- time saving RECORD_SEC of wave file
-	FILE* outFP = fopen( "M0:/messages/testmsg.wav", "wb" );
-	if ( outFP == NULL ) tbErr("testSaveBuff open failed"); 
-	
-	audInitState();
-	pSt.audF = outFP;
-	audSquareWav( RECORD_SEC, 880 );
-	
-	int tsStartSv = tbTimeStamp();
-	int cnt = fwrite( pSt.wavHdr, 1, WaveHdrBytes, pSt.audF );
-	if ( cnt != WaveHdrBytes ) tbErr( "tst wavHdr cnt=%d", cnt );
-	
-  while ( pSt.sqrSamples > 0 ){
-		Buffer_t *pB = allocBuff(0);
-		fillSqrBuff( pB, BuffWds, true );		// left channel will be even samples of square wave
-		saveBuff( pB );
-	}
-	int err = fclose( outFP );
-	if ( err!=fsOK ) tbErr("fclose %d", err );
-	int tsEndSv = tbTimeStamp();
-	dbgLog( "testSv: %d sec in %d msec \n", RECORD_SEC, tsEndSv - tsStartSv );
-}
-*/
 static void 				fillSqrBuff( Buffer_t * pB, int nSamp, bool stereo ){	// DEBUG: fill buffer with current square wave
 		pSt.sqrSamples -= nSamp;		// decrement SqrWv samples to go
 
@@ -566,6 +557,7 @@ static void 				haltRecord( void ){														// ISR callable: stop audio inp
 	pSt.msRecorded += (pSt.tsPause - pSt.tsResume);  		// (tsResume == tsRecord, if never paused)
 	dbgEvt( TB_audRecDn, pSt.msRecorded, 0, 0,0 );
 	
+	ledFg( NULL );		// cancel fgRecording
 	ledFg( TB_Config.fgSavingRec );				// Switch foreground LED to saving  
 }
 
@@ -618,7 +610,8 @@ static Buffer_t * 	loadBuff( ){																	// read next block of audio into
 	if ( nSamp < BuffWds ){ 				// room left in buffer: at EOF, so fill rest with zeros
 		if ( nSamp <= BuffWds-MIN_AUDIO_PAD ){
 			pSt.audioEOF = true;							// enough padding, so stop after this
-			fclose( pSt.audF );
+			int res = fclose( pSt.audF );
+			if ( res!=fsOK ) dbgLog( "ldBuf fclose => %d \n", res );
 			pSt.audF = NULL;
 			dbgEvt( TB_audClose, nSamp, 0,0,0);
 		}
