@@ -50,12 +50,18 @@ static enum mad_flow 				input( void *st, struct mad_stream *stream ){										
 
 	if ( dcdr_st->fmp3==NULL ) // file already closed, stop
 		return MAD_FLOW_STOP;
-	// TODO: SAVE UNUSED PART OF BUFFER
-// if (stream->next_frame) {
-//    memmove(input->data, stream->next_frame,
+
+	uint8_t *rdaddr = &dcdr_st->in_buff[0];
+	int rdlen = BUFF_SIZ;
+	if ( stream->next_frame ){			// SAVE UNUSED PART OF BUFFER
+		rdlen = stream->next_frame - dcdr_st->in_buff;	// amount that's been processed
+    memcpy( dcdr_st->in_buff, stream->next_frame, BUFF_SIZ - rdlen );
+		rdaddr = (uint8_t *) stream->next_frame;
+	}
 //	    input->length = &input->data[input->length] - stream->next_frame);
 //  }	
-  int len = fread( &dcdr_st->in_buff, 1, BUFF_SIZ, dcdr_st->fmp3 );     // read next buffer
+	
+  int len = fread( rdaddr, 1, rdlen, dcdr_st->fmp3 );     // fill rest of buffer
   if ( len==0 ){  // end of file encountered
 		memset( dcdr_st->in_buff, 0, BUFF_SIZ );	// set buff to 0
 		fclose( dcdr_st->fmp3 );

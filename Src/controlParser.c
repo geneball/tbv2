@@ -30,24 +30,24 @@ static void		appendIf( char * path, const char *suffix ){	// append 'suffix' if 
 	if ( len<slen || strcasecmp( &path[len-slen], suffix )!=0 )
 		strcat( path, suffix );
 }
-void					buildPath( char *path, const char *dir, const char *nm, const char *ext ){
+void					buildPath( char *dstpath, const char *dir, const char *nm, const char *ext ){ 		// dstpath[] <= "dir/nm.ext"
 	short dirlen = strlen( dir );
 	short nmlen = strlen( nm );
 	short extlen = strlen( ext );
 	
-	strcpy( path, "M0:/" );
+	strcpy( dstpath, "M0:/" );
 	bool absNm = ( nm[0]=='/' || strcmp(nm, "M0:")==0 );		// is nm an absolute path?
 	
 	const char *p = absNm? nm : dir;
 	if ( p[2]==':' ) p += 3;
 	if ( *p=='/' ) p++;
-	pathCat( path, p, NULL );
+	pathCat( dstpath, p, NULL );
 	if ( !absNm ){
-		appendIf( path, "/" );
-		pathCat( path, nm, NULL );
+		appendIf( dstpath, "/" );
+		pathCat( dstpath, nm, NULL );
 	}
-	appendIf( path, ext );
-	if ( strlen( path ) >= MAX_PATH ) 
+	appendIf( dstpath, ext );
+	if ( strlen( dstpath ) >= MAX_PATH ) 
 		tbErr( "path too long" ); 
 }
 static char *	allocStr( const char * s ){
@@ -78,7 +78,8 @@ void					findPackages( void ){						// scan for M0:/package*/  directories
 	while ( ffind( packageDirPatt, &fInfo )==fsOK ){		// find all package directories on device
 		char pkgPath[ MAX_PATH ];
 		buildPath( pkgPath, "M0:/", fInfo.name, "/" );
-		TBPackage[ nPackages++ ] = readContent( pkgPath );
+		TBPackage[ nPackages ] = readContent( pkgPath, nPackages );
+		nPackages++;
 		if ( strlen( fInfo.name ) < pkgNmLen ){
 			pkgNmLen = strlen( fInfo.name );
 			iPkg = nPackages-1;			// shortest is the initial package
@@ -86,7 +87,7 @@ void					findPackages( void ){						// scan for M0:/package*/  directories
 	}
 	TBPkg = TBPackage[ iPkg ];
 }
-TBPackage_t * readContent( const char * pkgPath ){		// parse list_of_subjects.txt & messages.txt for each Subj => Content	
+TBPackage_t * readContent( const char * pkgPath, int pkgIdx ){		// parse list_of_subjects.txt & messages.txt for each Subj => Content	
 	char pth[MAX_PATH];
 	buildPath( pth, pkgPath, "list_of_subjects", ".txt" );
 	
@@ -95,14 +96,17 @@ TBPackage_t * readContent( const char * pkgPath ){		// parse list_of_subjects.tx
 		tbErr( "list_of_subjects file not found" );
 	
 	TBPackage_t * Pkg = tbAlloc( sizeof(TBPackage_t), "pkg" );
+	Pkg->idx = pkgIdx;
 	Pkg->nSubjs = 0;
 	Pkg->path = allocStr( pkgPath );
 	buildPath( pth, pkgPath, "package", ".wav" );
 	Pkg->packageName = allocStr( pth );
+	logEvtNINS( "load Package", "idx", pkgIdx, "path", pkgPath );
 	
 	char 		line[200], dt[30];			// up to 200 characters per line
 	fsTime tm;
-	char *	contentVersion = loadLine( line, TBP[ pPKG_VERS ], &tm );
+	buildPath( pth, pkgPath, "version", ".txt" );
+	char *	contentVersion = loadLine( line, pth, &tm );
 	sprintf( dt, "%d-%d-%d %d:%d", tm.year, tm.mon, tm.day, tm.hr, tm.min );
 	logEvtNSNS( "Package", "dt", dt, "ver", contentVersion );
 	
@@ -132,6 +136,7 @@ TBPackage_t * readContent( const char * pkgPath ){		// parse list_of_subjects.tx
 				tbErr( "Invalid msg list" );
 			for ( int i=0; i<sb->NMsgs; i++ )
 				sb->msgAudio[ i ] = tknStr( getField( msgLst, (char *)i ));			// file paths for each message
+			logEvtNSNI( "Subj", "nm", sb->name, "nMsgs", sb->NMsgs );
 		}
 	}
 	fclose( inFile );	// done with list_of_subjects.txt
@@ -183,6 +188,8 @@ void 					readControlDef( void ){				// parse control.def => Config & TBookCSM[]
 	TB_Config.fgRecording 		= getStrFld( cfg, "fgRecording", 	TB_Config.fgRecording );
 	TB_Config.fgRecordPaused 	= getStrFld( cfg, "fgRecordPaused", TB_Config.fgRecordPaused );
 	TB_Config.fgSavingRec 		= getStrFld( cfg, "fgSavingRec", 	TB_Config.fgSavingRec );
+	TB_Config.fgSaveRec				= getStrFld( cfg, "fgSaveRec", 		TB_Config.fgSaveRec );
+	TB_Config.fgCancelRec			= getStrFld( cfg, "fgCancelRec", 	TB_Config.fgCancelRec );
 	TB_Config.fgUSB_MSC 			= getStrFld( cfg, "fgUSB_MSC", 		TB_Config.fgUSB_MSC );
 	TB_Config.fgTB_Error 			= getStrFld( cfg, "fgTB_Error", 	TB_Config.fgTB_Error );
 	TB_Config.fgNoUSBcable 		= getStrFld( cfg, "fgNoUSBcable", TB_Config.fgNoUSBcable );

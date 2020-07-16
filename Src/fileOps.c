@@ -3,6 +3,7 @@
 
 #include "fileOps.h"
 #include "EncAudio.h"
+#include "controlMgr.h"			// buildPath
 #include <string.h>
 
 const int 									FILE_ENCRYPT_REQ   =	0x01; 	// signal sent to request audio file encryption
@@ -81,45 +82,49 @@ static void 				encryptCopy( ){
 	if ( res != fsOK ) tbErr("dat fclose => %d", res );	
 }
 
-static void 				decodeMp3( const char *path, char *fname ){			// decode fname (.mp3) & copy to .wav
-	dbgLog("decode %s/%s \n", path, fname );
-	char fnm[60];
-	strcpy( fnm, path );
-	strcat( fnm, "/" );
-	strcat( fnm, fname );
-	mp3ToWav( fnm );
+static void 				decodeMp3( char *fpath ){			// decode fname (.mp3) & copy to .wav
+	int flen = strlen( fpath );
+	fpath[ flen-4 ] = 0;
+	strcat( fpath, ".wav" );
+	if ( !fexists( fpath )){
+		fpath[ flen-4 ] = 0;
+		strcat( fpath, ".mp3" );
+		mp3ToWav( fpath );
+	}
 }
-static void 				scanDecodeAudio( ){			// scan audio paths for .mp3 & copy to .wav
-
-	const char *packDirPatt = "M0:/package/*";
-	char path[ MAX_PATH ], patt[ MAX_PATH ]; 
-
+static bool					endsWith( char *nm, char *sfx ){
+	int nmlen = strlen( nm ), slen = strlen( sfx );
+	if ( nmlen < slen ) return false;
+	return strcasecmp( nm+nmlen-slen, sfx )==0;
+}
+static void 				scanTree( char *dstpath ){			// scan & decode mp3s in 'path'
 	fsFileInfo fInfo;
 	fInfo.fileID = 0;
-	strcpy( path, "M0:/ststem/audio/" );
-	strcpy( patt, path );
-	strcat( patt, "*.mp3" );
-	while ( ffind( patt, &fInfo )==fsOK ){		// process all .mp3 in /system/audio
-		decodeMp3( path, fInfo.name );
-	}
 	
-	fsFileInfo fDir;
-	fDir.fileID = 0;
-	while ( ffind(packDirPatt, &fDir )==fsOK ){		// process all directories in /package/
-		dbgLog("package dir %s \n", fDir.name );
-		if ( fDir.name[0]!='.' && fDir.attrib == 0x10 ){  // dir other than . or ..
-			strcpy( path, "M0:/package/" );
-			strcat( path, fDir.name );
-			
-			strcpy( patt, path );
-			strcat( patt, "/*.mp3" );
-			
-			fInfo.fileID = 0;
-			while ( ffind( patt, &fInfo )==fsOK ){		// process all .mp3 in /package/dir/
-				decodeMp3( path, fInfo.name );
-			}
-		}
+	int dlen = strlen( dstpath );
+	if ( dstpath[dlen-1]!='/' ) 
+		strcat( dstpath, "/" ); 
+	strcat( dstpath, "*" );
+	dlen = strlen( dstpath );
+	
+	while ( ffind( dstpath, &fInfo )==fsOK ){		// scan everything in dir 
+		
+		dstpath[ dlen-1 ] = 0;		// overwrite "*"
+		strcat( dstpath, fInfo.name );
+		
+		if ( fInfo.attrib == 0x10 &&  fInfo.name[0]!='.' ){  // dir other than . or ..
+			scanTree( dstpath );
+		} else if ( endsWith( fInfo.name, ".MP3" ))
+			decodeMp3( dstpath );
+		
+		dstpath[ dlen-1 ] = 0;		// revert to "path/*"
+		strcat( dstpath, "*" );
 	}
+}
+static void 				scanDecodeAudio( ){			// scan audio paths for .mp3 & copy to .wav
+	char path[ MAX_PATH ];
+	strcpy( path, "M0:/" );
+	scanTree( path );
 }
 
 static void 				fileOpThread( void *arg ){				
