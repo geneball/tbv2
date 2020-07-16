@@ -14,12 +14,14 @@ const char *  			fgPlayPaused		= "G2_3!";
 const char *  			fgRecording			= "R!";
 const char *  			fgRecordPaused	= "R2_3!";
 const char *				fgSavingRec			= "O!";
+const char *				fgSaveRec				= "G3_3G3";
+const char *				fgCancelRec			= "R3_3R3";
 const char *  			fgUSB_MSC				= "O5o5!";
-const char *  			fgTB_Error			= "R8_2R8_2R8_20!";
-const char *  			fgNoUSBcable		= "_3R3_3R3_3R3_5!";
+const char *  			fgTB_Error			= "R8_2R8_2R8_20!";		// repeat: 4.8sec
+const char *  			fgNoUSBcable		= "_3R3_3R3_3R3_5!";  // repeat: 2.3sec
 const char *				fgUSBconnect		= "G5g5!";
-const char *  			fgPowerDown			= "G_3G_3G_9G_3G_9G_3";
-const char *  			fgDFU						= "O3_5O3_3O3_2O3_1O3"; 
+const char *  			fgPowerDown			= "G_3G_3G_9G_3G_9G_3";  // length: 3.5sec
+const char *  			fgDFU						= "O3_5O3_3O3_2O3_1O3";  // length: 2.6sec
 
 // TBook Control State Machine
 int 	 								nCSMstates = 0;
@@ -108,9 +110,24 @@ static void 					playNxtPackage( ){										// play name of next available Pack
 	logEvtNSNI( "PlayPkg", "Pkg", pkg->packageName, "Idx", iPkg );  
 	playAudio( pkg->packageName, NULL );
 }
+static void 					showPkg( ){										// debug print Package iPkg
+	TBPackage_t * pkg = TBPackage[ iPkg]; 
+	printf( "iPkg=%d nm=%s nSubjs=%d \n", pkg->idx, pkg->packageName, pkg->nSubjs );
+	printf( " path=%s \n", pkg->path );
+	for (int i=0; i<pkg->nSubjs; i++){
+		tbSubject *sb = pkg->TBookSubj[ i ];
+		printf(" S%d nMsgs=%d pth=%s \n", i, sb->NMsgs, sb->path );
+		printf("   nm=%s anm=%s pr=%s \n", sb->name, sb->audioName, sb->audioPrompt );
+		for (int j=0; j<sb->NMsgs; j++)
+			printf("   M%d %s \n", j, sb->msgAudio[j] );
+	}
+}
 static void						changePackage(){											// switch to last played package name
 	TBPkg = TBPackage[ iPkg ];
+	TBook.iSubj = 0;
+	TBook.iMsg = 0;
 	logEvtNS( "ChgPkg", "Pkg", TBPkg->packageName );  
+	showPkg();
 }
 static void 					playSysAudio( char *arg ){				// play system file 'arg'
 	char path[MAX_PATH];
@@ -123,7 +140,6 @@ static void						startRecAudio( char *arg ){
 	resetAudio();
 	tbSubject * tbS = TBPkg->TBookSubj[ TBook.iSubj ];
 	char path[MAX_PATH];
-	buildPath( path, TB_Config.systemAudio, arg, ".dat" ); // .dat is encrypted audio
 	int mCnt = 0;
 	char * fNm = logMsgName( path, tbS->name, TBook.iSubj, TBook.iMsg, ".wav", &mCnt ); //".ogg" );		// build file path for next audio msg for S<iS>M<iM>
 	logEvtNSNINI( "Record", "Subj", tbS->name, "iM", TBook.iMsg, "cnt", mCnt );
@@ -406,7 +422,6 @@ static void 					eventTest(  ){										// report Events until DFU (pot table)
 		if ( evt->typ == starPlus ) return;
 	}
 }
-
 //
 static uint32_t 			startPlayingTS;
 static uint32_t 			PlayLoopBattCheck = 30*60*1000;		// 30min
@@ -548,15 +563,19 @@ static void 					controlTest(  ){									// CSM test procedure
 					break;
 				
 				case starTree:
-					playNxtPackage( );		// plays next package name
+					playNxtPackage( );		// bump iPkg & plays next package name 
+					showPkg();
 					break;
 				
-				case starTable:		// switch packages
+				case starTable:		// switch packages to iPkg
 					changePackage();
+					showPkg();
+					dbgLog(" iPkg=%d  iSubj=%d  iMsg=%d \n", iPkg, TBook.iSubj, TBook.iMsg );
 					break;
 				
 				case starPlus:	
-					eventTest();
+					decodeAudio();
+					//eventTest();
 					break;
 				
 				case starMinus: 
@@ -595,7 +614,7 @@ void 									initControlManager( void ){				// initialize control manager
 	TB_Config.powerCheckMS = 10000;				// set by setPowerCheckTimer()
 	TB_Config.shortIdleMS = 3000;
 	TB_Config.longIdleMS = 11000;
-	TB_Config.systemAudio = "M0:/system/aud/";			// path to system audio files
+	TB_Config.systemAudio = "M0:/system/audio/";			// path to system audio files
 	TB_Config.minShortPressMS = 30;				// used by inputmanager.c
 	TB_Config.minLongPressMS = 900;				// used by inputmanager.c
 	TB_Config.bgPulse 				= (char *) bgPulse;
@@ -604,6 +623,8 @@ void 									initControlManager( void ){				// initialize control manager
 	TB_Config.fgRecording			= (char *) fgRecording;
 	TB_Config.fgRecordPaused	= (char *) fgRecordPaused;
 	TB_Config.fgSavingRec			= (char *) fgSavingRec;
+	TB_Config.fgSaveRec				= (char *) fgSaveRec;
+	TB_Config.fgCancelRec			= (char *) fgCancelRec;
 	TB_Config.fgUSB_MSC				= (char *) fgUSB_MSC;
 	TB_Config.fgUSBconnect		= (char *) fgUSBconnect;
 	TB_Config.fgTB_Error			= (char *) fgTB_Error;
