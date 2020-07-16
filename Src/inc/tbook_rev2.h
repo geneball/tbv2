@@ -6,8 +6,9 @@
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef TBOOKREV2B_H
 #define TBOOKREV2B_H
-	
-#define UID_BASE                     0x1FFF7A10U           /*STM32F412 !< Unique device ID register base address */
+
+#include "stm32f412vx.h"
+//#define UID_BASE                     0x1FFF7A10U           /*STM32F412 !< Unique device ID register base address */
 //	#include "I2C_STM32F4xx.h"			
 #include "stm32f4xx.h"
 #include "GPIO_STM32F4xx.h"

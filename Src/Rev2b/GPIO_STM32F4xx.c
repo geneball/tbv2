@@ -47,16 +47,20 @@ void GPIO_PortClock (GPIO_TypeDef *GPIOx, bool enable) {
     else if (GPIOx == GPIOC) RCC->AHB1ENR |=  RCC_AHB1ENR_GPIOCEN; 
     else if (GPIOx == GPIOD) RCC->AHB1ENR |=  RCC_AHB1ENR_GPIODEN; 
     else if (GPIOx == GPIOE) RCC->AHB1ENR |=  RCC_AHB1ENR_GPIOEEN; 
+#if defined(GPIOF)
     else if (GPIOx == GPIOF) RCC->AHB1ENR |=  RCC_AHB1ENR_GPIOFEN; 
     else if (GPIOx == GPIOG) RCC->AHB1ENR |=  RCC_AHB1ENR_GPIOGEN; 
+#endif
   } else {
     if      (GPIOx == GPIOA) RCC->AHB1ENR &= ~RCC_AHB1ENR_GPIOAEN; 
     else if (GPIOx == GPIOB) RCC->AHB1ENR &= ~RCC_AHB1ENR_GPIOBEN; 
     else if (GPIOx == GPIOC) RCC->AHB1ENR &= ~RCC_AHB1ENR_GPIOCEN; 
     else if (GPIOx == GPIOD) RCC->AHB1ENR &= ~RCC_AHB1ENR_GPIODEN; 
     else if (GPIOx == GPIOE) RCC->AHB1ENR &= ~RCC_AHB1ENR_GPIOEEN; 
+#if defined(GPIOF)
     else if (GPIOx == GPIOF) RCC->AHB1ENR &= ~RCC_AHB1ENR_GPIOFEN; 
     else if (GPIOx == GPIOG) RCC->AHB1ENR &= ~RCC_AHB1ENR_GPIOGEN; 
+#endif
   }
 }
 
@@ -73,8 +77,10 @@ bool GPIO_GetPortClockState (GPIO_TypeDef *GPIOx) {
 	else if (GPIOx == GPIOC) { return ((RCC->AHB1ENR & RCC_AHB1ENR_GPIOCEN) != 0U); } 
 	else if (GPIOx == GPIOD) { return ((RCC->AHB1ENR & RCC_AHB1ENR_GPIODEN) != 0U); } 
 	else if (GPIOx == GPIOE) { return ((RCC->AHB1ENR & RCC_AHB1ENR_GPIOEEN) != 0U); } 
+#if defined(GPIOF)
 	else if (GPIOx == GPIOF) { return ((RCC->AHB1ENR & RCC_AHB1ENR_GPIOFEN) != 0U); } 
 	else if (GPIOx == GPIOG) { return ((RCC->AHB1ENR & RCC_AHB1ENR_GPIOGEN) != 0U); } 
+#endif
   return false; 
 }
 
