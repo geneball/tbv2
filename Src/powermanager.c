@@ -109,8 +109,10 @@ void 											enableStandby( void ){					// power off-- reboot on wakeup from 
 	__WFI();	// standby till reboot
 }
 void											powerDownTBook( void ){					// shut down TBook
+	ledFg( TB_Config.fgPowerDown );
 	logEvt( "Standby" );
 	logPowerDown();		// flush & close logs
+	tbDelay_ms( 3500 );	// wait for fgPowerDown to finish
 	ledBg( NULL );
 	ledFg( NULL );
 	enableStandby();		// shut down
@@ -357,6 +359,9 @@ const int LiHI  = 3800;			// mV at ~75%
 const int ReplLOW = 2300;   // mV at ~15% capacity (for AA Alkaline)
 const int ReplMED = 2500;		// mV at ~45%  
 const int ReplHI  = 2700;		// mV at ~75%  
+const int HiMpuTemp = 800;
+const int HiLiTemp  = 800;
+
 
 void 											checkPower( ){				// check and report power status
 	//  check gPWR_FAIL_N & MCP73871: gBAT_PG_N, gBAT_STAT1, gBAT_STAT2
@@ -426,7 +431,7 @@ void 											checkPower( ){				// check and report power status
 
 		dbgLog( "srTB: %d %4d %3d %4d\n", pstat, pS.VRefMV, pS.MpuTempMV, pS.VBatMV );
 		dbgLog( "LtLP: %3d %4d %4d\n", pS.LiThermMV, pS.LiMV, pS.PrimaryMV );
-		if ( pS.MpuTempMV > 500 ){
+		if ( pS.MpuTempMV > HiMpuTemp ){
 			logEvtNI("MpuTemp", "mV", pS.MpuTempMV );
 			sendEvent( MpuHot, pS.MpuTempMV );
 		}
@@ -439,7 +444,7 @@ void 											checkPower( ){				// check and report power status
 				case CHARGING: 					// started charging
 					logEvtNI("BattCharging", "mV", pS.LiMV ); 
 					sendEvent( BattCharging, pS.LiMV );	
-					if ( pS.LiThermMV > 500 ){		// lithium thermistor is only active while charging
+					if ( pS.LiThermMV > HiLiTemp ){		// lithium thermistor is only active while charging
 						logEvtNI("LiTemp", "mV", pS.LiThermMV );
 						sendEvent( LithiumHot, pS.LiThermMV );
 					}

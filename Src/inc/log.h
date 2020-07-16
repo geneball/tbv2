@@ -49,6 +49,7 @@ extern void			logEvtNI( const char *evtID, const char *nm, int val );			// write
 extern void			logEvtNINI( const char *evtID, const char *nm, int val, const char *nm2, int val2 );	// write log entry
 extern void 		logEvtNININI( const char *evtID, const char *nm,  int val, const char *nm2, int val2, const char *nm3, int val3 );
 extern void			logEvtNS( const char *evtID, const char *nm, const char *val );	// write log entry: "EVENT, at:    d.ddd, NM: 'VAL' "
+extern void			logEvtNINS( const char *evtID, const char *nm, int val, const char *nm2, const char * val2 );	// write log entry
 extern void			logEvtNSNI( const char *evtID, const char *nm, const char *val, const char *nm2, int val2 );	// write log entry
 extern void 		logEvtNSNINI(  const char *evtID, const char *nm, const char *val, const char *nm2, int val2, const char *nm3, int val3 );
 extern void 		logEvtNSNININS(  const char *evtID, const char *nm, const char *val, const char *nm2, int val2, const char *nm3, int val3, const char *nm4, const char *val4 );

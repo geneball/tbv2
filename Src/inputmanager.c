@@ -302,7 +302,8 @@ void 					inputThread( void *arg ){			// converts signals from keypad ISR's to e
 					}
 					if ( KTest.Active ){
 						keypadTestKey( KSt.detectedUpKey, dntime );
-					} else {  
+					} else {
+						dbgLog(" key: %s\n", eventNm( eTyp ));
 						sendEvent( eTyp, dntime );			// add event to queue
 					}
 				}

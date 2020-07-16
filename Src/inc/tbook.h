@@ -174,6 +174,8 @@ typedef struct TBConfig {			// TBConfig
 	char *	fgRecording;
 	char *	fgRecordPaused;
 	char *	fgSavingRec;
+	char *	fgSaveRec;
+	char *	fgCancelRec;
 	char *	fgUSB_MSC;
 	char *	fgTB_Error;
 	char *	fgNoUSBcable;

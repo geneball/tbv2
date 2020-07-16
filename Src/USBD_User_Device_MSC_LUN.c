@@ -115,6 +115,11 @@ bool		isMassStorageEnabled( void ){							// => true if usb is providing FileSys
 }	
 bool		enableMassStorage( char *drv0, char *drv1, char *drv2, char *drv3 ){	// init drives as MSC Logical Units 0..3
 	if ( usbProvidingMassStorage ) return true;
+	ledFg( NULL );
+	if ( !haveUSBpower() )
+		ledFg( TB_Config.fgNoUSBcable ); // no USB cable!
+	else				
+  	ledFg( TB_Config.fgUSBconnect );	
 	
 	// initialize LUN[] array for specified drives
 	addLUN( drv0==NULL? "M0:" : drv0 ); 
@@ -128,10 +133,7 @@ bool		enableMassStorage( char *drv0, char *drv1, char *drv2, char *drv3 ){	// in
 	if ( !usbIsInitialized ) 			return false;			// USB failed to initialize
 	
 	dbgEvt( TB_usbConn, 0,0,0,0);
-	if ( !haveUSBpower() )
-		ledFg( TB_Config.fgNoUSBcable ); // no USB cable!
-	else				
-  	ledFg( TB_Config.fgUSBconnect );	
+
 	stat = USBD_Connect(0);													// signal connection to Host, so Host will enumerate & discover configured drives
 	return usbProvidingMassStorage;
 }
@@ -253,6 +255,7 @@ void	 	USBD_MSC0_Initialize( void ){										// callback from USBD_Initialize t
   for ( int i=0; i<nLUNs; i++ )
 		initLUN( i );
 	usbProvidingMassStorage = true;
+	ledFg( NULL );		// stop USBconnect
 	ledFg( TB_Config.fgUSB_MSC );			// connected
 }
 void 		USBD_MSC0_Uninitialize( void ){									// callback from USBD_Uninitialize to de-init all Logical Units of the USB MSC class instance.

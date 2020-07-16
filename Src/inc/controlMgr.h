@@ -37,6 +37,7 @@ typedef struct { 	// tbSubject										// info for one subject
 } tbSubject;
 //
 typedef struct TBPackage {	// TBPackage_t				// path & subject list for a package
+	int									idx;
 	char * 							path;
 	char *							packageName;
 	int 								nSubjs;
@@ -53,9 +54,9 @@ extern int			nCSMstates;																	// #states defined
 extern csmState *	TBookCSM[ MAX_CSM_STATES ];								// TBook state machine definition
 
 extern void						initControlManager( void );						// initialize & run TBook Control State Machine
-extern void						buildPath( char *path, const char *dir, const char *nm, const char *ext ); 
+extern void						buildPath( char *dstpath, const char *dir, const char *nm, const char *ext ); // dstpath[] <= "dir/nm.ext"
 extern void						findPackages( void );									// scan for M0:/package*/  directories
-extern TBPackage_t * 	readContent( const char *pkgPath );		// parse list_of_subjects.txt & messages.txt for each Subj => Content
+TBPackage_t * 				readContent( const char * pkgPath, int pkgIdx );		// parse list_of_subjects.txt & messages.txt for each Subj => Content
 extern void 					readControlDef( void );								// parse control.def => Config & TBookCSM[]
 
 #endif

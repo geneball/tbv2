@@ -3,6 +3,7 @@
 
 #include "tbook.h"
 #include "log.h"
+#include "controlMgr.h"
 
 static FILE *		logF = NULL;			// file ptr for open log file
 static int			totLogCh = 0;
@@ -66,13 +67,16 @@ static void			addHist( const char * s1, const char * s2 ){			// DEBUG:  prepend 
 }
 
 char *					loadLine( char * line, char * fpath, fsTime *tm ){		// => 1st line of 'fpath'
+	const fsTime nullTm = { 0,0,0,1,1, 2020 };
+	if (tm!=NULL)  *tm = nullTm;
+	strcpy(line, "---");
 	FILE *stF = fopen( fpath, "rb" );
-	if ( stF == NULL ) return NULL;
+	if ( stF == NULL ) return line;
 	
 	char * txt = fgets( line, 200, stF );
 	fclose( stF );
 	
-	if ( txt == NULL ) return NULL;
+	if ( txt == NULL ) return line;
 	
 	char *pRet = strchr( txt, '\r' );
 	if ( pRet!=NULL ) *pRet = 0;
@@ -232,7 +236,7 @@ void						initLogger( void ){																// init tbLog file on bootup
 	dbgLog( "Logger initialized \n" );
 }
 static char *		statFNm( const char * nm, short iS, short iM ){		// INTERNAL: fill statFileNm for  subj 'nm', iSubj, iMsg
-	sprintf( statFileNm, "%s%s_S%d_M%d.stat", TBP[ pSTATS_PATH ], nm, iS, iM );
+	sprintf( statFileNm, "P%s_%d%s_S%d_M%d.stat", TBP[ pSTATS_PATH ], iPkg, nm, iS, iM );
 	return statFileNm;
 }
 int							fileMatchNext( const char *fnPatt ){			// return next unused value for file pattern of form "xxxx_*.xxx"
@@ -250,12 +254,12 @@ int							fileMatchNext( const char *fnPatt ){			// return next unused value for
 	}
 	return cnt;
 }
-char *					logMsgName( char *path, const char * sNm, short iSubj, short iMsg, const char *ext, int *pcnt ){			// build & => file path for next msg for Msg_<sNm>_S<iS>_M<iM>.<ext>
+char *					logMsgName( char *path, const char * sNm, short iSubj, short iMsg, const char *ext, int *pcnt ){			// build & => file path for next msg for Msg<iPkg>_<sNm>_S<iS>_M<iM>.<ext>
 	char fnPatt[ MAX_PATH ]; 
-	sprintf( fnPatt, "%sMsg_%s_S%d_M%d_*%s", TBP[ pMSGS_PATH ], sNm, iSubj, iMsg, ext );	// e.g. "M0:/messages/Msg_Health_S2_M3_*.txt"
+	sprintf( fnPatt, "%sMsgP%d_%s_S%d_M%d_*%s", TBP[ pMSGS_PATH ], iPkg, sNm, iSubj, iMsg, ext );	// e.g. "M0:/messages/Msg_Health_S2_M3_*.txt"
 	
 	int cnt = fileMatchNext( fnPatt );
-	sprintf( path, "%sMsg_%s_S%d_M%d_%d%s", TBP[ pMSGS_PATH ], sNm, iSubj, iMsg, cnt, ext );
+	sprintf( path, "%sMsgP%d_%s_S%d_M%d_%d%s", TBP[ pMSGS_PATH ], iPkg, sNm, iSubj, iMsg, cnt, ext );
 	*pcnt = cnt;
 	return path;
 }
@@ -386,6 +390,11 @@ void 						logEvtNININI( const char *evtID, const char *nm,  int val, const char
 void						logEvtNSNI( const char *evtID, const char *nm, const char *val, const char *nm2, int val2 ){	// write log entry
 	char args[300];
 	sprintf( args, "%s: '%s', %s: %d", nm, val, nm2, val2 );
+	logEvtS( evtID, args );
+}
+void						logEvtNINS( const char *evtID, const char *nm, int val, const char *nm2, const char * val2 ){	// write log entry
+	char args[300];
+	sprintf( args, "%s: '%d', %s: %s", nm, val, nm2, val2 );
 	logEvtS( evtID, args );
 }
 void						logEvtNSNINS( const char *evtID, const char *nm, const char *val, const char *nm2, int val2, const char *nm3, const char *val3 ){	// write log entry
