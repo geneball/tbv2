@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\Objects\TBookRev2b.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Objects\TBookRev2b.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Thu Jul 16 16:54:20 2020
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Thu Jul 16 17:00:35 2020
 <BR><P>
 <H3>Maximum Stack Usage =       7552 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -1267,8 +1267,8 @@ Global Symbols
 </UL>
 <BR>[Called By]<UL><LI><a href="#[304]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USBD_ThreadFlagsWait
 <LI><a href="#[4a5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_get_sys_tick_us
-<LI><a href="#[464]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_format
 <LI><a href="#[516]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_int_div_int
+<LI><a href="#[464]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_format
 </UL>
 
 <P><STRONG><a name="[67a]"></a>_ll_udiv</STRONG> (Thumb, 238 bytes, Stack size 48 bytes, lludivv7m.o(.text), UNUSED)
@@ -1823,12 +1823,12 @@ Global Symbols
 <LI><a href="#[2ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_strerror
 <LI><a href="#[4d6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;initRandom
 <LI><a href="#[3a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;addLUN
+<LI><a href="#[553]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_pem_read_buffer
 <LI><a href="#[472]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;path_create
 <LI><a href="#[384]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_open
 <LI><a href="#[478]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_strmatch
 <LI><a href="#[464]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_format
 <LI><a href="#[394]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_delete
-<LI><a href="#[553]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_pem_read_buffer
 </UL>
 
 <P><STRONG><a name="[3c3]"></a>strcat</STRONG> (Thumb, 24 bytes, Stack size 0 bytes, strcat.o(.text))
@@ -1851,16 +1851,6 @@ Global Symbols
 <LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osRtxMessageQueuePostProcess
 <LI><a href="#[4e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isrRtxMessageQueuePut
 <LI><a href="#[4de]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isrRtxMessageQueueGet
-<LI><a href="#[40d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;write_cache
-<LI><a href="#[3f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;read_sector
-<LI><a href="#[471]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;read_cache
-<LI><a href="#[472]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;path_create
-<LI><a href="#[354]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USBD_MSC_GetCBW
-<LI><a href="#[38e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_write
-<LI><a href="#[388]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_read
-<LI><a href="#[58e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mc_control_lock
-<LI><a href="#[461]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_ffind
-<LI><a href="#[1c6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__rt_memmove
 <LI><a href="#[576]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_rsassa_pss_sign
 <LI><a href="#[575]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_rsassa_pkcs1_v15_sign
 <LI><a href="#[572]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_rsaes_pkcs1_v15_encrypt
@@ -1873,6 +1863,16 @@ Global Symbols
 <LI><a href="#[529]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_sha256_update_ret
 <LI><a href="#[514]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_ctr_drbg_reseed_internal
 <LI><a href="#[3eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;block_cipher_df
+<LI><a href="#[40d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;write_cache
+<LI><a href="#[3f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;read_sector
+<LI><a href="#[471]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;read_cache
+<LI><a href="#[472]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;path_create
+<LI><a href="#[354]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USBD_MSC_GetCBW
+<LI><a href="#[38e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_write
+<LI><a href="#[388]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_read
+<LI><a href="#[58e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mc_control_lock
+<LI><a href="#[461]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_ffind
+<LI><a href="#[1c6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__rt_memmove
 <LI><a href="#[1f9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fread
 <LI><a href="#[1f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fwrite
 </UL>
@@ -1905,13 +1905,13 @@ Global Symbols
 <LI><a href="#[44a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;startEncrypt
 <LI><a href="#[49b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;free_bitrate
 <LI><a href="#[2b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;III_reorder
-<LI><a href="#[472]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;path_create
-<LI><a href="#[42a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;create_dot_entries
-<LI><a href="#[1c4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__rt_memcpy
 <LI><a href="#[567]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_deduce_primes
 <LI><a href="#[52d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_grow
 <LI><a href="#[52c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_copy
 <LI><a href="#[541]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mpi_montmul
+<LI><a href="#[472]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;path_create
+<LI><a href="#[42a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;create_dot_entries
+<LI><a href="#[1c4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__rt_memcpy
 <LI><a href="#[1df]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__rt_memmove_w
 </UL>
 
@@ -1932,9 +1932,9 @@ Global Symbols
 <P><STRONG><a name="[1ca]"></a>__aeabi_memset</STRONG> (Thumb, 16 bytes, Stack size 0 bytes, aeabi_memset.o(.text))
 <BR><BR>[Calls]<UL><LI><a href="#[1c9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_memset
 </UL>
-<BR>[Called By]<UL><LI><a href="#[356]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USBD_MSC_Inquiry
+<BR>[Called By]<UL><LI><a href="#[583]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rsa_rsassa_pkcs1_v15_encode
+<LI><a href="#[356]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USBD_MSC_Inquiry
 <LI><a href="#[464]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_format
-<LI><a href="#[583]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rsa_rsassa_pkcs1_v15_encode
 </UL>
 
 <P><STRONG><a name="[189]"></a>__aeabi_memclr</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, rt_memclr.o(.text))
@@ -1949,6 +1949,11 @@ Global Symbols
 <LI><a href="#[360]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USBD_MSC_Reset
 <LI><a href="#[96]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;svcRtxMessageQueueNew
 <LI><a href="#[94]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;svcRtxMemoryPoolNew
+<LI><a href="#[576]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_rsassa_pss_sign
+<LI><a href="#[573]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_rsaes_oaep_encrypt
+<LI><a href="#[51c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_sha512_finish_ret
+<LI><a href="#[54f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_write_binary
+<LI><a href="#[51b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_sha256_finish_ret
 <LI><a href="#[465]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbr_write
 <LI><a href="#[466]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;label_write
 <LI><a href="#[456]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fsinfo_write
@@ -1960,11 +1965,6 @@ Global Symbols
 <LI><a href="#[464]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_format
 <LI><a href="#[1cd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strncpy
 <LI><a href="#[9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;calloc
-<LI><a href="#[576]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_rsassa_pss_sign
-<LI><a href="#[573]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_rsaes_oaep_encrypt
-<LI><a href="#[51c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_sha512_finish_ret
-<LI><a href="#[54f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_write_binary
-<LI><a href="#[51b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_sha256_finish_ret
 </UL>
 
 <P><STRONG><a name="[1cb]"></a>__rt_memclr</STRONG> (Thumb, 68 bytes, Stack size 0 bytes, rt_memclr.o(.text), UNUSED)
@@ -2005,11 +2005,6 @@ Global Symbols
 <LI><a href="#[11d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USBD_PowerControl
 <LI><a href="#[125]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USBD_EndpointUnconfigure
 <LI><a href="#[124]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USBD_EndpointConfigure
-<LI><a href="#[383]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_handle_get
-<LI><a href="#[58e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mc_control_lock
-<LI><a href="#[46e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_mount
-<LI><a href="#[1bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fopen
-<LI><a href="#[1b2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_fclose_internal
 <LI><a href="#[580]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mgf_mask
 <LI><a href="#[56c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_init
 <LI><a href="#[524]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_sha512_init
@@ -2023,6 +2018,11 @@ Global Symbols
 <LI><a href="#[514]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_ctr_drbg_reseed_internal
 <LI><a href="#[433]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ctr_drbg_update_internal
 <LI><a href="#[3eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;block_cipher_df
+<LI><a href="#[383]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_handle_get
+<LI><a href="#[58e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mc_control_lock
+<LI><a href="#[46e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_mount
+<LI><a href="#[1bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fopen
+<LI><a href="#[1b2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_fclose_internal
 <LI><a href="#[16a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_initio
 </UL>
 
@@ -2958,6 +2958,9 @@ Global Symbols
 <LI><a href="#[381]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__sys_open
 <LI><a href="#[37e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__sys_flen
 <LI><a href="#[377]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__sys_close
+<LI><a href="#[382]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_drive_id
+<LI><a href="#[239]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;EvrFsIOC_NotAllowed
+<LI><a href="#[238]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;EvrFsIOC_DriveIdInvalid
 <LI><a href="#[457]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;path_validate
 <LI><a href="#[45a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;path_open
 <LI><a href="#[5b2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;name_validate
@@ -3035,9 +3038,6 @@ Global Symbols
 <LI><a href="#[464]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_format
 <LI><a href="#[394]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_delete
 <LI><a href="#[455]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_vol_chk
-<LI><a href="#[382]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_drive_id
-<LI><a href="#[239]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;EvrFsIOC_NotAllowed
-<LI><a href="#[238]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;EvrFsIOC_DriveIdInvalid
 </UL>
 
 <P><STRONG><a name="[226]"></a>EventRecord4</STRONG> (Thumb, 118 bytes, Stack size 40 bytes, eventrecorder.o(i.EventRecord4))
@@ -4753,10 +4753,10 @@ Global Symbols
 <LI><a href="#[386]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;efs_open
 <LI><a href="#[385]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;efs_handle_get
 <LI><a href="#[223]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;EventRecord2
+<LI><a href="#[382]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_drive_id
 <LI><a href="#[384]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_open
 <LI><a href="#[383]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_handle_get
 <LI><a href="#[186]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_errno_addr
-<LI><a href="#[382]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_drive_id
 </UL>
 <BR>[Called By]<UL><LI><a href="#[1bd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_sys_open
 </UL>
@@ -4817,8 +4817,8 @@ Global Symbols
 <LI><a href="#[378]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_mutex_acquire
 <LI><a href="#[395]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;efs_delete
 <LI><a href="#[223]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;EventRecord2
-<LI><a href="#[394]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_delete
 <LI><a href="#[382]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_drive_id
+<LI><a href="#[394]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_delete
 </UL>
 <BR>[Called By]<UL><LI><a href="#[44b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fdelete
 </UL>
@@ -6050,7 +6050,8 @@ Global Symbols
 <P><STRONG><a name="[461]"></a>fat_ffind</STRONG> (Thumb, 214 bytes, Stack size 48 bytes, fs_fat.o(i.fat_ffind))
 <BR><BR>[Stack]<UL><LI>Max Depth = 368<LI>Call Chain = fat_ffind &rArr; path_open &rArr; frec_find &rArr; entry_pos_inc &rArr; alloc_table_read &rArr; cache_fat &rArr; EvrFsFAT_SectorWriteFailed &rArr; EventRecord4 &rArr; EventRecordItem
 </UL>
-<BR>[Calls]<UL><LI><a href="#[45a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;path_open
+<BR>[Calls]<UL><LI><a href="#[3bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_u32
+<LI><a href="#[45a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;path_open
 <LI><a href="#[459]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;path_init
 <LI><a href="#[45c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;frec_next
 <LI><a href="#[463]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;extract_time
@@ -6059,7 +6060,6 @@ Global Symbols
 <LI><a href="#[233]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;EvrFsFAT_InvalidParameter
 <LI><a href="#[1c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
 <LI><a href="#[455]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_vol_chk
-<LI><a href="#[3bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_u32
 </UL>
 <BR>[Called By]<UL><LI><a href="#[475]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ffind
 </UL>
@@ -6141,6 +6141,7 @@ Global Symbols
 <BR>[Calls]<UL><LI><a href="#[468]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_jour_init
 <LI><a href="#[469]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;elink_cmd
 <LI><a href="#[223]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;EventRecord2
+<LI><a href="#[3bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_u32
 <LI><a href="#[471]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;read_cache
 <LI><a href="#[46f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbr_read
 <LI><a href="#[46a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_root_clus
@@ -6149,7 +6150,6 @@ Global Symbols
 <LI><a href="#[3f1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;bs_read
 <LI><a href="#[1b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
 <LI><a href="#[455]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_vol_chk
-<LI><a href="#[3bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_u32
 </UL>
 <BR>[Called By]<UL><LI><a href="#[48a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fmount
 </UL>
@@ -6159,6 +6159,7 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[226]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;EventRecord4
 <LI><a href="#[223]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;EventRecord2
+<LI><a href="#[3bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_u32
 <LI><a href="#[45e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;unlink_clus
 <LI><a href="#[457]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;path_validate
 <LI><a href="#[45a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;path_open
@@ -6179,7 +6180,6 @@ Global Symbols
 <LI><a href="#[3a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strlen
 <LI><a href="#[42c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_get_time
 <LI><a href="#[455]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_vol_chk
-<LI><a href="#[3bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_u32
 </UL>
 <BR>[Called By]<UL><LI><a href="#[381]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__sys_open
 </UL>
@@ -6290,13 +6290,13 @@ Global Symbols
 <LI><a href="#[378]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_mutex_acquire
 <LI><a href="#[477]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;efs_ffind
 <LI><a href="#[223]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;EventRecord2
+<LI><a href="#[382]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_drive_id
 <LI><a href="#[476]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_strpos
 <LI><a href="#[479]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_strncasecmp
 <LI><a href="#[478]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_strmatch
 <LI><a href="#[461]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_ffind
 <LI><a href="#[39b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcmp
 <LI><a href="#[3a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strlen
-<LI><a href="#[382]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_drive_id
 </UL>
 <BR>[Called By]<UL><LI><a href="#[43c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fexists
 <LI><a href="#[4e9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;loadLine
@@ -6314,8 +6314,8 @@ Global Symbols
 <LI><a href="#[378]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_mutex_acquire
 <LI><a href="#[47b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;efs_format
 <LI><a href="#[223]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;EventRecord2
-<LI><a href="#[464]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_format
 <LI><a href="#[382]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_drive_id
+<LI><a href="#[464]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_format
 </UL>
 <BR>[Called By]<UL><LI><a href="#[49e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fsMount
 </UL>
@@ -6384,10 +6384,10 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[484]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;efs_init
 <LI><a href="#[223]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;EventRecord2
-<LI><a href="#[46b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_init
-<LI><a href="#[483]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_component_init
 <LI><a href="#[3bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_u32
 <LI><a href="#[382]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_drive_id
+<LI><a href="#[46b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_init
+<LI><a href="#[483]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_component_init
 </UL>
 <BR>[Called By]<UL><LI><a href="#[49e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fsMount
 <LI><a href="#[341]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;initLUN
@@ -6439,8 +6439,8 @@ Global Symbols
 <LI><a href="#[378]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_mutex_acquire
 <LI><a href="#[48b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;efs_mount
 <LI><a href="#[223]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;EventRecord2
-<LI><a href="#[46e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_mount
 <LI><a href="#[382]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_drive_id
+<LI><a href="#[46e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_mount
 </UL>
 <BR>[Called By]<UL><LI><a href="#[49e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fsMount
 <LI><a href="#[348]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;uninitLUN
@@ -6728,8 +6728,8 @@ Global Symbols
 <LI><a href="#[378]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_mutex_acquire
 <LI><a href="#[4ad]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;efs_unmount
 <LI><a href="#[223]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;EventRecord2
-<LI><a href="#[474]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_unmount
 <LI><a href="#[382]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_drive_id
+<LI><a href="#[474]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_unmount
 </UL>
 <BR>[Called By]<UL><LI><a href="#[341]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;initLUN
 </UL>
@@ -6926,6 +6926,7 @@ Global Symbols
 <LI><a href="#[4a8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_ioc_get_id
 <LI><a href="#[4a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_ioc_get_cache
 <LI><a href="#[343]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_ioc_device_ctrl
+<LI><a href="#[382]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_drive_id
 <LI><a href="#[46f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbr_read
 <LI><a href="#[470]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fsinfo_read
 <LI><a href="#[3f1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;bs_read
@@ -6933,7 +6934,6 @@ Global Symbols
 <LI><a href="#[384]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_open
 <LI><a href="#[46e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_mount
 <LI><a href="#[461]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_ffind
-<LI><a href="#[382]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_drive_id
 </UL>
 
 <P><STRONG><a name="[214]"></a>handleInterrupt</STRONG> (Thumb, 184 bytes, Stack size 16 bytes, inputmanager.o(i.handleInterrupt))
@@ -7952,9 +7952,9 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[3ed]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_aes_setkey_enc
 <LI><a href="#[3ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_aes_init
-<LI><a href="#[1b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
 <LI><a href="#[514]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_ctr_drbg_reseed_internal
 <LI><a href="#[515]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;good_nonce_len
+<LI><a href="#[1b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
 </UL>
 <BR>[Called By]<UL><LI><a href="#[4d6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;initRandom
 </UL>
@@ -8194,10 +8194,10 @@ Global Symbols
 <P><STRONG><a name="[52c]"></a>mbedtls_mpi_copy</STRONG> (Thumb, 128 bytes, Stack size 24 bytes, bignum.o(i.mbedtls_mpi_copy))
 <BR><BR>[Stack]<UL><LI>Max Depth = 72<LI>Call Chain = mbedtls_mpi_copy &rArr; mbedtls_mpi_grow &rArr; mbedtls_mpi_zeroize &rArr; mbedtls_platform_zeroize
 </UL>
-<BR>[Calls]<UL><LI><a href="#[1b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
-<LI><a href="#[1c5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy4
-<LI><a href="#[52d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_grow
+<BR>[Calls]<UL><LI><a href="#[52d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_grow
 <LI><a href="#[536]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_free
+<LI><a href="#[1b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
+<LI><a href="#[1c5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy4
 </UL>
 <BR>[Called By]<UL><LI><a href="#[57a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_private
 <LI><a href="#[531]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_sub_abs
@@ -8237,8 +8237,7 @@ Global Symbols
 <P><STRONG><a name="[53e]"></a>mbedtls_mpi_exp_mod</STRONG> (Thumb, 1402 bytes, Stack size 1664 bytes, bignum.o(i.mbedtls_mpi_exp_mod))
 <BR><BR>[Stack]<UL><LI>Max Depth = 1960<LI>Call Chain = mbedtls_mpi_exp_mod &rArr; mbedtls_mpi_mod_mpi &rArr; mbedtls_mpi_div_mpi &rArr; mbedtls_mpi_mul_int &rArr; mbedtls_mpi_mul_mpi &rArr; mbedtls_mpi_copy &rArr; mbedtls_mpi_grow &rArr; mbedtls_mpi_zeroize &rArr; mbedtls_platform_zeroize
 </UL>
-<BR>[Calls]<UL><LI><a href="#[1b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
-<LI><a href="#[53a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_shift_l
+<BR>[Calls]<UL><LI><a href="#[53a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_shift_l
 <LI><a href="#[540]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_mod_mpi
 <LI><a href="#[539]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_lset
 <LI><a href="#[538]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_init
@@ -8252,6 +8251,7 @@ Global Symbols
 <LI><a href="#[542]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mpi_montred
 <LI><a href="#[541]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mpi_montmul
 <LI><a href="#[53f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mpi_montg_init
+<LI><a href="#[1b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
 </UL>
 <BR>[Called By]<UL><LI><a href="#[567]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_deduce_primes
 <LI><a href="#[57c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_public
@@ -8324,10 +8324,10 @@ Global Symbols
 <P><STRONG><a name="[52d]"></a>mbedtls_mpi_grow</STRONG> (Thumb, 86 bytes, Stack size 16 bytes, bignum.o(i.mbedtls_mpi_grow))
 <BR><BR>[Stack]<UL><LI>Max Depth = 48<LI>Call Chain = mbedtls_mpi_grow &rArr; mbedtls_mpi_zeroize &rArr; mbedtls_platform_zeroize
 </UL>
-<BR>[Calls]<UL><LI><a href="#[1c5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy4
-<LI><a href="#[520]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_free
+<BR>[Calls]<UL><LI><a href="#[520]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_free
 <LI><a href="#[522]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_calloc
 <LI><a href="#[545]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_zeroize
+<LI><a href="#[1c5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy4
 </UL>
 <BR>[Called By]<UL><LI><a href="#[53a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_shift_l
 <LI><a href="#[54b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_read_binary
@@ -8388,8 +8388,8 @@ Global Symbols
 <P><STRONG><a name="[539]"></a>mbedtls_mpi_lset</STRONG> (Thumb, 76 bytes, Stack size 16 bytes, bignum.o(i.mbedtls_mpi_lset))
 <BR><BR>[Stack]<UL><LI>Max Depth = 64<LI>Call Chain = mbedtls_mpi_lset &rArr; mbedtls_mpi_grow &rArr; mbedtls_mpi_zeroize &rArr; mbedtls_platform_zeroize
 </UL>
-<BR>[Calls]<UL><LI><a href="#[1b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
-<LI><a href="#[52d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_grow
+<BR>[Calls]<UL><LI><a href="#[52d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_grow
+<LI><a href="#[1b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
 </UL>
 <BR>[Called By]<UL><LI><a href="#[567]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_deduce_primes
 <LI><a href="#[53c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_shift_r
@@ -8451,12 +8451,12 @@ Global Symbols
 <P><STRONG><a name="[54b]"></a>mbedtls_mpi_read_binary</STRONG> (Thumb, 134 bytes, Stack size 32 bytes, bignum.o(i.mbedtls_mpi_read_binary))
 <BR><BR>[Stack]<UL><LI>Max Depth = 96<LI>Call Chain = mbedtls_mpi_read_binary &rArr; mbedtls_mpi_lset &rArr; mbedtls_mpi_grow &rArr; mbedtls_mpi_zeroize &rArr; mbedtls_platform_zeroize
 </UL>
-<BR>[Calls]<UL><LI><a href="#[1c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
-<LI><a href="#[539]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_lset
+<BR>[Calls]<UL><LI><a href="#[539]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_lset
 <LI><a href="#[538]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_init
 <LI><a href="#[52d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_grow
 <LI><a href="#[536]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_free
 <LI><a href="#[544]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mpi_bigendian_to_host
+<LI><a href="#[1c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
 </UL>
 <BR>[Called By]<UL><LI><a href="#[57c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_public
 <LI><a href="#[57a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_private
@@ -8577,12 +8577,12 @@ Global Symbols
 <BR><BR>[Stack]<UL><LI>Max Depth = 96<LI>Call Chain = mbedtls_pem_read_buffer &rArr; mbedtls_base64_decode
 </UL>
 <BR>[Calls]<UL><LI><a href="#[3f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_platform_zeroize
-<LI><a href="#[3a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strlen
-<LI><a href="#[555]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;memcmp
-<LI><a href="#[554]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strstr
 <LI><a href="#[556]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_base64_decode
 <LI><a href="#[520]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_free
 <LI><a href="#[522]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_calloc
+<LI><a href="#[3a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strlen
+<LI><a href="#[555]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;memcmp
+<LI><a href="#[554]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strstr
 </UL>
 <BR>[Called By]<UL><LI><a href="#[558]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_pk_parse_public_key
 </UL>
@@ -8736,8 +8736,7 @@ Global Symbols
 <P><STRONG><a name="[567]"></a>mbedtls_rsa_deduce_primes</STRONG> (Thumb, 530 bytes, Stack size 128 bytes, rsa_internal.o(i.mbedtls_rsa_deduce_primes))
 <BR><BR>[Stack]<UL><LI>Max Depth = 2088<LI>Call Chain = mbedtls_rsa_deduce_primes &rArr; mbedtls_mpi_exp_mod &rArr; mbedtls_mpi_mod_mpi &rArr; mbedtls_mpi_div_mpi &rArr; mbedtls_mpi_mul_int &rArr; mbedtls_mpi_mul_mpi &rArr; mbedtls_mpi_copy &rArr; mbedtls_mpi_grow &rArr; mbedtls_mpi_zeroize &rArr; mbedtls_platform_zeroize
 </UL>
-<BR>[Calls]<UL><LI><a href="#[1c5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy4
-<LI><a href="#[54e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_sub_int
+<BR>[Calls]<UL><LI><a href="#[54e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_sub_int
 <LI><a href="#[53c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_shift_r
 <LI><a href="#[549]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_mul_mpi
 <LI><a href="#[540]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_mod_mpi
@@ -8751,6 +8750,7 @@ Global Symbols
 <LI><a href="#[535]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_cmp_mpi
 <LI><a href="#[534]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_cmp_int
 <LI><a href="#[52e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_add_int
+<LI><a href="#[1c5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy4
 </UL>
 <BR>[Called By]<UL><LI><a href="#[566]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_complete
 </UL>
@@ -8798,8 +8798,8 @@ Global Symbols
 <P><STRONG><a name="[56c]"></a>mbedtls_rsa_init</STRONG> (Thumb, 36 bytes, Stack size 16 bytes, rsa.o(i.mbedtls_rsa_init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 20<LI>Call Chain = mbedtls_rsa_init &rArr; __aeabi_memclr4
 </UL>
-<BR>[Calls]<UL><LI><a href="#[1b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
-<LI><a href="#[56d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_set_padding
+<BR>[Calls]<UL><LI><a href="#[56d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_set_padding
+<LI><a href="#[1b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
 </UL>
 <BR>[Called By]<UL><LI><a href="#[132]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rsa_alloc_wrap
 </UL>
@@ -8896,7 +8896,6 @@ Global Symbols
 <BR><BR>[Stack]<UL><LI>Max Depth = 3328<LI>Call Chain = mbedtls_rsa_rsaes_oaep_decrypt &rArr; mbedtls_rsa_private &rArr; rsa_prepare_blinding &rArr; mbedtls_mpi_exp_mod &rArr; mbedtls_mpi_mod_mpi &rArr; mbedtls_mpi_div_mpi &rArr; mbedtls_mpi_mul_int &rArr; mbedtls_mpi_mul_mpi &rArr; mbedtls_mpi_copy &rArr; mbedtls_mpi_grow &rArr; mbedtls_mpi_zeroize &rArr; mbedtls_platform_zeroize
 </UL>
 <BR>[Calls]<UL><LI><a href="#[3f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_platform_zeroize
-<LI><a href="#[1c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
 <LI><a href="#[521]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_md_setup
 <LI><a href="#[57f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_md_init
 <LI><a href="#[51d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_md_free
@@ -8906,6 +8905,7 @@ Global Symbols
 <LI><a href="#[580]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mgf_mask
 <LI><a href="#[57d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_md_info_from_type
 <LI><a href="#[57e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_md_get_size
+<LI><a href="#[1c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
 </UL>
 <BR>[Called By]<UL><LI><a href="#[56e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_pkcs1_decrypt
 </UL>
@@ -8913,9 +8913,7 @@ Global Symbols
 <P><STRONG><a name="[573]"></a>mbedtls_rsa_rsaes_oaep_encrypt</STRONG> (Thumb, 348 bytes, Stack size 72 bytes, rsa.o(i.mbedtls_rsa_rsaes_oaep_encrypt))
 <BR><BR>[Stack]<UL><LI>Max Depth = 2232<LI>Call Chain = mbedtls_rsa_rsaes_oaep_encrypt &rArr; mbedtls_rsa_private &rArr; rsa_prepare_blinding &rArr; mbedtls_mpi_exp_mod &rArr; mbedtls_mpi_mod_mpi &rArr; mbedtls_mpi_div_mpi &rArr; mbedtls_mpi_mul_int &rArr; mbedtls_mpi_mul_mpi &rArr; mbedtls_mpi_copy &rArr; mbedtls_mpi_grow &rArr; mbedtls_mpi_zeroize &rArr; mbedtls_platform_zeroize
 </UL>
-<BR>[Calls]<UL><LI><a href="#[189]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr
-<LI><a href="#[1c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
-<LI><a href="#[521]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_md_setup
+<BR>[Calls]<UL><LI><a href="#[521]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_md_setup
 <LI><a href="#[57f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_md_init
 <LI><a href="#[51d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_md_free
 <LI><a href="#[517]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_md
@@ -8924,6 +8922,8 @@ Global Symbols
 <LI><a href="#[580]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mgf_mask
 <LI><a href="#[57d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_md_info_from_type
 <LI><a href="#[57e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_md_get_size
+<LI><a href="#[189]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr
+<LI><a href="#[1c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
 </UL>
 <BR>[Called By]<UL><LI><a href="#[571]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_pkcs1_encrypt
 </UL>
@@ -8932,13 +8932,13 @@ Global Symbols
 <BR><BR>[Stack]<UL><LI>Max Depth = 3248<LI>Call Chain = mbedtls_rsa_rsaes_pkcs1_v15_decrypt &rArr; mbedtls_rsa_private &rArr; rsa_prepare_blinding &rArr; mbedtls_mpi_exp_mod &rArr; mbedtls_mpi_mod_mpi &rArr; mbedtls_mpi_div_mpi &rArr; mbedtls_mpi_mul_int &rArr; mbedtls_mpi_mul_mpi &rArr; mbedtls_mpi_copy &rArr; mbedtls_mpi_grow &rArr; mbedtls_mpi_zeroize &rArr; mbedtls_platform_zeroize
 </UL>
 <BR>[Calls]<UL><LI><a href="#[3f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_platform_zeroize
-<LI><a href="#[1c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
 <LI><a href="#[57c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_public
 <LI><a href="#[57a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_private
 <LI><a href="#[581]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;size_greater_than
 <LI><a href="#[582]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mem_move_to_left
 <LI><a href="#[4bd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;if_int
 <LI><a href="#[4be]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;all_or_nothing_int
+<LI><a href="#[1c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
 </UL>
 <BR>[Called By]<UL><LI><a href="#[56e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_pkcs1_decrypt
 </UL>
@@ -8946,9 +8946,9 @@ Global Symbols
 <P><STRONG><a name="[572]"></a>mbedtls_rsa_rsaes_pkcs1_v15_encrypt</STRONG> (Thumb, 246 bytes, Stack size 56 bytes, rsa.o(i.mbedtls_rsa_rsaes_pkcs1_v15_encrypt))
 <BR><BR>[Stack]<UL><LI>Max Depth = 2216<LI>Call Chain = mbedtls_rsa_rsaes_pkcs1_v15_encrypt &rArr; mbedtls_rsa_private &rArr; rsa_prepare_blinding &rArr; mbedtls_mpi_exp_mod &rArr; mbedtls_mpi_mod_mpi &rArr; mbedtls_mpi_div_mpi &rArr; mbedtls_mpi_mul_int &rArr; mbedtls_mpi_mul_mpi &rArr; mbedtls_mpi_copy &rArr; mbedtls_mpi_grow &rArr; mbedtls_mpi_zeroize &rArr; mbedtls_platform_zeroize
 </UL>
-<BR>[Calls]<UL><LI><a href="#[1c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
-<LI><a href="#[57c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_public
+<BR>[Calls]<UL><LI><a href="#[57c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_public
 <LI><a href="#[57a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_private
+<LI><a href="#[1c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
 </UL>
 <BR>[Called By]<UL><LI><a href="#[571]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_pkcs1_encrypt
 </UL>
@@ -8957,13 +8957,13 @@ Global Symbols
 <BR><BR>[Stack]<UL><LI>Max Depth = 2208 + Unknown Stack Size
 <LI>Call Chain = mbedtls_rsa_rsassa_pkcs1_v15_sign &rArr; mbedtls_rsa_private &rArr; rsa_prepare_blinding &rArr; mbedtls_mpi_exp_mod &rArr; mbedtls_mpi_mod_mpi &rArr; mbedtls_mpi_div_mpi &rArr; mbedtls_mpi_mul_int &rArr; mbedtls_mpi_mul_mpi &rArr; mbedtls_mpi_copy &rArr; mbedtls_mpi_grow &rArr; mbedtls_mpi_zeroize &rArr; mbedtls_platform_zeroize
 </UL>
-<BR>[Calls]<UL><LI><a href="#[1c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
-<LI><a href="#[57c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_public
+<BR>[Calls]<UL><LI><a href="#[57c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_public
 <LI><a href="#[57a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_private
 <LI><a href="#[583]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rsa_rsassa_pkcs1_v15_encode
 <LI><a href="#[584]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_safer_memcmp
 <LI><a href="#[520]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_free
 <LI><a href="#[522]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_calloc
+<LI><a href="#[1c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
 </UL>
 <BR>[Called By]<UL><LI><a href="#[574]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_pkcs1_sign
 </UL>
@@ -8987,8 +8987,6 @@ Global Symbols
 <BR><BR>[Stack]<UL><LI>Max Depth = 2312<LI>Call Chain = mbedtls_rsa_rsassa_pss_sign &rArr; mbedtls_rsa_private &rArr; rsa_prepare_blinding &rArr; mbedtls_mpi_exp_mod &rArr; mbedtls_mpi_mod_mpi &rArr; mbedtls_mpi_div_mpi &rArr; mbedtls_mpi_mul_int &rArr; mbedtls_mpi_mul_mpi &rArr; mbedtls_mpi_copy &rArr; mbedtls_mpi_grow &rArr; mbedtls_mpi_zeroize &rArr; mbedtls_platform_zeroize
 </UL>
 <BR>[Calls]<UL><LI><a href="#[3f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_platform_zeroize
-<LI><a href="#[189]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr
-<LI><a href="#[1c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
 <LI><a href="#[528]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_md_update
 <LI><a href="#[525]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_md_starts
 <LI><a href="#[521]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_md_setup
@@ -9001,6 +8999,8 @@ Global Symbols
 <LI><a href="#[57d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_md_info_from_type
 <LI><a href="#[57e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_md_get_size
 <LI><a href="#[532]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_bitlen
+<LI><a href="#[189]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr
+<LI><a href="#[1c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
 </UL>
 <BR>[Called By]<UL><LI><a href="#[574]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_pkcs1_sign
 </UL>
@@ -9016,8 +9016,7 @@ Global Symbols
 <P><STRONG><a name="[585]"></a>mbedtls_rsa_rsassa_pss_verify_ext</STRONG> (Thumb, 536 bytes, Stack size 1168 bytes, rsa.o(i.mbedtls_rsa_rsassa_pss_verify_ext))
 <BR><BR>[Stack]<UL><LI>Max Depth = 3328<LI>Call Chain = mbedtls_rsa_rsassa_pss_verify_ext &rArr; mbedtls_rsa_private &rArr; rsa_prepare_blinding &rArr; mbedtls_mpi_exp_mod &rArr; mbedtls_mpi_mod_mpi &rArr; mbedtls_mpi_div_mpi &rArr; mbedtls_mpi_mul_int &rArr; mbedtls_mpi_mul_mpi &rArr; mbedtls_mpi_copy &rArr; mbedtls_mpi_grow &rArr; mbedtls_mpi_zeroize &rArr; mbedtls_platform_zeroize
 </UL>
-<BR>[Calls]<UL><LI><a href="#[555]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;memcmp
-<LI><a href="#[528]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_md_update
+<BR>[Calls]<UL><LI><a href="#[528]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_md_update
 <LI><a href="#[525]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_md_starts
 <LI><a href="#[521]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_md_setup
 <LI><a href="#[57f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_md_init
@@ -9029,6 +9028,7 @@ Global Symbols
 <LI><a href="#[57d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_md_info_from_type
 <LI><a href="#[57e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_md_get_size
 <LI><a href="#[532]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_bitlen
+<LI><a href="#[555]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;memcmp
 </UL>
 <BR>[Called By]<UL><LI><a href="#[579]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_rsassa_pss_verify
 </UL>
@@ -9068,9 +9068,9 @@ Global Symbols
 <P><STRONG><a name="[51b]"></a>mbedtls_sha256_finish_ret</STRONG> (Thumb, 418 bytes, Stack size 32 bytes, sha256.o(i.mbedtls_sha256_finish_ret))
 <BR><BR>[Stack]<UL><LI>Max Depth = 344<LI>Call Chain = mbedtls_sha256_finish_ret &rArr; mbedtls_internal_sha256_process
 </UL>
-<BR>[Calls]<UL><LI><a href="#[1b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
+<BR>[Calls]<UL><LI><a href="#[586]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_internal_sha256_process
+<LI><a href="#[1b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
 <LI><a href="#[189]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr
-<LI><a href="#[586]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_internal_sha256_process
 </UL>
 <BR>[Called By]<UL><LI><a href="#[51a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_md_finish
 <LI><a href="#[518]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_sha256_ret
@@ -9114,8 +9114,8 @@ Global Symbols
 <P><STRONG><a name="[529]"></a>mbedtls_sha256_update_ret</STRONG> (Thumb, 158 bytes, Stack size 32 bytes, sha256.o(i.mbedtls_sha256_update_ret))
 <BR><BR>[Stack]<UL><LI>Max Depth = 344<LI>Call Chain = mbedtls_sha256_update_ret &rArr; mbedtls_internal_sha256_process
 </UL>
-<BR>[Calls]<UL><LI><a href="#[1c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
-<LI><a href="#[586]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_internal_sha256_process
+<BR>[Calls]<UL><LI><a href="#[586]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_internal_sha256_process
+<LI><a href="#[1c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
 </UL>
 <BR>[Called By]<UL><LI><a href="#[528]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_md_update
 <LI><a href="#[518]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_sha256_ret
@@ -9124,9 +9124,9 @@ Global Symbols
 <P><STRONG><a name="[51c]"></a>mbedtls_sha512_finish_ret</STRONG> (Thumb, 1122 bytes, Stack size 40 bytes, sha512.o(i.mbedtls_sha512_finish_ret))
 <BR><BR>[Stack]<UL><LI>Max Depth = 792<LI>Call Chain = mbedtls_sha512_finish_ret &rArr; mbedtls_internal_sha512_process
 </UL>
-<BR>[Calls]<UL><LI><a href="#[1b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
+<BR>[Calls]<UL><LI><a href="#[587]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_internal_sha512_process
+<LI><a href="#[1b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
 <LI><a href="#[189]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr
-<LI><a href="#[587]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_internal_sha512_process
 </UL>
 <BR>[Called By]<UL><LI><a href="#[51a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_md_finish
 <LI><a href="#[519]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_sha512_ret
@@ -9172,8 +9172,8 @@ Global Symbols
 <P><STRONG><a name="[52a]"></a>mbedtls_sha512_update_ret</STRONG> (Thumb, 178 bytes, Stack size 32 bytes, sha512.o(i.mbedtls_sha512_update_ret))
 <BR><BR>[Stack]<UL><LI>Max Depth = 784<LI>Call Chain = mbedtls_sha512_update_ret &rArr; mbedtls_internal_sha512_process
 </UL>
-<BR>[Calls]<UL><LI><a href="#[1c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
-<LI><a href="#[587]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_internal_sha512_process
+<BR>[Calls]<UL><LI><a href="#[587]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_internal_sha512_process
+<LI><a href="#[1c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
 </UL>
 <BR>[Called By]<UL><LI><a href="#[528]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_md_update
 <LI><a href="#[519]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_sha512_ret
@@ -14044,11 +14044,11 @@ Local Symbols
 <P><STRONG><a name="[541]"></a>mpi_montmul</STRONG> (Thumb, 204 bytes, Stack size 64 bytes, bignum.o(i.mpi_montmul))
 <BR><BR>[Stack]<UL><LI>Max Depth = 96<LI>Call Chain = mpi_montmul &rArr; mpi_mul_hlp
 </UL>
-<BR>[Calls]<UL><LI><a href="#[1b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
-<LI><a href="#[1c5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy4
-<LI><a href="#[530]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_cmp_abs
+<BR>[Calls]<UL><LI><a href="#[530]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_cmp_abs
 <LI><a href="#[54d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mpi_sub_hlp
 <LI><a href="#[54a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mpi_mul_hlp
+<LI><a href="#[1b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
+<LI><a href="#[1c5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy4
 </UL>
 <BR>[Called By]<UL><LI><a href="#[53e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_mpi_exp_mod
 <LI><a href="#[542]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mpi_montred
@@ -14194,11 +14194,11 @@ Local Symbols
 <BR><BR>[Stack]<UL><LI>Max Depth = 920<LI>Call Chain = mgf_mask &rArr; mbedtls_md_finish &rArr; mbedtls_sha512_finish_ret &rArr; mbedtls_internal_sha512_process
 </UL>
 <BR>[Calls]<UL><LI><a href="#[3f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_platform_zeroize
-<LI><a href="#[1b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
 <LI><a href="#[528]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_md_update
 <LI><a href="#[525]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_md_starts
 <LI><a href="#[51a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_md_finish
 <LI><a href="#[57e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_md_get_size
+<LI><a href="#[1b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
 </UL>
 <BR>[Called By]<UL><LI><a href="#[576]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_rsassa_pss_sign
 <LI><a href="#[573]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_rsaes_oaep_encrypt
@@ -14239,11 +14239,11 @@ Local Symbols
 <LI>Call Chain = rsa_rsassa_pkcs1_v15_encode &rArr; mbedtls_platform_zeroize
 </UL>
 <BR>[Calls]<UL><LI><a href="#[3f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_platform_zeroize
-<LI><a href="#[1ca]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memset
-<LI><a href="#[1c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
 <LI><a href="#[602]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_oid_get_oid_by_md
 <LI><a href="#[57d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_md_info_from_type
 <LI><a href="#[57e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_md_get_size
+<LI><a href="#[1ca]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memset
+<LI><a href="#[1c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
 </UL>
 <BR>[Called By]<UL><LI><a href="#[578]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_rsassa_pkcs1_v15_verify
 <LI><a href="#[575]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_rsa_rsassa_pkcs1_v15_sign
@@ -14287,10 +14287,10 @@ Local Symbols
 <BR><BR>[Stack]<UL><LI>Max Depth = 3356<LI>Call Chain = mbedtls_ctr_drbg_reseed_internal &rArr; block_cipher_df &rArr; mbedtls_aes_setkey_enc &rArr; aes_gen_tables
 </UL>
 <BR>[Calls]<UL><LI><a href="#[3f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_platform_zeroize
-<LI><a href="#[1b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
-<LI><a href="#[1c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
 <LI><a href="#[433]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ctr_drbg_update_internal
 <LI><a href="#[3eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;block_cipher_df
+<LI><a href="#[1b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
+<LI><a href="#[1c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
 </UL>
 <BR>[Called By]<UL><LI><a href="#[4d8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mbedtls_ctr_drbg_seed
 </UL>
@@ -15382,10 +15382,10 @@ Local Symbols
 <P><STRONG><a name="[3b9]"></a>alloc_table_read</STRONG> (Thumb, 154 bytes, Stack size 24 bytes, fs_fat.o(i.alloc_table_read))
 <BR><BR>[Stack]<UL><LI>Max Depth = 144<LI>Call Chain = alloc_table_read &rArr; cache_fat &rArr; EvrFsFAT_SectorWriteFailed &rArr; EventRecord4 &rArr; EventRecordItem
 </UL>
-<BR>[Calls]<UL><LI><a href="#[3bc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_fat_sect
+<BR>[Calls]<UL><LI><a href="#[3bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_u32
+<LI><a href="#[3bc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_fat_sect
 <LI><a href="#[3bd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;cache_fat
 <LI><a href="#[3be]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_u16
-<LI><a href="#[3bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_u32
 </UL>
 <BR>[Called By]<UL><LI><a href="#[45e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;unlink_clus
 <LI><a href="#[431]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;entry_pos_inc
@@ -15413,9 +15413,9 @@ Local Symbols
 <BR><BR>[Stack]<UL><LI>Max Depth = 128<LI>Call Chain = bs_read &rArr; read_sector &rArr; EvrFsFAT_SectorReadFailed &rArr; EventRecord4 &rArr; EventRecordItem
 </UL>
 <BR>[Calls]<UL><LI><a href="#[223]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;EventRecord2
+<LI><a href="#[3bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_u32
 <LI><a href="#[3f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;read_sector
 <LI><a href="#[3be]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_u16
-<LI><a href="#[3bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_u32
 </UL>
 <BR>[Called By]<UL><LI><a href="#[46e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_mount
 </UL>
@@ -15715,8 +15715,8 @@ Local Symbols
 <BR><BR>[Stack]<UL><LI>Max Depth = 136<LI>Call Chain = fsinfo_read &rArr; read_sector &rArr; EvrFsFAT_SectorReadFailed &rArr; EventRecord4 &rArr; EventRecordItem
 </UL>
 <BR>[Calls]<UL><LI><a href="#[223]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;EventRecord2
-<LI><a href="#[3f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;read_sector
 <LI><a href="#[3bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_u32
+<LI><a href="#[3f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;read_sector
 </UL>
 <BR>[Called By]<UL><LI><a href="#[46e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_mount
 </UL>
@@ -15797,9 +15797,9 @@ Local Symbols
 <BR><BR>[Stack]<UL><LI>Max Depth = 128<LI>Call Chain = mbr_read &rArr; read_sector &rArr; EvrFsFAT_SectorReadFailed &rArr; EventRecord4 &rArr; EventRecordItem
 </UL>
 <BR>[Calls]<UL><LI><a href="#[223]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;EventRecord2
+<LI><a href="#[3bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_u32
 <LI><a href="#[3f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;read_sector
 <LI><a href="#[3be]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_u16
-<LI><a href="#[3bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_u32
 </UL>
 <BR>[Called By]<UL><LI><a href="#[46e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fat_mount
 </UL>

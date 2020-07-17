@@ -159,7 +159,7 @@
           <Type>0</Type>
           <LineNumber>136</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134394332</Address>
+          <Address>134393812</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -1137,7 +1137,7 @@
 
   <Group>
     <GroupName>Compiler</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -1169,7 +1169,7 @@
 
   <Group>
     <GroupName>STM32F4xx</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -1417,7 +1417,7 @@
 
   <Group>
     <GroupName>Keil</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
