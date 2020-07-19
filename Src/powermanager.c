@@ -94,6 +94,11 @@ void											setPowerCheckTimer( int timerMs ){
 }
 
 void 											enableSleep( void ){						// low power mode -- CPU stops till interrupt
+	for (int i=0; i<3; i++){			// clear all pending ISR
+		uint32_t pend = NVIC->ISPR[i];
+		if ( pend != 0 ) 	// clear any pending interrupts
+			NVIC->ICPR[i] = pend;		
+	}
 	__WFI();	// sleep till interrupt
 }
 void 											enableStandby( void ){					// power off-- reboot on wakeup from NRST
@@ -108,14 +113,17 @@ void 											enableStandby( void ){					// power off-- reboot on wakeup from 
 	}
 	__WFI();	// standby till reboot
 }
-void											powerDownTBook( void ){					// shut down TBook
+void											powerDownTBook( bool sleep ){					// shut down TBook
 	ledFg( TB_Config.fgPowerDown );
 	logEvt( "Standby" );
 	logPowerDown();		// flush & close logs
 	tbDelay_ms( 3500 );	// wait for fgPowerDown to finish
 	ledBg( NULL );
 	ledFg( NULL );
-	enableStandby();		// shut down
+	if (sleep)
+		enableSleep();
+	else
+		enableStandby();		// shut down
 }
 
 void 											initPwrSignals( void ){					// configure power GPIO pins, & EXTI on NOPWR 	
@@ -367,7 +375,7 @@ void 											checkPower( ){				// check and report power status
 	//  check gPWR_FAIL_N & MCP73871: gBAT_PG_N, gBAT_STAT1, gBAT_STAT2
 	bool PwrFail 			= gGet( gPWR_FAIL_N );	// PD0 -- input power fail signal
   if ( PwrFail && false ) 
-		powerDownTBook();
+		powerDownTBook( false );
 	
 	//  check MCP73871: gBAT_PG_N, gBAT_STAT1, gBAT_STAT2
 	bool PwrGood_N 	  = gGet( gBAT_PG_N );	 // MCP73871 PG_:  0 => power is good   			MCP73871 PG_    (powermanager.c)

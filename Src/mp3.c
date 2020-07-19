@@ -62,6 +62,7 @@ static enum mad_flow 				input( void *st, struct mad_stream *stream ){										
 //  }	
 	
   int len = fread( rdaddr, 1, rdlen, dcdr_st->fmp3 );     // fill rest of buffer
+	dbgLog("mp3 in: nf=%x addr=%x rdlen=%d len=%d\n", stream->next_frame, rdaddr, rdlen, len );
   if ( len==0 ){  // end of file encountered
 		memset( dcdr_st->in_buff, 0, BUFF_SIZ );	// set buff to 0
 		fclose( dcdr_st->fmp3 );

@@ -290,7 +290,7 @@ static void 					doAction( Action act, char *arg, int iarg ){	// execute one csm
 			ledBg( NULL );								// turn off background heartbeat
 			ledFg( TB_Config.fgPowerDown ); 	//  R R R   R R   R
 			tbDelay_ms( 15000 );					// wait for LED sequence to finish
-			powerDownTBook();
+			powerDownTBook( false );
 			break;
 	  case sysTest:
 			controlTest();
@@ -484,6 +484,10 @@ static void 					controlTest(  ){									// CSM test procedure
 					saveRecAudio( "del" );
 					recordingMsg = false;
 					break;
+				case starHome:
+					dbgLog( "going to USB mass-storage mode \n");
+					USBmode( true );
+					break;
 			}
 		} else {
 			tbSubject * tbS = TBPkg->TBookSubj[ TBook.iSubj ];
@@ -555,12 +559,15 @@ static void 					controlTest(  ){									// CSM test procedure
 					break;
 				
 				case starRhand:
+					powerDownTBook( true );
 					osTimerStart( timers[1], TB_Config.longIdleMS );
 					playSysAudio( "faster" );
 					break;
 				case LongIdle:
 					playSysAudio( "slower" );
-					break;
+					saveWriteMsg( "Clean power down" );
+				  break;
+
 				
 				case starTree:
 					playNxtPackage( );		// bump iPkg & plays next package name 
@@ -584,7 +591,7 @@ static void 					controlTest(  ){									// CSM test procedure
 					
 				case starCircle:
 					saveWriteMsg( "Clean power down" );
-					powerDownTBook();
+					powerDownTBook( false );
 				  break;
 				
 				case starHome:
