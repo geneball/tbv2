@@ -166,7 +166,7 @@ static void 	mediaThread( void *arg ){						// communicates with audio codec for
 		
 		if ( (flags & MEDIA_RECORD_START) != 0 ){	// request to start recording
 			resetAudio();			// clean up anything in progress 
-			FILE* outFP = fopen( (const char *)mRecordFilePath, "wb" );
+			FILE* outFP = tbOpenWriteBinary( (const char *)mRecordFilePath ); //fopen( (const char *)mRecordFilePath, "wb" );
 			if ( outFP != NULL ){
 				dbgLog("Rec fnm: %s \n", (char *)mRecordFilePath );
 				audStartRecording( outFP, (MsgStats *) mRecordStats );
@@ -188,6 +188,7 @@ static void 	mediaThread( void *arg ){						// communicates with audio codec for
 		if ( (flags & MEDIA_DEL_RECORD) != 0 ){	// request to delete recording
 			int res = fdelete( (char *) mRecordFilePath, "" );
 			mRecordFilePath[0] = 0;
+			FileSysPower( false );			// power down SDIO after finished with recording
 		}
 		
 		if ( (flags & MEDIA_SET_VOL) != 0 ){			// request to set volume

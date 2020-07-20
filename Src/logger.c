@@ -70,11 +70,11 @@ char *					loadLine( char * line, char * fpath, fsTime *tm ){		// => 1st line of
 	const fsTime nullTm = { 0,0,0,1,1, 2020 };
 	if (tm!=NULL)  *tm = nullTm;
 	strcpy(line, "---");
-	FILE *stF = fopen( fpath, "rb" );
+	FILE *stF = tbOpenReadBinary( fpath ); //fopen( fpath, "rb" );
 	if ( stF == NULL ) return line;
 	
 	char * txt = fgets( line, 200, stF );
-	fclose( stF );
+	tbCloseFile( stF );		//fclose( stF );
 	
 	if ( txt == NULL ) return line;
 	
@@ -93,11 +93,11 @@ char *					loadLine( char * line, char * fpath, fsTime *tm ){		// => 1st line of
 	return txt;
 }
 void 						writeLine( char * line, char * fpath ){
-	FILE *stF = fopen( fpath, "wb" );
+	FILE *stF = tbOpenWriteBinary( fpath ); //fopen( fpath, "wb" );
 	if ( stF!=NULL ){
 		int nch = fprintf( stF, "%s\n", line );
-		int err = fclose( stF );
-	  dbgEvt( TB_wrLnFile, nch, err, 0, 0 );
+		tbCloseFile( stF );		//int err = fclose( stF );
+	  dbgEvt( TB_wrLnFile, nch, 0, 0, 0 );
 	}
 }
 bool						openLog( bool forRead ){
@@ -128,17 +128,17 @@ void						checkLog(){				//DEBUG: verify tbLog.txt is readable
 		linecnt++;
 		charcnt += strlen( line );
 	}
-	int err = fclose( logF );
+	tbCloseFile( logF );		//int err = fclose( logF );
   logF = NULL;
-	dbgEvt( TB_chkLog, linecnt, charcnt, err,0);
+	dbgEvt( TB_chkLog, linecnt, charcnt, 0,0);
 	dbgLog( "checkLog: %d lns, %d chs \n", linecnt, charcnt );
 }
 void						closeLog(){
   if ( logF!=NULL ){
 		int err1 = fflush( logF );
-		int err2 = fclose( logF );
-		dbgLog( "closeLog fflush=%d fclose=%d \n", err1, err2 );
-		dbgEvt( TB_wrLogFile, totLogCh, err1,err2,0);
+		tbCloseFile( logF );		//int err2 = fclose( logF );
+		dbgLog( "closeLog fflush=%d \n", err1 );
+		dbgEvt( TB_wrLogFile, totLogCh, err1,0,0);
 	}
 	logF = NULL;
 	//checkLog(); //DEBUG
@@ -265,10 +265,10 @@ char *					logMsgName( char *path, const char * sNm, short iSubj, short iMsg, co
 }
 void 						saveStats( MsgStats *st ){ 												// save statistics block to file
 	char * fnm = statFNm( st->SubjNm, st->iSubj, st->iMsg );
-	FILE *stF = fopen( fnm, "wb" );
+	FILE *stF = tbOpenWriteBinary( fnm ); //fopen( fnm, "wb" );
 	int cnt = fwrite( st, STAT_SIZ, 1, stF );
-	int err = fclose( stF );
-	dbgEvt(TB_wrStatFile, st->iSubj, st->iMsg, cnt,err);
+	tbCloseFile( stF );		//int err = fclose( stF );
+	dbgEvt(TB_wrStatFile, st->iSubj, st->iMsg, cnt,0);
 }
 void						flushStats(){																			// save all cached stats files
 	short cnt = 0;
@@ -301,11 +301,11 @@ MsgStats *			loadStats( const char *subjNm, short iSubj, short iMsg ){		// load 
 	
 	short newStatIdx = oldestIdx;
 	char * fnm = statFNm( subjNm, iSubj, iMsg );
-	FILE *stF = fopen( fnm, "rb" );
+	FILE *stF = tbOpenReadBinary( fnm ); //fopen( fnm, "rb" );
 	if ( stF == NULL || fread( st, STAT_SIZ, 1, stF ) != 1 ){  // file not defined
 		if ( stF!=NULL ){ 
 			dbgLog("stats S%d, M%d size wrong \n", iSubj, iMsg ); 
-			fclose( stF );
+			tbCloseFile( stF );		//fclose( stF );
 		}
 		memset( st, 0, STAT_SIZ );		// initialize new block
 		st->iSubj = iSubj;
@@ -314,7 +314,7 @@ MsgStats *			loadStats( const char *subjNm, short iSubj, short iMsg ){		// load 
 	} 
 	else { // success--
 		dbgEvt( TB_LdStatFile, iSubj,iMsg, 0,0);
-		fclose( stF );		
+		tbCloseFile( stF );		//fclose( stF );		
 	}
 	lastRef[ newStatIdx ] = nRefs;
 	touched[ newStatIdx ] = 1;
@@ -580,7 +580,7 @@ void						copyNorLog( const char * fpath ){								// copy curr Nor log into fil
 	strcpy( fnm, fpath );
 	if ( strlen( fnm )==0 ) // generate tmp log name
 		sprintf( fnm, "%s/tbLog_%d.txt", norLogPath, NLg.currLogIdx );  // e.g. LOG/tbLog_x.txt  .,. /NLg61_7829377.txt
-	FILE * f = fopen( fnm, "w" );
+	FILE * f = tbOpenWrite( fnm ); //fopen( fnm, "w" );
 	if ( f==NULL ) tbErr("cpyNor fopen err");
 	
 	for ( int p = NLg.logBase; p < NLg.Nxt; p+= NLg.PGSZ ){
@@ -592,17 +592,17 @@ void						copyNorLog( const char * fpath ){								// copy curr Nor log into fil
 		stat = fwrite( NLg.pg, 1, cnt, f );
 		if ( stat != cnt ){ 
 			dbgLog("cpyNor fwrite => %d  totcnt=%d", stat, totcnt );
-			fclose( f );
+			tbCloseFile( f );		//fclose( f );
 			return;
 		}
 		totcnt += cnt;
 	}
-	fclose( f );
+	tbCloseFile( f );		//fclose( f );
 	msec = tbTimeStamp() - tsStart;
 	dbgLog( "copyNorLog: %s: %d in %d msec \n", fpath, totcnt, msec );
 }
 void						restoreNorLog( const char * fpath ){								// copy file into current log
-	FILE * f = fopen( fpath, "r" );
+	FILE * f = tbOpenRead( fpath ); //fopen( fpath, "r" );
 	if ( f==NULL ) tbErr("rstrNor fopen err");
 	
 	int cnt = fread( NLg.pg, 1, NLg.PGSZ, f );
@@ -611,7 +611,7 @@ void						restoreNorLog( const char * fpath ){								// copy file into current 
 		appendNorLog( NLg.pg );		// append string to log
 		cnt = fread( NLg.pg, 1, NLg.PGSZ, f );
 	}
-	fclose( f );
+	tbCloseFile( f );		//fclose( f );
 }
 //end logger.c
 

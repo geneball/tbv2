@@ -161,10 +161,10 @@ static void						saveWriteMsg( char *txt ){				// save 'txt' in Msg file
 	char path[MAX_PATH];
 	int mCnt = 0;
 	char * fNm = logMsgName( path, tbS->name, TBook.iSubj, TBook.iMsg, ".txt", &mCnt );		// build file path for next text msg for S<iS>M<iM>
-	FILE* outFP = fopen( fNm, "w" );
+	FILE* outFP = tbOpenWrite( fNm ); //fopen( fNm, "w" );
 	int nch = fprintf( outFP, "%s\n", txt );
-	int err = fclose( outFP ); 
-	dbgEvt( TB_wrMsgFile, nch, err, 0, 0 );
+	tbCloseFile( outFP );  //int err = fclose( outFP ); 
+	dbgEvt( TB_wrMsgFile, nch, 0, 0, 0 );
 	logEvtNSNININS( "writeMsg", "Subj", tbS->name, "iM", TBook.iMsg, "cnt", mCnt, "msg", txt );
 }
 static void 					USBmode( bool start ){						// start (or stop) USB storage mode
@@ -282,6 +282,9 @@ static void 					doAction( Action act, char *arg, int iarg ){	// execute one csm
 			break;
 		case setTimer:
 			osTimerStart( timers[2], iarg );
+			break;
+		case resetTimer:
+			osTimerStop( timers[2] );
 			break;
 		case showCharge:
 			showBattCharge();
@@ -425,6 +428,9 @@ static void 					eventTest(  ){										// report Events until DFU (pot table)
 //
 static uint32_t 			startPlayingTS;
 static uint32_t 			PlayLoopBattCheck = 30*60*1000;		// 30min
+extern bool FSysPowerAlways;
+extern bool SleepWhenIdle;
+
 static void 					controlTest(  ){									// CSM test procedure
 	TB_Event *evt;
 	osStatus_t status;
@@ -562,6 +568,10 @@ static void 					controlTest(  ){									// CSM test procedure
 					powerDownTBook( true );
 					osTimerStart( timers[1], TB_Config.longIdleMS );
 					playSysAudio( "faster" );
+					break;
+				case starLhand:
+					FSysPowerAlways = true;
+					SleepWhenIdle = false;
 					break;
 				case LongIdle:
 					playSysAudio( "slower" );

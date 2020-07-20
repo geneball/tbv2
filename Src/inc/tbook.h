@@ -66,6 +66,12 @@ extern uint32_t 	APB1_clock;																			// freq in MHz of APB1 (slow) per
 extern void 			setCpuClock( int mHz, int apbshift2, int apbshift1 );													// config & enable PLL & PLLI2S, bus dividers, flash latency & switch HCLK to PLL at 'mHz' MHz 
 extern void 			LED_Init( GPIO_ID led );												// ledManager-- for debugging
 extern bool 			ledMgrActive;
+extern FILE * 		tbOpenRead( const char * nm );									// repower if necessary, & open file
+extern FILE * 		tbOpenReadBinary( const char * nm );						// repower if necessary, & open file
+extern FILE * 		tbOpenWrite( const char * nm );									// repower if necessary, & open file
+extern FILE * 		tbOpenWriteBinary( const char * nm );						// repower if necessary, & open file
+extern void				tbCloseFile( FILE * f );												// close file, errLog if error
+extern void 			FileSysPower( bool enable );										// power up/down eMMC & SD 3V supply
 
 extern void 			talking_book ( void *argument );
 extern void 			showRTC( void );

@@ -148,11 +148,8 @@ void 											initPwrSignals( void ){					// configure power GPIO pins, & EXTI
 	gConfigOut( gBAT_TE_N );  // OUT: 0 to enable safety timer 	MCP73871 TE_	  (powermanager.c)
 	gSet( gBAT_TE_N, 0 );			// disable?
 	
-	// power controls to memory devices
-	gConfigOut( gEMMC_RSTN );		// 0 to reset? eMMC
-	gConfigOut( g3V3_SW_EN );		// 1 to enable power to SDCard & eMMC
-	gSet( gEMMC_RSTN, 1 );			// enable at power up?
-	gSet( g3V3_SW_EN, 1 );			// enable at start up, for FileSys access
+	// enable power & signals to EMMC & SDIO devices
+	FileSysPower( true );				// power up eMMC & SD 3V supply
 	
   // Configure audio power control 
 	gConfigOut( gEN_5V );				// 1 to supply 5V to codec-- enable AP6714 regulator

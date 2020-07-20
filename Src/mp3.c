@@ -65,7 +65,7 @@ static enum mad_flow 				input( void *st, struct mad_stream *stream ){										
 	dbgLog("mp3 in: nf=%x addr=%x rdlen=%d len=%d\n", stream->next_frame, rdaddr, rdlen, len );
   if ( len==0 ){  // end of file encountered
 		memset( dcdr_st->in_buff, 0, BUFF_SIZ );	// set buff to 0
-		fclose( dcdr_st->fmp3 );
+		tbCloseFile( dcdr_st->fmp3 );		// fclose( dcdr_st->fmp3 );
 		dcdr_st->fmp3 = NULL;		// mark as ready to stop
 	}
 
@@ -191,10 +191,10 @@ void 												mp3ToWav( const char *nm ){		// decode nm.mp3 to nm.wav
 
   dcdr_st->freq = 0;
 
-  dcdr_st->fmp3 = fopen( fnm, "rb" );
+  dcdr_st->fmp3 = tbOpenReadBinary( fnm ); //fopen( fnm, "rb" );
 
   strcpy( pdot, ".wav" );
-  dcdr_st->fwav = fopen( fnm, "wb");
+  dcdr_st->fwav = tbOpenWriteBinary( fnm ); //fopen( fnm, "wb");
 
   if ( dcdr_st->fmp3==NULL || dcdr_st->fwav==NULL ){ 
 		dbgLog("Mp3 fopen %s: %d %d \n", fnm, dcdr_st->fmp3, dcdr_st->fwav );
@@ -208,6 +208,6 @@ void 												mp3ToWav( const char *nm ){		// decode nm.mp3 to nm.wav
 		mp3Err( NULL, result );
 	
   mad_decoder_finish( &decoder );  // release the decoder 
-	if ( dcdr_st->fmp3 != NULL ){ fclose( dcdr_st->fmp3 ); dcdr_st->fmp3 = NULL; }
-	if ( dcdr_st->fwav != NULL ){ fclose( dcdr_st->fwav ); dcdr_st->fwav = NULL; }
+	if ( dcdr_st->fmp3 != NULL ){ tbCloseFile( dcdr_st->fmp3 ); dcdr_st->fmp3 = NULL; }
+	if ( dcdr_st->fwav != NULL ){ tbCloseFile( dcdr_st->fwav ); dcdr_st->fwav = NULL; }
 }

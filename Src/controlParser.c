@@ -91,7 +91,7 @@ TBPackage_t * readContent( const char * pkgPath, int pkgIdx ){		// parse list_of
 	char pth[MAX_PATH];
 	buildPath( pth, pkgPath, "list_of_subjects", ".txt" );
 	
-	FILE *inFile = fopen( pth, "rb" );
+	FILE *inFile = tbOpenReadBinary( pth ); //fopen( pth, "rb" );
 	if ( inFile==NULL )
 		tbErr( "list_of_subjects file not found" );
 	
@@ -139,7 +139,7 @@ TBPackage_t * readContent( const char * pkgPath, int pkgIdx ){		// parse list_of
 			logEvtNSNI( "Subj", "nm", sb->name, "nMsgs", sb->NMsgs );
 		}
 	}
-	fclose( inFile );	// done with list_of_subjects.txt
+	tbCloseFile( inFile );  //fclose( inFile );	// done with list_of_subjects.txt
 	return Pkg;
 }
 static short	asStIdx( TknID stNm ){			// => idx of csmState with this 'stNm', or alloc

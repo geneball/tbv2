@@ -99,8 +99,8 @@ void								audInitState( void ){													// set up playback State in pSt
 		dbgLog("audInit: missing buffs %d \n", nFreeBuffs );
 	if ( pSt.audF != NULL ){
 		dbgLog("audInit close audF\n");
-		int res = fclose( pSt.audF );
-		if ( res!=fsOK ) dbgLog( "audInit fclose => %d \n", res );
+		tbCloseFile( pSt.audF );  //int res = fclose( pSt.audF );
+		//if ( res!=fsOK ) dbgLog( "audInit fclose => %d \n", res );
 	}
 	pSt.audF = NULL;
 	
@@ -207,8 +207,9 @@ void 								audPlayAudio( const char* audioFileName, MsgStats *stats ){ // star
 }
 void								audPlayDone(){																// close, report errs, => idle
 	if ( pSt.audF!=NULL ){ // normally closed by loadBuff
-		int res = fclose( pSt.audF );
-		if ( res!=fsOK ) dbgLog( "PlyDn fclose => %d \n", res );
+		tbCloseFile( pSt.audF );  //int res = fclose( pSt.audF );
+		FileSysPower( false );		// power down SDIO after playback
+		//if ( res!=fsOK ) dbgLog( "PlyDn fclose => %d \n", res );
 		pSt.audF = NULL;
 	}
 	if ( pSt.ErrCnt > 0 ){
@@ -382,8 +383,8 @@ void 								audPlaybackComplete( void ){									// shut down after completed p
 void 								audRecordComplete( void ){										// last buff recorded, finish saving file
 	freeBuffs( );
 	audSaveBuffs();			// write all filled SvBuff[]
-	int err = fclose( pSt.audF );
-	if ( err != fsOK ) dbgLog("recCom fclose => %d \n", err );
+	tbCloseFile( pSt.audF );  //int err = fclose( pSt.audF );
+	//if ( err != fsOK ) dbgLog("recCom fclose => %d \n", err );
 	ledFg( NULL );
 	
 	dbgEvt( TB_audRecClose, pSt.nSaved, pSt.buffNum, minFreeBuffs, 0);
@@ -610,10 +611,11 @@ static Buffer_t * 	loadBuff( ){																	// read next block of audio into
 	if ( nSamp < BuffWds ){ 				// room left in buffer: at EOF, so fill rest with zeros
 		if ( nSamp <= BuffWds-MIN_AUDIO_PAD ){
 			pSt.audioEOF = true;							// enough padding, so stop after this
-			int res = fclose( pSt.audF );
-			if ( res!=fsOK ) dbgLog( "ldBuf fclose => %d \n", res );
+			tbCloseFile( pSt.audF );  //int res = fclose( pSt.audF );
+			//if ( res!=fsOK ) dbgLog( "ldBuf fclose => %d \n", res );
 			pSt.audF = NULL;
 			dbgEvt( TB_audClose, nSamp, 0,0,0);
+			FileSysPower( false );		// power down SDIO after playback reading completes
 		}
 		
 		for( int i=nSamp; i<BuffWds; i++ )		// clear rest of buffer -- can't change count in DoubleBuffer DMA
@@ -633,7 +635,7 @@ extern void 				playWave( const char *fname ){ 								// play the WAV file -- (
 //	chkDevState( "PlayWv", true );
 	pSt.state = pbLdHdr;
   if ( !pSt.SqrWAVE ){	// open file, unless SqrWAVE
-		pSt.audF = fopen( fname, "r" );
+		pSt.audF = tbOpenRead( fname ); //fopen( fname, "r" );
 		if ( pSt.audF==NULL || fread( pSt.wavHdr, 1, WaveHdrBytes, pSt.audF ) != WaveHdrBytes ) 
 			{ errLog( "open wav failed, %s", fname ); return; }
 		if ( pSt.wavHdr->ChunkID != WaveRecordHdr.ChunkID || pSt.wavHdr->FileFormat != WaveRecordHdr.FileFormat )

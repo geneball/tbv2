@@ -16,6 +16,7 @@
 #include "mbedtls/ctr_drbg.h"
 
 #include "encAudio.h"
+#include "tbook.h"
 
 const int KEY_BYTES         = AES_KEY_WDS * 4;
 const int SESS_SIZE         = (AES_KEY_WDS + 1) * 4;  // including 'Sess'
@@ -83,6 +84,7 @@ int                             genRand( void *pRNG, unsigned char* output, size
 
 // EncryptAudio:  startEncrypt, encryptBlock, endEncrypt
 void 							startEncrypt( char * fname ){		// init session key & save public encrypted copy in 'fname.key'
+	FileSysPower( true );  // make sure FS is powered 
   initRandom( "TBook entropy generation seed for STM32F412" );
 	uint8_t * sess_key = (uint8_t *) &Enc.sessionkey;
 
@@ -148,10 +150,10 @@ void 							startEncrypt( char * fname ){		// init session key & save public enc
 
 	char txtnm[40];
 	sprintf( txtnm, "%s.key", fname );
-	FILE * f = fopen( txtnm, "w" );
+	FILE * f = tbOpenWrite( txtnm ); //fopen( txtnm, "w" );
 	fwrite( enc_sess_b64, 1, b64_len, f );
-	res = fclose( f );
-	if ( res != 0 ) tbErr(".key fclose => %d", res );
+	tbCloseFile( f );  //res = fclose( f );
+	//if ( res != 0 ) tbErr(".key fclose => %d", res );
 }
 void 							encryptBlock( const uint8_t *in, uint8_t *out, int len ){		// AES CBC encrypt in[0..len] => out[] (len%16===0)
 	if ( !Enc.initialized ) tbErr("encrypt not init");

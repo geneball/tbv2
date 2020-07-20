@@ -7,7 +7,7 @@
 #include "fs_evr.h"					// FileSys components
 #include "fileOps.h"				// decode & encrypt audio files
 
-const char * 	TBV2_Version 				= "V2.07 of 17-Jul-2020";
+const char * 	TBV2_Version 				= "V2.07 of 18-Jul-2020";
 
 //
 // Thread stack sizes
@@ -93,8 +93,8 @@ static char * fsDevs[] = { "M0:", "M1:", "N0:", "F0:", "F1:", NULL };
 static int    fsNDevs = 0;
 
 void copyFile( const char *src, const char * dst ){
-	FILE * fsrc = fopen( src, "r" );
-	FILE * fdst = fopen( dst, "w" );
+	FILE * fsrc = tbOpenRead( src ); //fopen( src, "r" );
+	FILE * fdst = tbOpenWrite( dst ); //fopen( dst, "w" );
 	if ( fsrc==NULL || fdst==NULL ) return;
 	char buf[512];
 	while (true){
@@ -103,8 +103,8 @@ void copyFile( const char *src, const char * dst ){
 
 		fwrite( buf, 1, 512, fdst );
 	}
-	fclose(fsrc);
-	fclose(fdst);
+	tbCloseFile( fsrc );		// fclose(fsrc);
+	tbCloseFile( fdst );		// fclose(fdst);
 }
 int PlayDBG = 0;
 void 								saiEvent( uint32_t event );

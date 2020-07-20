@@ -158,9 +158,9 @@ void 							initTknTable(){										// initialize tknTable-- (self inits on fir
 //				playSys, 	playSubj,	pausePlay,	resumePlay,		stopPlay,	volAdj,		spdAdj,		posAdj,
 		"startRec pauseRec resumeRec finishRec playRec saveRec writeMsg",
 //				startRec,	pauseRec,	resumeRec,	finishRec, playRec,	saveRec, writeMsg,
-		"goPrevSt saveSt goSavedSt subjAdj msgAdj setTimer showCharge",
+		"goPrevSt saveSt goSavedSt subjAdj msgAdj setTimer resetTimer showCharge",
 //				goPrevSt,	saveSt,		goSavedSt,
-//				subjAdj, 	msgAdj,		setTimer,	showCharge,
+//				subjAdj, 	msgAdj,		setTimer,	resetTimer, showCharge,
 		"startUSB endUSB powerDown sysBoot sysTest", "playNxtPkg changePkg" );
 //				startUSB,	endUSB,		powerDown,	sysBoot, sysTest, playNxtPkg, changePkg
 	verifyEnum( "aNull", sysBoot );
@@ -679,13 +679,13 @@ static TknID			parseLstObj( Punct closeBr, short depth, char *path ){			// INTER
 TknID 						parseFile( const char *fnm ){						// read and parse a JSONish text file
 	char *fnm2, *fnm3; tbShw( fnm, &fnm2, &fnm3 );
 	dbgLog( "Reading %s...\n", fnm );
-	inFile = fopen( fnm, "rb" );
+	inFile = tbOpenReadBinary( fnm ); //fopen( fnm, "rb" );
 	if ( inFile==NULL )
 		tbErr( "parseFile file not found" );
 	char ValPath[300] = {0};	
 	TknID tk = cTkn();
 	TknID lst = parseValue( 1, ValPath );
-	fclose( inFile );
+	tbCloseFile( inFile );		// fclose( inFile );
 	
 	char Value[ MAX_TKN_LEN ] = { 0 };
 	toStr( Value, lst );

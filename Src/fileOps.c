@@ -50,8 +50,8 @@ static void 				encryptCopy( ){
  	startEncrypt( basenm );				// write basenm.key & initialize AES encryption
 	strcat( basenm, ".dat" );
 	
-	FILE * fwav = fopen( (const char *)mFileArgPath, "rb" );
-	FILE * fdat = fopen( basenm, "wb" );
+	FILE * fwav = tbOpenReadBinary( (const char *)mFileArgPath ); //fopen( (const char *)mFileArgPath, "rb" );
+	FILE * fdat = tbOpenWriteBinary( basenm ); //fopen( basenm, "wb" );
 	if ( fwav==NULL || fdat==NULL ) tbErr("encryptCopy: fwav=%x fdat=%x", fwav, fdat );
 
 	uint32_t flen = 0;
@@ -68,18 +68,19 @@ static void 				encryptCopy( ){
     flen += cnt;
 		if (cnt != BUFF_SIZ ) tbErr("encryptCopy fwrite => %d", cnt);
  	}
-	int res = fclose( fwav );
-	if ( res != fsOK ) tbErr("wav fclose => %d", res );
+	tbCloseFile( fwav );		//int res = fclose( fwav );
+	//if ( res != fsOK ) tbErr("wav fclose => %d", res );
 	
-	res = fclose( fdat );
-	if ( res != fsOK ) tbErr("dat fclose => %d", res );
+	tbCloseFile( fdat );		//res = fclose( fdat );
+	//if ( res != fsOK ) tbErr("dat fclose => %d", res );
 	logEvtNS("encF", "dat", basenm );
 
   basenm[ strlen(basenm)-3 ] = 'x';
 	char * newnm = strrchr( basenm, '/' )+1;
 // 	res = frename( (const char *)mFileArgPath, newnm );	// rename .wav => .xat
- 	res = fdelete( (const char *)mFileArgPath, NULL );		// delete wav file
+ 	int res = fdelete( (const char *)mFileArgPath, NULL );		// delete wav file
 	if ( res != fsOK ) tbErr("dat fclose => %d", res );	
+	FileSysPower( false );  // powerdown SDIO after encrypting recording
 }
 
 static void 				decodeMp3( char *fpath ){			// decode fname (.mp3) & copy to .wav

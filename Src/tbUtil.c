@@ -184,12 +184,76 @@ void										flashInit( ){																		// init keypad GPIOs for debugging
 	//tbDelay_ms(1000);
 }
 
+// 
+// filesystem wrappers -- allow eMMC power shut off
+static bool FSysPowered = false;
+bool FSysPowerAlways = false;
+bool SleepWhenIdle = true;
+FILE * 									tbOpenRead( const char * nm ){									// repower if necessary, & open file
+	FileSysPower( true );
+	return fopen( nm, "r" );
+}
+FILE * 									tbOpenReadBinary( const char * nm ){						// repower if necessary, & open file
+	FileSysPower( true );
+	return fopen( nm, "rb" );
+}
+FILE *									tbOpenWrite( const char * nm ){									// repower if necessary, & open file
+	FileSysPower( true );
+	return fopen( nm, "w" );
+}
+FILE * 									tbOpenWriteBinary( const char * nm ){						// repower if necessary, & open file
+	FileSysPower( true );
+	return fopen( nm, "wb" );
+}
+void										tbCloseFile( FILE * f ){												// close file errLog if error
+	int st = fclose( f );
+	if ( st != fsOK ) errLog("fclose => %d", st );
+}
+void 										FileSysPower( bool enable ){										// power up/down eMMC & SD 3V supply
+	if ( FSysPowerAlways )
+		enable = true;
+	if ( enable ){
+		if ( FSysPowered ) return;
+		
+		gConfigOut( gEMMC_RSTN );		// 0 to reset? eMMC
+		gConfigOut( g3V3_SW_EN );		// 1 to enable power to SDCard & eMMC
+		gSet( gEMMC_RSTN, 1 );			// enable at power up?
+		gSet( g3V3_SW_EN, 1 );			// enable at start up, for FileSys access
+		
+		tbDelay_ms( 100 );
+		int st = finit( "M0:" );
+		if ( st != fsOK ) 
+			errLog("finit => %d", st );
+		st = fmount("M0:");
+		if ( st != fsOK ) 
+			errLog("fmount => %d", st );
+		FSysPowered = true;
+
+	} else {
+		if ( !FSysPowered ) return;
+		
+		int st = funinit( "M0:" );
+		if ( st != fsOK ) 
+			errLog("funinit => %d", st );
+		
+		gSet( g3V3_SW_EN, 0 );			// shut off 3V supply to SDIO
+		FSysPowered = false;
+	}
+}
+void osRtxIdleThread (void *argument) {
+  (void)argument;
+  // The idle demon is a system thread, running when no other thread is ready to run. 
+  for (;;) {
+    if ( SleepWhenIdle )
+			__WFE();                            // Enter sleep mode    
+  }
+}
 //
 // MPU Identifiers
 char CPU_ID[20], TB_ID[20], TBookName[20];
 void 										loadTBookName(){
 	strcpy( TBookName, TB_ID );		// default to ID
-	FILE *f = fopen( "M0:/system/tbook_names.txt", "r" );
+	FILE *f = tbOpenRead( "M0:/system/tbook_names.txt" ); //fopen( , "r" );
 	if ( f == NULL ) return;
 	
 	char fid[20], fnm[20];
@@ -199,7 +263,7 @@ void 										loadTBookName(){
 			break;
 		}
 	}
-	fclose( f );
+	tbCloseFile( f );		// fclose( f );
 }
 void 										initIDs(){																		// initialize CPU_ID & TB_ID strings
 	typedef struct {	// MCU device & revision
@@ -238,7 +302,7 @@ void 										initIDs(){																		// initialize CPU_ID & TB_ID strings
 	stmID.lot[7] = 0;  // null terminate the lot string
 	sprintf( TB_ID, "%04x.%04x.%x.%s", stmID.x, stmID.y, stmID.wafer, stmID.lot );
 	
-	loadTBookName();
+//	loadTBookName();
 }
 
 //
@@ -346,13 +410,13 @@ void *									tbAlloc( int nbytes, const char *msg ){					// malloc() & check f
 	}
 	return mem;
 }
-void *mp3_malloc( int size ){
+void *									mp3_malloc( int size ){
 	return tbAlloc( size, "mp3" );
 }
-void mp3_free( void *ptr ){
+void 										mp3_free( void *ptr ){
 	free( ptr );
 }
-void *mp3_calloc( int num,int size ){
+void *									mp3_calloc( int num,int size ){
 	unsigned char *ptr;
 	ptr = tbAlloc(size*num, "mp3c" );
 	for( int i=0; i<num*size; i++ ) 
