@@ -164,6 +164,7 @@ void						logPowerUp( bool reboot ){											// re-init logger after reboot, U
 		logEvtNS( "TB_V2", "Firmware", TBV2_Version );
 		logEvtS(  "CPU",  CPU_ID );
 		logEvtS(  "TB_ID",  TB_ID );
+		logEvtFmt("BUILT", "Built on %s at %s", __DATE__, __TIME__);
 		loadTBookName();
 		logEvtS(  "TB_NM",  TBookName );
 		logEvtNI( "CPU_CLK", "MHz", SystemCoreClock/1000000 );
@@ -342,6 +343,21 @@ void						logEvtS( const char *evtID, const char *args ){		// write log entry: '
 	}
 	if ( osMutexRelease( logLock )!=osOK )	tbErr("logLock!");
 }
+
+// Log an event with flexible formatting.
+void logEvtFmt(const char *eventId, const char *fmt, ...) {
+	va_list args1;
+	va_start(args1, fmt);
+	va_list args2;
+	va_copy(args2, args1);
+	char buf[1 + vsnprintf(NULL, 0, fmt, args1)];
+	va_end(args1);
+	vsnprintf(buf, sizeof buf, fmt, args2);
+	va_end(args2);
+	
+	logEvtS(eventId, buf);
+}
+
 void						logEvtNS( const char *evtID, const char *nm, const char *val ){	// write log entry: "EVENT, at:    d.ddd, NM: 'VAL' "
 	char args[300];
 	sprintf( args, "%s: '%s'", nm, val );

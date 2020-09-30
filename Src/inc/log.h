@@ -45,6 +45,7 @@ extern void			flushStats( void );												// save all cached stats files
 extern MsgStats *	loadStats( const char *subjNm, short iSubj, short iMsg );	// load statistics snapshot for Subj/Msg
 extern void			logEvt( const char *evtID );									// write log entry: 'EVENT, at:    d.ddd'
 extern void			logEvtS( const char *evtID, const char *args );					// write log entry: 'EVENT, at:    d.ddd, ARGS'
+extern void     logEvtFmt( const char *EventID, const char *fmt, ...); // write log entry, any arguments
 extern void			logEvtNI( const char *evtID, const char *nm, int val );			// write log entry: "EVENT, at:    d.ddd, NM: VAL "
 extern void			logEvtNINI( const char *evtID, const char *nm, int val, const char *nm2, int val2 );	// write log entry
 extern void 		logEvtNININI( const char *evtID, const char *nm,  int val, const char *nm2, int val2, const char *nm3, int val3 );
