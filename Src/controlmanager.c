@@ -671,8 +671,8 @@ void 									initControlManager( void ){				// initialize control manager
 			if ( timers[it] == NULL ) 
 				tbErr( "timer not alloc'd" );
 		}
-		controlTest();  //DEBUG
-		//executeCSM();	
+		//controlTest();  //DEBUG
+		executeCSM();	
 		
 	} else if ( FileSysOK ) {		// FS but no data, go into USB mode
 		logEvt( "NoFS USBmode" );
