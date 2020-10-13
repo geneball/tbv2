@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\Objects\TBookRev2b.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Objects\TBookRev2b.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Mon Oct 12 13:19:22 2020
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Mon Oct 12 14:40:49 2020
 <BR><P>
 <H3>Maximum Stack Usage =       7552 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -26,6 +26,7 @@ Mutually Recursive functions
 </H3> <LI><a href="#[44a]">logEvtS</a>&nbsp;&nbsp;&nbsp;&rArr;&nbsp;&nbsp;&nbsp;<a href="#[205]">tbErr</a><BR>
  <LI><a href="#[409]">logEvtNS</a>&nbsp;&nbsp;&nbsp;&rArr;&nbsp;&nbsp;&nbsp;<a href="#[44a]">logEvtS</a><BR>
  <LI><a href="#[398]">osRtxErrorNotify</a>&nbsp;&nbsp;&nbsp;&rArr;&nbsp;&nbsp;&nbsp;<a href="#[205]">tbErr</a><BR>
+ <LI><a href="#[3ca]">appendNorLog</a>&nbsp;&nbsp;&nbsp;&rArr;&nbsp;&nbsp;&nbsp;<a href="#[205]">tbErr</a><BR>
  <LI><a href="#[3cb]">eraseNorFlash</a>&nbsp;&nbsp;&nbsp;&rArr;&nbsp;&nbsp;&nbsp;<a href="#[205]">tbErr</a><BR>
  <LI><a href="#[431]">copyNorLog</a>&nbsp;&nbsp;&nbsp;&rArr;&nbsp;&nbsp;&nbsp;<a href="#[205]">tbErr</a><BR>
  <LI><a href="#[459]">restoreNorLog</a>&nbsp;&nbsp;&nbsp;&rArr;&nbsp;&nbsp;&nbsp;<a href="#[205]">tbErr</a><BR>
@@ -5165,11 +5166,13 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[2a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2S2only_Send
 </UL>
 
-<P><STRONG><a name="[3ca]"></a>appendNorLog</STRONG> (Thumb, 140 bytes, Stack size 24 bytes, norlog.o(i.appendNorLog))
+<P><STRONG><a name="[3ca]"></a>appendNorLog</STRONG> (Thumb, 154 bytes, Stack size 24 bytes, norlog.o(i.appendNorLog))
 <BR><BR>[Stack]<UL><LI>Max Depth = 824 + Unknown Stack Size
-<LI>Call Chain = appendNorLog &rArr; eraseNorFlash &rArr;  tbErr (Cycle)
+ + In Cycle
+<LI>Call Chain = appendNorLog &rArr;  tbErr (Cycle)
 </UL>
-<BR>[Calls]<UL><LI><a href="#[3cb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;eraseNorFlash
+<BR>[Calls]<UL><LI><a href="#[205]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tbErr
+<LI><a href="#[3cb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;eraseNorFlash
 <LI><a href="#[3cc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;logEvtNINI
 <LI><a href="#[3cd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;nxtBlk
 <LI><a href="#[2d4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;NLogWrite
@@ -9402,7 +9405,7 @@ Global Symbols
 
 <P><STRONG><a name="[4fb]"></a>norEvt</STRONG> (Thumb, 32 bytes, Stack size 16 bytes, logger.o(i.norEvt))
 <BR><BR>[Stack]<UL><LI>Max Depth = 840 + Unknown Stack Size
-<LI>Call Chain = norEvt &rArr; appendNorLog &rArr; eraseNorFlash &rArr;  tbErr (Cycle)
+<LI>Call Chain = norEvt &rArr; appendNorLog &rArr;  tbErr (Cycle)
 </UL>
 <BR>[Calls]<UL><LI><a href="#[3ca]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;appendNorLog
 </UL>
@@ -10739,6 +10742,7 @@ Global Symbols
 <LI><a href="#[4da]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;initNorLog
 <LI><a href="#[3cb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;eraseNorFlash
 <LI><a href="#[431]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;copyNorLog
+<LI><a href="#[3ca]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;appendNorLog
 <LI><a href="#[459]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;restoreNorLog
 <LI><a href="#[48b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;findLogNext
 <LI><a href="#[2d4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;NLogWrite

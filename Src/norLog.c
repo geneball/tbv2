@@ -1,5 +1,43 @@
 // TBook Rev2  norLog.c  --  nor Flash logging utilities
 //   Gene Ball  Oct2020
+//     
+//   operations on TBook Log written to NorFLASH memory  
+//  W25Q64JV  TBookRev2 U5    datasheet: https://www.mouser.com/datasheet/2/949/w25q64jv_revj_03272018_plus-1489671.pdf
+//  3V 64M-BIT  SERIAL FLASH MEMORY WITH DUAL, QUAD SPI
+//
+//	The W25Q64JV device is directly handled by W25Q64JV.c 
+//  The driver sends commands to the chip over SPI, this file only access a few driver functions:
+//     pNor->Initialize,  pNor->PowerControl, & pNor->GetInfo  -- from initNorLog()
+//     pNor->ReadData						  -- from NLogReadPage() and copyNorLog()
+//     pNor->ProgramData				  -- from NLogWrite()
+//     pNor->EraseSector()  			-- from eraseNorFlash()
+//
+//  
+//  the NOR-FLASH is organized as a collection of sequential text log files, each starting on a NOR page boundary
+//  the 1st NOR page is reserved as an array of 64 start addresses -- Nor address for logs 0..63
+//  erased NOR locations read as all 1's, so a non-zero log start_address means that log has been initialized
+//
+//-- initNorLog( bool startNewLog )
+//    initializes NLg structure,
+//      NLg.pNor points to ARMDRIVER Driver_Flash0 (defined by ARM_Driver_Flash_(DRIVER_FLASH_NUM) in W25Q64JV.c)
+//      NLg.pI points to key NORFLASH parameters that are defined in W25Q64JV.h 
+//     then calls findCurrNLog()
+//       which finds current log index, base address, and next empty byte
+//       by scanning the page of log start_addresses (in page0): 
+//        if s_a[0] is erased, -- entire flash is erased, so initialize Idx=0, Base=page1, Nxt=Base
+//        otherwise, Idx & Base are set from the last used address, then findLogNext()
+//            sets Nxt to first still erased byte beyond Base  (calls TbErr if entire NOR flash is full)
+//        if startNewLog has been requested, index is incremented,
+//            Base & Nxt are set to next empty page, and page0 start_address[idx] is written with Base 
+//        if currLog==63, startNewLog forces a full erase of the NORflash and starts Log0
+//-- appendNorLog( text ) 
+//   writes text to NOR flash, starting at NLg.Nxt 
+//      splits into two calls to NLogWrite if data crosses into next page
+//-- copyNorLog( path ) -- writes contents of current log to specified file path
+//-- eraseNorFlash( saveCurrLog ) -- erases entire NOR flash, a page at a time, verifying that byte0 was reset
+//       (page at a time, which is slow, because pNor->eraseChip() didn't work)
+//       if saveCurrLog was requested, writes the current log before erasing, 
+//          then appends the file to log0 afterward
 
 #include "tbook.h"
 
@@ -25,13 +63,13 @@ const char *					norLogPath = "M0:/LOG";
 const int 						BUFFSZ = 260;   // 256 plus space for null to terminate string
 const int							N_SADDR = 64;		// number of startAddresses in page0
 
-void						NLogShowStatus(){
+void						NLogShowStatus(){														// write event with NorLog status details
 		logEvtNININI( "NorLog", "Idx", NLg.currLogIdx, "Sz", NLg.Nxt-NLg.logBase, "Free%", (NLg.MAX_ADDR-NLg.Nxt)*100/NLg.MAX_ADDR );
 }
-int							NLogIdx(){  
+int							NLogIdx(){  																// => index of log section currently in use
 		return NLg.currLogIdx;
 }
-void	*					NLogReadPage( uint32_t addr ){					// read NOR page at 'addr' into NLg.pg & return ptr to it
+void	*					NLogReadPage( uint32_t addr ){							// read NOR page at 'addr' into NLg.pg & return ptr to it
 	uint32_t stat = NLg.pNor->ReadData( addr, NLg.pg, NLg.PGSZ );			// read page at addr into NLg.pg 
 	if ( stat != NLg.PGSZ ) tbErr(" pNor read(%d) => %d", addr, stat );
 	return (void *)NLg.pg;
@@ -43,7 +81,7 @@ void 						NLogWrite( uint32_t addr, const char *data, int len ){	// write len b
 	uint32_t stat = NLg.pNor->ProgramData( addr, data, len );		
 	if ( stat != ARM_DRIVER_OK ) tbErr(" pNor wr => %d", stat );
 }
-int 						nxtBlk( int addr, int blksz ){		// => 1st multiple of 'blksz' after 'addr'
+int 						nxtBlk( int addr, int blksz ){							// => 1st multiple of 'blksz' after 'addr'
 	return (addr/blksz + 1) * blksz;
 }
 void						findLogNext(){															// sets NLg.Nxt to first erased byte in current log
@@ -104,7 +142,7 @@ void						findCurrNLog( bool startNewLog ){						// read 1st pg (startAddrs) & i
 		NLg.Nxt = NLg.logBase;						// new empty log, Nxt = base
 	}
 }
-void 						eraseNorFlash( bool svCurrLog ){			// erase entire chip & re-init with fresh log (or copy of current)
+void 						eraseNorFlash( bool svCurrLog ){						// erase entire chip & re-init with fresh log (or copy of current)
   if ( NLg.pNor == NULL ) return;				// Nor not initialized
 
 	if ( svCurrLog )
@@ -127,12 +165,12 @@ void 						eraseNorFlash( bool svCurrLog ){			// erase entire chip & re-init wit
 	if ( svCurrLog )
 		restoreNorLog( norTmpFile );
 }
-void						initNorLog( bool startNewLog ){														// init driver for W25Q64JV NOR flash
+void						initNorLog( bool startNewLog ){							// init driver for W25Q64JV NOR flash
 	uint32_t stat;
 	
 	// init constants in NLg struct
 	NLg.pNor 			= &Driver_Flash0;
-	NLg.pI 				= NLg.pNor->GetInfo();
+	NLg.pI 				= NLg.pNor->GetInfo();   // get key NORFLASH parameters (defined in W25Q64JV.h)
 	NLg.PGSZ 			= NLg.pI->page_size;
 	NLg.SECTORSZ 	= NLg.pI->sector_size;
 	if ( NLg.PGSZ > BUFFSZ ) tbErr("NLog: buff too small");
@@ -174,6 +212,8 @@ void						appendNorLog( const char * s ){									// append text to Nor flash
 	int nxtPg = nxtBlk( NLg.Nxt, NLg.PGSZ ); 
 	if ( NLg.Nxt+len > nxtPg ){ // crosses page boundary, split into two writes
 		int flen = nxtPg-NLg.Nxt;		// bytes on this page
+		if ( flen > NLg.PGSZ ) tbErr("append too long");
+		
 		NLogWrite( NLg.Nxt, s, flen );						// write rest of this page
 		NLogWrite( nxtPg, s+flen, len-flen );			// & part on next page
 	

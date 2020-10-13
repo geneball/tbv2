@@ -728,7 +728,7 @@ I (.\Src\inc\ledMgr.h)(0x5F201488)
 I (.\Src\inc\powerMgr.h)(0x5F201488)
 I (.\Src\inc\inputMgr.h)(0x5F201488)
 I (.\Src\inc\tb_evr.h)(0x5F201488)
-F (.\Src\norLog.c)(0x5F848EF7)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\config -I .\Src\inc -I .\Keil\inc -I .\Src\Rev2b\inc -I .\Keil\mbedtls-I.\RTE\_TBv2b-IC:\Users\Gene\AppData\Local\Arm\Packs\ARM\CMSIS\5.7.0\CMSIS\Driver\Include-IC:\Users\Gene\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.14.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="531" -D_RTE_ -DSTM32F412Vx -D_RTE_ -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000" -D_RTE_ -DFPM_DEFAULT-o .\objects\norlog.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\norlog.crf --depend .\objects\norlog.d)
+F (.\Src\norLog.c)(0x5F84A0F0)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections --asm --interleave --asm_dir ".\\Listings\\" -I .\Src\config -I .\Src\inc -I .\Keil\inc -I .\Src\Rev2b\inc -I .\Keil\mbedtls-I.\RTE\_TBv2b-IC:\Users\Gene\AppData\Local\Arm\Packs\ARM\CMSIS\5.7.0\CMSIS\Driver\Include-IC:\Users\Gene\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.14.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="531" -D_RTE_ -DSTM32F412Vx -D_RTE_ -DTBOOKREV2B -DSTM32F412Vx -DHSE_VALUE="8000000" -D_RTE_ -DFPM_DEFAULT-o .\objects\norlog.o --list_dir ".\\Listings\\" --list --omf_browse .\objects\norlog.crf --depend .\objects\norlog.d)
 I (.\Src\inc\tbook.h)(0x5F201488)
 I (.\Src\inc\main.h)(0x5F201488)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5EC82CCC)

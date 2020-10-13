@@ -573,23 +573,7 @@
         <Bp>
           <Number>26</Number>
           <Type>0</Type>
-          <LineNumber>400</LineNumber>
-          <EnabledFlag>0</EnabledFlag>
-          <Address>0</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>0</BreakIfRCount>
-          <Filename>.\Src\logger.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression></Expression>
-        </Bp>
-        <Bp>
-          <Number>27</Number>
-          <Type>0</Type>
-          <LineNumber>54</LineNumber>
+          <LineNumber>84</LineNumber>
           <EnabledFlag>0</EnabledFlag>
           <Address>0</Address>
           <ByteObject>0</ByteObject>
@@ -603,9 +587,9 @@
           <Expression></Expression>
         </Bp>
         <Bp>
-          <Number>28</Number>
+          <Number>27</Number>
           <Type>0</Type>
-          <LineNumber>59</LineNumber>
+          <LineNumber>89</LineNumber>
           <EnabledFlag>0</EnabledFlag>
           <Address>0</Address>
           <ByteObject>0</ByteObject>
