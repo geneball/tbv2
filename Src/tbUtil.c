@@ -318,6 +318,30 @@ struct {
 	uint8_t		tenths;
 	uint8_t		pm;
 } lastRTC, firstRTC;
+           
+/// \brief Gets the current time from RTC into a fsTime structure.
+/// \param[out] fsTime                   fsTime structure to be filled in. 
+void getRTC(struct _fsTime *fsTime) {
+	int pDt=0,Dt=1, pTm=0,Tm=1;
+	while (pDt != Dt || pTm != Tm){
+		pDt = Dt;
+		pTm = Tm;
+		Dt = RTC->DR;
+		Tm = RTC->TR;
+	}
+	
+  // This is going suck in the year 2100. But it would break in 2107 anyway.
+  // The time format allows years 1980 to 2107. The RTC only allows years % 100.
+	fsTime->year =  ((Dt>>20) & 0xF)*10 + ((Dt>>16) & 0xF) + 2000;
+	fsTime->mon = ((Dt>>12) & 0x1)*10 + ((Dt>>8) & 0xF);
+	fsTime->day =((Dt>> 4) & 0x3)*10 + (Dt & 0xF);
+	
+	fsTime->hr =  ((Tm>>20) & 0x3)*10 + ((Tm>>16) & 0xF);
+	fsTime->min = ((Tm>>12) & 0x7)*10 + ((Tm>>8) & 0xF);
+	fsTime->sec  = ((Tm>> 4) & 0x7)*10 + (Tm & 0xF);
+}
+
+
 void 										showRTC( ){
 	int pDt=0,Dt=1, pTm=0,Tm=1;
 	while (pDt != Dt || pTm != Tm){
@@ -485,25 +509,29 @@ void 										errLog( const char * fmt, ... ){
 	disableLCD();
 }
 
+// To prevent recursion.
 static int 							tbErrNest = 0;
-void 										tbErr( const char * fmt, ... ){									// report fatal error
+// report fatal error
+void 										_tbErr( const char *file, const int line, const char * fmt, ... ) {
 	if ( tbErrNest == 0 ){ 
-		char s[100];
 		tbErrNest++;
 		
-		va_list arg_ptr;
-		va_start( arg_ptr, fmt );
-		vsprintf( s, fmt, arg_ptr );
-		va_end( arg_ptr );
-		
-		printf( "%s \n", s );
-		logEvtS( "***tbErr", s );
+    va_list args1;
+    va_start(args1, fmt);
+    va_list args2;
+    va_copy(args2, args1);
+    char s[1 + vsnprintf(NULL, 0, fmt, args1)];
+    va_end(args1);
+    vsnprintf(s, sizeof s, fmt, args2);
+    va_end(args2);
+
+		printf( "%s(%d): %s \n", file, line, s );
+		logEvtFmt( "***tbErr", "%s(%d) %s", file, line, s );
 		dbgEvtS( TB_Error, s );
 //		logPowerDown();			// try to save log
 	}
 	__breakpoint(0);		// halt if in debugger
-	
-	
+		
 	ledFg( TB_Config.fgTB_Error ); 
 	while ( true ){ }
 }
@@ -725,16 +753,25 @@ void 										HardFault_Handler_C( svFault_t *svFault, uint32_t linkReg ){
 	dbgEvt( TB_Fault, vAct, cfsr, svFault->PC,0 );
 	
 	enableLCD();
-	dbgLog( "Fault: 0x%x = %s \n",  vAct, vAct<7? fNms[vAct]:"" );
-  dbgLog( "PC: 0x%08x \n", svFault->PC );
-	dbgLog( "CFSR: 0x%08x \n", cfsr );
-	dbgLog( "EXC_R: 0x%08x \n", svSCB.EXC_RET );
-	dbgLog( "  sp: 0x%08x \n ", svSCB.SP + (sizeof svFault) );
-  if ( usgF ) dbgLog( "  Usg: 0x%04x \n", usgF );
-  if ( busF ) dbgLog( "  Bus: 0x%02x \n   BFAR: 0x%08x \n", busF, svSCB.BFAR );
-  if ( memF ) dbgLog( "  Mem: 0x%02x \n   MMAR: 0x%08x \n", memF, svSCB.MMAR );
+//	dbgLog( "Fault: 0x%x = %s \n",  vAct, vAct<7? fNms[vAct]:"" );
+//  dbgLog( "PC: 0x%08x \n", svFault->PC );
+//	dbgLog( "CFSR: 0x%08x \n", cfsr );
+//	dbgLog( "EXC_R: 0x%08x \n", svSCB.EXC_RET );
+//	dbgLog( "  sp: 0x%08x \n ", svSCB.SP + (sizeof svFault) );
+//  if ( usgF ) dbgLog( "  Usg: 0x%04x \n", usgF );
+//  if ( busF ) dbgLog( "  Bus: 0x%02x \n   BFAR: 0x%08x \n", busF, svSCB.BFAR );
+//  if ( memF ) dbgLog( "  Mem: 0x%02x \n   MMAR: 0x%08x \n", memF, svSCB.MMAR );
 	
-	tbErr(" Fault" );
+	printf( "Fault: 0x%x = %s \n",  vAct, vAct<7? fNms[vAct]:"" );
+  printf( "   PC: 0x%08x \n", svFault->PC );
+	printf( " CFSR: 0x%08x \n", cfsr );
+	printf( "EXC_R: 0x%08x \n", svSCB.EXC_RET );
+	printf( "   sp: 0x%08x \n ", svSCB.SP + (sizeof svFault) );
+  if ( usgF ) printf( "  Usg: 0x%04x \n", usgF );
+  if ( busF ) printf( "  Bus: 0x%02x \n   BFAR: 0x%08x \n", busF, svSCB.BFAR );
+  if ( memF ) printf( "  Mem: 0x%02x \n   MMAR: 0x%08x \n", memF, svSCB.MMAR );
+
+  tbErr(" Fault" );
 }
 void 										RebootToDFU( void ){													// reboot into SystemMemory -- Device Firmware Update bootloader
 	// STM32F412vet

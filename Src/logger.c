@@ -185,6 +185,7 @@ void						logPowerUp( bool reboot ){											// re-init logger after reboot, U
 	}
 
 	char * status = loadLine( line, TBP[ pCSM_VERS ], &verDt );			// version.txt marker file exists-- when created?
+  dumpHex("version string", 0, status, strlen(status));
 	dateStr( dt, verDt );
 	logEvtNSNS( "TB_CSM", "dt", dt, "ver", status );
 		
@@ -312,11 +313,13 @@ void						logEvt( const char *evtID ){											// write log entry: 'EVENT, at:
 }
 void						norEvt( const char *s1, const char *s2 ){
 	appendNorLog( s1 );
-	appendNorLog( ", " );
-	appendNorLog( s2 );
+    if (s2 != NULL && strlen(s2) > 0) {
+        appendNorLog( ", " );
+        appendNorLog( s2 );
+    }
 	appendNorLog( "\n" );
 }
-void						logEvtS( const char *evtID, const char *args ){		// write log entry: 'm.ss.s: EVENT, ARGS'
+void						logEvtS( const char *evtID, const char *str ){		// write log entry: 'm.ss.s: evtID, str'
 	int 		ts = tbTimeStamp();
 	char 		evtBuff[ MAX_EVT_LEN1 ];
 	int tsec = ts/100, sec = tsec/10, min = sec/60, hr = min/60;
@@ -324,13 +327,13 @@ void						logEvtS( const char *evtID, const char *args ){		// write log entry: '
 		sprintf( evtBuff,  "%d_%02d_%02d.%d: %8s", hr, min %60, sec % 60, tsec % 10, evtID );
 	else
 		sprintf( evtBuff,  "%d_%02d.%d: %8s", min %60, sec % 60, tsec % 10, evtID );
-	addHist( evtBuff, args );
-	dbgLog( "%s %s\n", evtBuff, args );
+	addHist( evtBuff, str );
+	dbgLog( "%s %s\n", evtBuff, str );
 	
 	if ( osMutexAcquire( logLock, osWaitForever )!=osOK )	tbErr("logLock");
-	norEvt( evtBuff, args );	// WRITE to NOR Log
+	norEvt( evtBuff, str );	// WRITE to NOR Log
 	if ( logF!=NULL ){
-		int nch = fprintf( logF, "%s, %s\n", evtBuff, args );
+		int nch = fprintf( logF, "%s, %s\n", evtBuff, str );
 		if (nch < 0) 
 			dbgLog("LogErr: %d \n", nch );
 		else

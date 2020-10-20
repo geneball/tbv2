@@ -66,4 +66,8 @@ extern void			eraseNorFlash( bool svCurrLog );					// erase entire chip & re-ini
 extern void			NLogShowStatus( void );
 extern int			NLogIdx( void );
 
+extern void     dumpNorLog(int ix, int maxPages);
+extern void     dumpHex(const char * from, uint32_t addr, const char *data, int len);
+extern void     dumpAll(int maxPages);
+
 #endif  // log.h

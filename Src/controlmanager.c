@@ -623,7 +623,6 @@ static void 					controlTest(  ){									// CSM test procedure
 	}
 }
 
-
 void 									initControlManager( void ){				// initialize control manager 	
 	// init to odd values so changes are visible
 	TB_Config.default_volume = 8; 
@@ -671,6 +670,8 @@ void 									initControlManager( void ){				// initialize control manager
 			if ( timers[it] == NULL ) 
 				tbErr( "timer not alloc'd" );
 		}
+    
+    //dumpAll(4);
 		//controlTest();  //DEBUG
 		executeCSM();	
 		

@@ -74,6 +74,7 @@ extern void				tbCloseFile( FILE * f );												// close file, errLog if erro
 extern void 			FileSysPower( bool enable );										// power up/down eMMC & SD 3V supply
 
 extern void 			talking_book ( void *argument );
+extern void       getRTC(struct _fsTime *fsTime);
 extern void 			showRTC( void );
 extern uint32_t 	tbTimeStamp( void );
 extern void 			tbDelay_ms( int ms ); 					//  Delay execution for a specified number of milliseconds
@@ -88,7 +89,8 @@ extern void 			dbgEvtS( int id, const char *d );
 extern void 			usrLog( const char * fmt, ... );
 extern void 			dbgLog( const char * fmt, ... );
 extern void 			errLog( const char * fmt, ... );
-extern void 			tbErr( const char * fmt, ... );							// report fatal error
+#define                 tbErr(...) _tbErr( __FILE__, __LINE__, __VA_ARGS__ )
+extern void 			_tbErr( const char *file, const int line, const char * fmt, ... );							// report fatal error
 extern void				tbShw( const char *s, char **p1, char **p2 );
 extern void 			_Error_Handler( char *, int );
 extern int 				PlayDBG;			// DEBUG flag for DebugLoop & playWave

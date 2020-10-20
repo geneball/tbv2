@@ -40,7 +40,7 @@ void 							startEncrypt( char * fname );								    // init session key & save 
 void 							encryptBlock( const uint8_t *in, uint8_t *out, int len );	    // AES CBC encrypt in[0..len] => out[] (len%16===0)
 void 							endEncrypt( void );											    // destroy session key
 
-void 							tbErr( const char * fmt, ... );								    // report fatal error
+//void 							tbErr( const char * fmt, ... );								    // report fatal error
 void 							TlsErr( char *msg, int cd );                                    // report mbedtls error
 
 // end encAudio.h
