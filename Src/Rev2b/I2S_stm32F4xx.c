@@ -632,7 +632,11 @@ static int32_t 								I2S2only_Send( const void *data, uint32_t nSamples, I2S_R
 	cfg |= DMA_SxCR_DBM;																						// double buffer, M0AR first
 	dma->CR = cfg;
 	
-	ak_SpeakerEnable( true );			// power up codec & amplifier (if not already)
+  // For testing codec power output
+  ak_SpeakerEnable( true );			// power up codec & amplifier (if not already)
+  // For testing codec power output
+	//ak_SpeakerEnable( true );			// power up codec & amplifier (if not already)
+  
 	ak_SetMute( false );
 
 	// clocks from codec are stable at selected frequency-- from ak_SetMasterFreq()

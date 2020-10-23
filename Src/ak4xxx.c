@@ -367,6 +367,66 @@ RecordTestCnt++;
 	}
 #endif
 }
+
+
+void 						ak_AkSpeakerEnable( bool enable ){														// enable/disable speaker -- using mute to minimize pop
+	if ( akSpeakerOn==enable )   // no change?
+		return;
+	
+	akSpeakerOn = enable;
+	dbgEvt( TB_akSpkEn, enable,0,0,0);
+
+	if ( enable ){ 	
+		#if defined( AK4637 )
+			// startup sequence re: AK4637 Lineout Uutput pg 91
+			akR.R.SigSel1.SLPSN = 0;  						// set power-save (mute) ON (==0)
+			akUpd();															// and UPDATE
+			gSet( gPA_EN, 1 );										// enable power to speaker & headphones
+																						// 1) done by ak_SetMasterFreq()
+      akR.R.SigSel1.DACS = 1; 						  // 2) Set up the path of DAC->SPK-Amp 0->1
+      akR.R.SigSel2.SPKG1_0 = 1;            // 3) SPK-Amp gain setting: SPKG1-0 00 -> 01
+      akR.R.TimSel.FRN = 0;                 // 4) Set up FRN, FRATT, and ADRST1-0 bits
+      akR.R.TimSel.RFATT = 0;               // mis-spelling of FRATT?
+      akR.R.TimSel.ADRST1_0 = 0;  
+    
+      akR.reg[0x0a] = 0x6c;                 // 5) Set up ALC mode 
+      akR.reg[0x0b] = 0x2e;
+    
+      akR.R.AlcMdCtr2.REF7_0 = 0xa1;        // 6) Set up REF value of ALC
+    
+      akR.R.InVolCtr.IVOL7_0 = 0x91;        // 7) Set up IVOL value of ALC operation start        
+        
+			//akR.R.SigSel3.DACL = 1;  							// 3) DACL=1			  MARC 8)
+			//akR.R.SigSel3.LVCM1_0 = 0;  					// 3) LVCM=01 			MARC 8)
+		  akR.R.DigVolCtr.DVOL7_0 = akFmtVolume;	// 4) Output_Digital_Volume 
+			akR.R.DigFilMd.PFDAC1_0 = 0;  				// 5) PFDAC=0			 default MARC 9)
+			akR.R.DigFilMd.ADCPF = 1;  						// 5) ADCPF=1			 default MARC 9)
+			akR.R.DigFilMd.PFSDO = 1;  						// 5) PFSDO=1			 default MARC 9)
+			akR.R.PwrMgmt1.PMDAC = 1;							// 6) Power up DAC
+		  akR.R.PwrMgmt2.PMSL = 1;							// 7) set spkr power ON
+			akUpd();															// UPDATE all settings
+			tbDelay_ms( 300 ); //DEBUG 30 );											// 7) wait up to 300ms   // MARC 11)
+			akR.R.SigSel1.SLPSN = 1;							// 8) exit power-save (mute) mode (==1)
+			akUpd();		
+		#endif
+	} else {			
+		//  power down by enabling mute, then shutting off power
+		#if defined( AK4637 )
+			// shutdown sequence re: AK4637 pg 89
+			akR.R.SigSel1.SLPSN = 0;  						// 13) enter SpeakerAmp Power Save Mode 
+			akUpd();															// and UPDATE
+			akR.R.SigSel1.DACS 	= 0;							// 14) set DACS = 0, disable DAC->Spkr
+		  akR.R.PwrMgmt2.PMSL = 0;							// 15) PMSL=0, power down Speaker-Amp
+			akR.R.PwrMgmt1.PMDAC = 0;							// 16) power down DAC
+			akR.R.PwrMgmt1.PMPFIL = 0;						// 16) power down filter
+			akR.R.PwrMgmt2.PMPLL = 0;  						// disable PLL (shuts off Master Clock from codec)
+			akUpd();															// and UPDATE
+			gSet( gPA_EN, 0 );										// disable power to speaker & headphones
+		#endif
+	}	
+}
+
+
 void 						ak_SpeakerEnable( bool enable ){														// enable/disable speaker -- using mute to minimize pop
 	if ( akSpeakerOn==enable )   // no change?
 		return;

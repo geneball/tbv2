@@ -671,6 +671,7 @@ void		 				ak_SetVolume( uint8_t Volume );				// 0..10
 void		 				ak_SetMute( bool muted );							// for temporarily muting, while speaker powered
 void 						ak_SetOutputMode( uint8_t Output );
 void 						ak_SpeakerEnable( bool enable );			// power up/down lineout, DAC, speaker amp
+void 						ak_AkSpeakerEnable( bool enable );		// power up/down lineout, DAC, codec speaker out enable, speaker amp
 void						ak_SetMasterFreq( int freq );					// set AK4637 to MasterMode, 12MHz ref input to PLL, audio @ 'freq'
 void						ak_MasterClock( bool enable );				// enable/disable PLL (Master Clock from codec) -- fill DataReg before enabling 
 void						ak_RecordEnable( bool enable );				// power up/down microphone amp, ADC, ALC, filters
