@@ -3,7 +3,7 @@
 
 #include "tbook.h"
 #include "log.h"
-#include "controlMgr.h"
+#include "controlmanager.h"
 
 static FILE *		logF = NULL;			// file ptr for open log file
 static int			totLogCh = 0;
@@ -162,6 +162,7 @@ void						logPowerUp( bool reboot ){											// re-init logger after reboot, U
 		if (logF!=NULL) fprintf( logF, "\n" );
 		logEvt(   "REBOOT--------" );
 		logEvtNS( "TB_V2", "Firmware", TBV2_Version );
+		logEvtFmt( "BUILT", "On %s at %s", __DATE__, __TIME__);
 		logEvtS(  "CPU",  CPU_ID );
 		logEvtS(  "TB_ID",  TB_ID );
 		loadTBookName();
@@ -342,6 +343,20 @@ void						logEvtS( const char *evtID, const char *args ){		// write log entry: '
 	}
 	if ( osMutexRelease( logLock )!=osOK )	tbErr("logLock!");
 }
+
+void logEvtFmt(const char *evtID, const char *fmt, ...) {
+    va_list args1;
+    va_start(args1, fmt);
+    va_list args2;
+    va_copy(args2, args1);
+    char buf[1+vsnprintf(NULL, 0, fmt, args1)];
+    va_end(args1);
+    vsnprintf(buf, sizeof buf, fmt, args2);
+    va_end(args2);
+
+	  logEvtS(evtID, buf);
+}
+
 void						logEvtNS( const char *evtID, const char *nm, const char *val ){	// write log entry: "EVENT, at:    d.ddd, NM: 'VAL' "
 	char args[300];
 	sprintf( args, "%s: '%s'", nm, val );
