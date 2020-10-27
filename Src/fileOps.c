@@ -3,7 +3,7 @@
 
 #include "fileOps.h"
 #include "EncAudio.h"
-#include "controlMgr.h"			// buildPath
+#include "controlmanager.h"			// buildPath
 #include <string.h>
 
 const int 									FILE_ENCRYPT_REQ   =	0x01; 	// signal sent to request audio file encryption

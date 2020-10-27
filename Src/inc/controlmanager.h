@@ -59,4 +59,44 @@ extern void						findPackages( void );									// scan for M0:/package*/  direct
 TBPackage_t * 				readContent( const char * pkgPath, int pkgIdx );		// parse list_of_subjects.txt & messages.txt for each Subj => Content
 extern void 					readControlDef( void );								// parse control.def => Config & TBookCSM[]
 
+typedef struct {							// CSM state variables
+	short 		iCurrSt;	// index of current csmState
+	char * 		currStateName;	// str nm of current state
+	Event		lastEvent;		// str nm of last event
+	char *		lastEventName;	// str nm of last event
+	char *		evtNms[ eUNDEF ];
+	char *		nxtEvtSt[ eUNDEF ];
+	
+	short		iPrevSt;	// idx of previous state
+	short		iNextSt;	// nextSt from state machine table ( can be overridden by goBack, etc )
+	short		iSavedSt[5];	// possible saved states
+  
+	short		volume;
+	short		speed;
+  
+	short		iSubj;		// index of current Subj
+	short		iMsg;		// index of current Msg within Subj
+
+	csmState *  cSt;		// -> TBookCSM[ iCurrSt ]
+	
+}	TBook_t;
+
+extern TBook_t TBook;
+extern osTimerId_t  	timers[3];
+
+extern int						stIdx( int iSt );
+extern void 					USBmode( bool start);
+extern void   				playRecAudio( void );
+extern void						saveRecAudio( char *arg );
+extern void 					playSysAudio( char *arg );
+extern void 					playSubjAudio( char *arg );
+extern void						startRecAudio( char *arg );
+extern void						saveWriteMsg( char *txt );
+extern void 					showPkg( void );
+extern void 					playNxtPackage( void );
+extern void 				  changePackage( void );
+extern void						executeCSM( void );
+
+extern void 					controlTest( void );
+
 #endif

@@ -2,7 +2,7 @@
 //   Gene Ball  May2018
 
 #include "tbook.h"
-#include "controlMgr.h"
+#include "controlmanager.h"
 
 
 // ---------------   parse  /system/control.def  &  /package/list_of_subjects.txt  & /package/SUBJ*/messages.txt 

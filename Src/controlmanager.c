@@ -1,7 +1,7 @@
 // TBookV2  controlmanager.c
 //   Gene Ball  May2018
 
-#include "controlMgr.h"
+#include "controlmanager.h"
 
 #include "tbook.h"				// enableMassStorage 
 #include "mediaPlyr.h"		// audio operations
@@ -36,6 +36,8 @@ TBPackage_t * 				TBPkg;												// content package in use
 // TBook configuration variales
 TBConfig_t 						TB_Config;
 
+
+/*
 struct {							// CSM state variables
 	short 		iCurrSt;	// index of current csmState
 	char * 		currStateName;	// str nm of current state
@@ -57,9 +59,10 @@ struct {							// CSM state variables
 	csmState *  cSt;		// -> TBookCSM[ iCurrSt ]
 	
 }	TBook;
-	
+*/
+TBook_t TBook;
 
-static osTimerId_t  	timers[3]; 	// ShortIdle, LongIdle, Timer
+osTimerId_t  	timers[3]; 	// ShortIdle, LongIdle, Timer
 	
 // ------------  CSM Action execution
 static void 					adjSubj( int adj ){								// adjust current Subj # in TBook
@@ -72,6 +75,8 @@ static void 					adjSubj( int adj ){								// adjust current Subj # in TBook
 	logEvtNI( "changeSubj", "iSubj", nS );
 	TBook.iSubj = nS;
 }
+
+
 static void 					adjMsg( int adj ){								// adjust current Msg # in TBook
 	short nM = TBook.iMsg + adj; 
 	short numM = TBPkg->TBookSubj[ TBook.iSubj ]->NMsgs;
@@ -82,7 +87,9 @@ static void 					adjMsg( int adj ){								// adjust current Msg # in TBook
 	logEvtNI( "changeMsg", "iMsg", nM );
 	TBook.iMsg = nM;
 }
-static void 					playSubjAudio( char *arg ){				// play current Subject: arg must be 'nm', 'pr', or 'msg'
+
+
+void 					playSubjAudio( char *arg ){				// play current Subject: arg must be 'nm', 'pr', or 'msg'
 	tbSubject * tbS = TBPkg->TBookSubj[ TBook.iSubj ];
 	char path[MAX_PATH];
 	char *nm = NULL;
@@ -102,7 +109,9 @@ static void 					playSubjAudio( char *arg ){				// play current Subject: arg mus
 	buildPath( path, tbS->path, nm, ".wav" ); //".ogg" );
 	playAudio( path, stats );
 }
-static void 					playNxtPackage( ){										// play name of next available Package 
+
+
+void 					playNxtPackage( ){										// play name of next available Package 
 	iPkg++;
 	if ( iPkg >= nPackages ) iPkg = 0;
 	
@@ -110,7 +119,9 @@ static void 					playNxtPackage( ){										// play name of next available Pack
 	logEvtNSNI( "PlayPkg", "Pkg", pkg->packageName, "Idx", iPkg );  
 	playAudio( pkg->packageName, NULL );
 }
-static void 					showPkg( ){										// debug print Package iPkg
+
+
+void 					showPkg( ){										// debug print Package iPkg
 	TBPackage_t * pkg = TBPackage[ iPkg]; 
 	printf( "iPkg=%d nm=%s nSubjs=%d \n", pkg->idx, pkg->packageName, pkg->nSubjs );
 	printf( " path=%s \n", pkg->path );
@@ -122,21 +133,27 @@ static void 					showPkg( ){										// debug print Package iPkg
 			printf("   M%d %s \n", j, sb->msgAudio[j] );
 	}
 }
-static void						changePackage(){											// switch to last played package name
+
+
+void						changePackage(){											// switch to last played package name
 	TBPkg = TBPackage[ iPkg ];
 	TBook.iSubj = 0;
 	TBook.iMsg = 0;
 	logEvtNS( "ChgPkg", "Pkg", TBPkg->packageName );  
 	showPkg();
 }
-static void 					playSysAudio( char *arg ){				// play system file 'arg'
+
+
+void 					playSysAudio( char *arg ){				// play system file 'arg'
 	char path[MAX_PATH];
 	resetAudio();
 	buildPath( path, TB_Config.systemAudio, arg, ".wav" ); //".ogg" );
 	playAudio( path, NULL );
 	logEvtNS( "PlaySys", "file", arg );
 }
-static void						startRecAudio( char *arg ){
+
+
+void						startRecAudio( char *arg ){
 	resetAudio();
 	tbSubject * tbS = TBPkg->TBookSubj[ TBook.iSubj ];
 	char path[MAX_PATH];
@@ -146,17 +163,23 @@ static void						startRecAudio( char *arg ){
 	MsgStats *stats = loadStats( tbS->name, TBook.iSubj, TBook.iMsg );	// load stats for message
 	recordAudio( fNm, stats );
 }
-static void   				playRecAudio(){
+
+
+void   				playRecAudio(){
 	playRecording();
 }
-static void						saveRecAudio( char *arg ){
+
+
+void						saveRecAudio( char *arg ){
 	if ( strcasecmp( arg, "sv" )==0 ){
 		saveRecording();
 	} else if ( strcasecmp( arg, "del" )==0 ){
 		cancelRecording();
 	} 
 }
-static void						saveWriteMsg( char *txt ){				// save 'txt' in Msg file
+
+
+void						saveWriteMsg( char *txt ){				// save 'txt' in Msg file
 	tbSubject * tbS = TBPkg->TBookSubj[ TBook.iSubj ];
 	char path[MAX_PATH];
 	int mCnt = 0;
@@ -167,7 +190,9 @@ static void						saveWriteMsg( char *txt ){				// save 'txt' in Msg file
 	dbgEvt( TB_wrMsgFile, nch, 0, 0, 0 );
 	logEvtNSNININS( "writeMsg", "Subj", tbS->name, "iM", TBook.iMsg, "cnt", mCnt, "msg", txt );
 }
-static void 					USBmode( bool start ){						// start (or stop) USB storage mode
+
+
+void 					USBmode( bool start ){						// start (or stop) USB storage mode
 	if ( start ){
 		logEvt( "enterUSB" );
 		logPowerDown();				// flush & shut down logs
@@ -181,12 +206,15 @@ static void 					USBmode( bool start ){						// start (or stop) USB storage mode
 			decodeAudio();
 	} 
 }
-static int						stIdx( int iSt ){
+
+
+int						stIdx( int iSt ){
 	if ( iSt < 0 || iSt >= nCSMstates )
 		tbErr("invalid iSt");
 	return iSt;
 }
-static void 					controlTest( void );  //DEBUG
+
+
 static void 					doAction( Action act, char *arg, int iarg ){	// execute one csmAction
 	dbgEvt( TB_csmDoAct, act, arg[0],arg[1],iarg );
 	logEvtNSNS( "Action", "nm", actionNm(act), "arg", arg ); //DEBUG
@@ -311,6 +339,7 @@ static void 					doAction( Action act, char *arg, int iarg ){	// execute one csm
 	}
 }
 
+
 // ------------- interpret TBook CSM 
 static void						changeCSMstate( short nSt, short lastEvtTyp ){
 	dbgEvt( TB_csmChSt, nSt, 0,0,0 );
@@ -349,6 +378,8 @@ static void						changeCSMstate( short nSt, short lastEvtTyp ){
 		nSt = TBook.iNextSt;		// in case Action set it
 	}
 }
+
+
 static void						tbTimer( void * eNum ){
 	switch ((int)eNum){
 		case 0:		sendEvent( ShortIdle,  0 );  	break;
@@ -356,7 +387,9 @@ static void						tbTimer( void * eNum ){
 		case 2:		sendEvent( Timer,  0 );  		break;
 	}
 }
-static void 					executeCSM( void ){								// execute TBook control state machine
+
+
+void 					executeCSM( void ){								// execute TBook control state machine
 	TB_Event *evt;
 	osStatus_t status;
 	
@@ -400,6 +433,8 @@ static void 					executeCSM( void ){								// execute TBook control state machi
 		changeCSMstate( nSt, lastEvtTyp );	// only changes if different
 	}
 }
+
+
 static void 					eventTest(  ){										// report Events until DFU (pot table)
 	TB_Event *evt;
 	osStatus_t status;
@@ -425,204 +460,6 @@ static void 					eventTest(  ){										// report Events until DFU (pot table)
 		if ( evt->typ == starPlus ) return;
 	}
 }
-//
-static uint32_t 			startPlayingTS;
-static uint32_t 			PlayLoopBattCheck = 30*60*1000;		// 30min
-extern bool FSysPowerAlways;
-extern bool SleepWhenIdle;
-
-static void 					controlTest(  ){									// CSM test procedure
-	TB_Event *evt;
-	osStatus_t status;
-	TBook.iCurrSt = stIdx( TB_Config.initState );
-	TBook.cSt = TBookCSM[ TBook.iCurrSt ];
-	TBook.currStateName = TBook.cSt->nm;	//DEBUG -- update currSt string
-  bool playforever = false;
-	bool recordingMsg = false;
-	MediaState audSt;
-	
-	dbgLog( "CTest: \n" );
-	while (true) {
-	  status = osMessageQueueGet( osMsg_TBEvents, &evt, NULL, osWaitForever );  // wait for next TB_Event
-		if (status != osOK) 
-			tbErr(" EvtQGet error");
-		
-	  TBook.lastEventName = eventNm( evt->typ );
-		//dbgLog( " %s ", eventNm( evt->typ ));
-		dbgEvt( TB_csmEvt, evt->typ, 0, 0, 0);
-		if (isMassStorageEnabled()){		// if USB MassStorage running: ignore events
-			if ( evt->typ==starHome || evt->typ==starCircle )
-				USBmode( false );
-			else
-				dbgLog("starHome to exit USB \n" );
-			
-		} else if ( recordingMsg ){
-			audSt = audGetState();
-			switch ( evt->typ ){
-				case Table:
-				case starTable:
-					if ( audSt==Recording )
-						stopRecording( );
-					break;
-				case Star:
-					if ( audSt==Recording )
-						pauseResume();
-					break;
-					
-				case AudioDone:
-				default:
-					break;
-					
-				case Pot:
-					if ( audSt==Recording )
-						stopRecording( );
-					playRecAudio();
-					break;
-				case Lhand:
-					if ( audSt==Recording )
-						stopRecording( );
-					saveRecAudio( "sv" );
-					recordingMsg = false;
-					break;
-				case Rhand:
-					if ( audSt==Recording )
-						stopRecording( );
-					saveRecAudio( "del" );
-					recordingMsg = false;
-					break;
-				case starHome:
-					dbgLog( "going to USB mass-storage mode \n");
-					USBmode( true );
-					break;
-			}
-		} else {
-			tbSubject * tbS = TBPkg->TBookSubj[ TBook.iSubj ];
-			switch (evt->typ){
-				case Tree:
-					playSysAudio( "welcome" );
-					dbgLog( "PlaySys welcome...\n" );
-					break; 
-				case AudioDone:
-				case starPot: 
-				case Pot:
-					if ( evt->typ==AudioDone && !playforever ) break;
-					if ( evt->typ==starPot ){
-						playforever = !playforever;
-						showBattCharge();
-						if ( playforever ){
-							startPlayingTS = tbTimeStamp();
-							logEvt("PlayLoopStart");
-						} else
-							logEvt("PlayLoopEnd");
-					} 
-					if ( tbTimeStamp() - startPlayingTS > PlayLoopBattCheck ){
-						showBattCharge();
-						startPlayingTS = tbTimeStamp();
-					}						
-					dbgLog( "Playing msg...\n" );
-					TBook.iMsg++;
-					if ( TBook.iMsg >= tbS->NMsgs ) TBook.iMsg = 0;
-					playSubjAudio( "msg" );
-					break; 
-				case Circle: 
-					TBook.iSubj++;
-					if ( TBook.iSubj >= TBPkg->nSubjs  ) TBook.iSubj = 0;
-					tbS = TBPkg->TBookSubj[ TBook.iSubj ];
-				  TBook.iMsg = 0;
-					playSubjAudio( "nm" );
-					break;
-				case Plus:
-					adjVolume( 1 );
-					break;
-				case Minus:
-					adjVolume( -1 );
-					break;
-				case Lhand:
-					audSt = audGetState();
-					if ( audSt==Playing ){
-						adjPlayPosition( -2 );
-						logEvt( "JumpBack2" );
-					} 
-					break;
-				case Rhand:
-					if ( audSt==Playing ){
-						adjPlayPosition( 2 );
-						logEvt( "JumpFwd2" );
-					}
-					break;
-				
-				case Star:
-					audSt = audGetState();
-					if ( audSt==Playing )
-						pauseResume();
-					else
-						showBattCharge();
-					break;
-					
-				case Table:		// Record
-					recordingMsg = true;
-					startRecAudio( NULL );
-					break;
-				
-				case starRhand:
-					powerDownTBook( true );
-					osTimerStart( timers[1], TB_Config.longIdleMS );
-					playSysAudio( "faster" );
-					break;
-				case starLhand:
-					FSysPowerAlways = true;
-					SleepWhenIdle = false;
-					break;
-				case LongIdle:
-					playSysAudio( "slower" );
-					saveWriteMsg( "Clean power down" );
-				  break;
-
-				
-				case starTree:
-					playNxtPackage( );		// bump iPkg & plays next package name 
-					showPkg();
-					break;
-				
-				case starTable:		// switch packages to iPkg
-					changePackage();
-					showPkg();
-					dbgLog(" iPkg=%d  iSubj=%d  iMsg=%d \n", iPkg, TBook.iSubj, TBook.iMsg );
-					break;
-				
-				case starPlus:	
-					decodeAudio();
-					//eventTest();
-					break;
-				
-				case starMinus: 
-					executeCSM();
-					break;
-					
-				case starCircle:
-					saveWriteMsg( "Clean power down" );
-					powerDownTBook( false );
-				  break;
-				
-				case starHome:
-					dbgLog( "going to USB mass-storage mode \n");
-					USBmode( true );
-					break;
-				
-				case FirmwareUpdate:   // pot table
-					dbgLog( "rebooting to system bootloader for DFU... \n" );
-					ledFg( TB_Config.fgEnterDFU );
-					tbDelay_ms( 3300 );
-					RebootToDFU(  );
-					break;
-				default:
-					dbgLog( "evt: %d %s \n", evt->typ, eventNm( evt->typ ) );
-			}
-		}
-		osMemoryPoolFree( TBEvent_pool, evt );
-	}
-}
-
 
 void 									initControlManager( void ){				// initialize control manager 	
 	// init to odd values so changes are visible

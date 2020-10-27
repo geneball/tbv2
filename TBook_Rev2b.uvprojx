@@ -404,6 +404,11 @@
               <FilePath>.\Src\controlmanager.c</FilePath>
             </File>
             <File>
+              <FileName>controlmanagertest.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Src\controlmanagertest.c</FilePath>
+            </File>
+            <File>
               <FileName>controlParser.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Src\controlParser.c</FilePath>

@@ -2,7 +2,7 @@
 //	Apr2018 
 
 #include "tbook.h"
-#include "controlMgr.h"			// runs on initialization thread
+#include "controlmanager.h"			// runs on initialization thread
 #include "mediaPlyr.h"			// thread to watch audio status
 #include "fs_evr.h"					// FileSys components
 #include "fileOps.h"				// decode & encrypt audio files
