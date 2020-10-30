@@ -44,7 +44,7 @@ typedef struct {	// TB_Event --  event & downMS for event Q
 //			Home, 		Circle,		Plus, 		Minus, 		Tree, 		Lhand, 		Rhand, 		Pot,	 Star,		Table,
 //			Home__, 	Circle__, 	Plus__, 	Minus__, 	Tree__, 	Lhand__, 	Rhand__, 	Pot__, 	 Star__,	Table__,
 //			starHome,	starCircle, starPlus, 	starMinus, 	starTree, 	starLhand, 	starRhand, 	starPot, starStar,	starTable,
-//			AudioDone,	ShortIdle,	LongIdle,	LowBattery,	BattCharging, BattCharged,	FirmwareUpdate, Timer, anyKey, eUNDEF
+//			AudioDone,	AudioStart, ShortIdle,	LongIdle,	LowBattery,	BattCharging, BattCharged,	FirmwareUpdate, Timer, anyKey, eUNDEF
 //}	Event;
 
 inline bool 	TB_isShort(  TB_Event evt ){	return evt.typ >= Home 			&& evt.typ <= Table;  }

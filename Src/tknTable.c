@@ -146,8 +146,8 @@ void 							initTknTable(){										// initialize tknTable-- (self inits on fir
 //			Home__, 	Circle__, 	Plus__, 	Minus__, 	Tree__, 	Lhand__, 	Rhand__, 	Pot__, 	 Star__,	Table__,
 		"starHome starCircle starPlus starMinus starTree starLhand starRhand starPot starStar starTable", 
 //			starHome,	starCircle, starPlus, 	starMinus, 	starTree, 	starLhand, 	starRhand, 	starPot, starStar,	starTable,
-		"AudioDone ShortIdle LongIdle LowBattery BattCharging BattCharged FirmwareUpdate Timer", 
-//			AudioDone,	ShortIdle,	LongIdle,	LowBattery,	BattCharging, BattCharged,	FirmwareUpdate, Timer, 
+		"AudioDone AudioStart ShortIdle LongIdle LowBattery BattCharging BattCharged FirmwareUpdate Timer", 
+//			AudioDone,	AudioStart, ShortIdle,	LongIdle,	LowBattery,	BattCharging, BattCharged,	FirmwareUpdate, Timer, 
 		" ChargeFault, LithiumHot, MpuHot, anyKey, eUNDEF" );
 //	anyKey, eUNDEF
 	verifyEnum( "eNull", eUNDEF );
@@ -340,10 +340,10 @@ Action						asAction( TknID tknid ){					// => Action or aNull
 		return (Action)tknVal(tknid);
 	return aNull;
 }
-char *						eventNm( Event e ){								// => string for enum Event 
-	TknID id; // = asTknID( gEvent, e );
+char *						eventNm( Event event ){								// => string for enum Event 
+	TknID id; // = asTknID( gEvent, event );
 	id.flds.grp = gEvent;
-	id.flds.val = e;
+	id.flds.val = event;
 	return tknStr( id );
 }
 char *						actionNm( Action a ){							// => string for enum Action 
