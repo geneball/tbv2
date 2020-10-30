@@ -208,11 +208,17 @@ void 					USBmode( bool start ){						// start (or stop) USB storage mode
 }
 
 
-int						stIdx( int iSt ){
-	if ( iSt < 0 || iSt >= nCSMstates )
-		tbErr("invalid iSt");
-	return iSt;
-}
+//int						stIdx( int iSt ){
+//	if ( iSt < 0 || iSt >= nCSMstates )
+//		tbErr("invalid iSt");
+//	return iSt;
+//}
+
+
+void assertValidState(int stateIndex) {
+	if ( stateIndex < 0 || stateIndex >= nCSMstates )
+		tbErr("invalid state index");
+}	
 
 
 static void 					doAction( Action act, char *arg, int iarg ){	// execute one csmAction
@@ -297,16 +303,23 @@ static void 					doAction( Action act, char *arg, int iarg ){	// execute one csm
 		case msgAdj:			
 			adjMsg( iarg );		
 			break;
-		case goPrevSt:			
-			TBook.iCurrSt = TBook.iNextSt = stIdx( TBook.iPrevSt );		// return to prevSt without transition
+		case goPrevSt:
+			assertValidState(TBook.iPrevSt);
+			TBook.iCurrSt = TBook.iNextSt = TBook.iPrevSt;		// return to prevSt without transition
 			break;
 		case saveSt:
 			if ( iarg > 4 ) iarg = 4;
-			TBook.iSavedSt[ iarg ] = stIdx( TBook.iPrevSt );
+		  assertValidState( TBook.iPrevSt );
+			TBook.iSavedSt[ iarg ] = TBook.iPrevSt;
 			break;
 		case goSavedSt:
 			if ( iarg > 4 ) iarg = 4;
-			TBook.iNextSt = stIdx( TBook.iSavedSt[ iarg ] );
+		  assertValidState(TBook.iSavedSt[ iarg ]);
+			TBook.iNextSt = TBook.iSavedSt[ iarg ];
+		  // BE: I'm not sure this is right, but it has the side effect of ending the while loop in changeCSMstate.
+		  // In general, when we return to a saved state, I don't think we want to execute the entrance
+		  // actions for that state.
+		  TBook.iCurrSt = TBook.iNextSt;
 			break;
 		case setTimer:
 			osTimerStart( timers[2], iarg );
@@ -343,40 +356,66 @@ static void 					doAction( Action act, char *arg, int iarg ){	// execute one csm
 // ------------- interpret TBook CSM 
 static void						changeCSMstate( short nSt, short lastEvtTyp ){
 	dbgEvt( TB_csmChSt, nSt, 0,0,0 );
+	assertValidState(nSt);
 	if (nSt==TBook.iCurrSt)
 		logEvtNSNS( "No-op_evt", "state",TBook.cSt->nm, "evt", eventNm( (Event)lastEvtTyp) ); //DEBUG
+	
+	// We twiddle with nSt and with iCurrSt in various ways. 
 	while ( nSt != TBook.iCurrSt ){
-		TBook.iPrevSt = stIdx( TBook.iCurrSt );
-		TBook.iCurrSt = stIdx( nSt );
+		assertValidState(TBook.iCurrSt);
+		assertValidState(nSt);
+		TBook.iPrevSt = TBook.iCurrSt;
+		TBook.iCurrSt = nSt;
 		
-		csmState *st = TBookCSM[ TBook.iCurrSt ];
-		TBook.cSt = st;
-		TBook.currStateName = st->nm;	//DEBUG -- update currSt string
+		// The state definition for the "current" state (it's really the next state).
+		csmState *stateDef = TBookCSM[ TBook.iCurrSt ];
+		TBook.cSt = stateDef;
+		TBook.currStateName = stateDef->nm;	//DEBUG -- update currSt string
 		
-		for ( short e=(int)eNull; e<(int)eUNDEF; e++ ){	//DEBUG -- update nextSt strings
-			TBook.evtNms[ e ] = eventNm( (Event)e );
-			short iState = st->evtNxtState[ e ];
+		// It appears that this loop updates values that are never read, every time through
+		// the enclosing while loop, every time changeCSMstate is called. ????
+		for ( Event e=eNull; e<eUNDEF; e++ ){	//DEBUG -- update nextSt strings
+			// Aren't these names the same each and every time?
+			TBook.evtNms[ e ] = eventNm( e );
+			// What is the next state (index) for the event in the current state
+			short iState = stateDef->evtNxtState[ e ];
+			// If we get the event, what is the name of the next state?
 			TBook.nxtEvtSt[ e ] = TBookCSM[ iState ]->nm;
 		}
 		
+		// By default the next state is the current state. 
 		TBook.iNextSt = TBook.iCurrSt;   // stay here unless something happens
 		
-		char Actions[200]; Actions[0] = 0;
+		// Build a list of actions, for debugging and logging. Hope the buffer is big enough.
+		// The actions are what we do when we enter a state.
+		char Actions[200]; Actions[0] = '\0';
 		char Act[80];
-		int nActs = st->nActions;
+		int nActs = stateDef->nActions;
+		// For each action defined on the state...
 		for ( short i=0; i<nActs; i++ ){
-			Action act = st->Actions[i].act;
-			char * arg = st->Actions[i].arg;
+			// What is the action, and any arguments.
+			Action act = stateDef->Actions[i].act;
+			char * arg = stateDef->Actions[i].arg;
+			// Next three lines build a string for debugging.
 			if (arg==NULL) arg = "";
 			sprintf(Act, " %s:%s", actionNm(act), arg );
 			strcat(Actions, Act);
+			// Parse the argument if it looks like it might be numberic.
 			int iarg = arg[0]=='-' || isdigit( arg[0] )? atoi( arg ) : 0;
+			// And invoke the action.
 			doAction( act, arg, iarg );
 		}
-		logEvtNSNSNS( "CSM_st", "ev", eventNm((Event)lastEvtTyp), "nm", st->nm, "act", Actions );
+		// Log the list of actions.
+		// TODO: how is this useful in the log? If we're to do anything with the actions, they should
+		// be logged individually.
+		logEvtNSNSNS( "CSM_st", "ev", eventNm((Event)lastEvtTyp), "nm", stateDef->nm, "act", Actions );
 		
+		// If one of the actions was goSavedSt, TBook.iNextSt was changed as a side effect of doAction()
+		// If one of the actions was goPrevSt, TBook.iCurrSt was also changed as a side effect.
+    //   - we set nSt to iNextSt here, if iCurrSt is also set, we will exit the loop that's looking for states.		
 		nSt = TBook.iNextSt;		// in case Action set it
 	}
+
 }
 
 
@@ -400,7 +439,7 @@ void 					executeCSM( void ){								// execute TBook control state machine
 
 	// set initialState & do actions
 	TBook.iCurrSt = 1;		// so initState (which has been assigned to 0) will be different
-	changeCSMstate( stIdx( TB_Config.initState ), 0 );
+	changeCSMstate( TB_Config.initState, 0 );
 	
 	while (true){
 		evt = NULL;
@@ -428,7 +467,8 @@ void 					executeCSM( void ){								// execute TBook control state machine
 //				break;
 		}
 		short lastEvtTyp = evt->typ;
-		short nSt = stIdx( TBook.cSt->evtNxtState[ evt->typ ]);
+		assertValidState( TBook.cSt->evtNxtState[ evt->typ ]);
+		short nSt = TBook.cSt->evtNxtState[ evt->typ ];
 		osMemoryPoolFree( TBEvent_pool, evt );
 		changeCSMstate( nSt, lastEvtTyp );	// only changes if different
 	}

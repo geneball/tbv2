@@ -84,7 +84,7 @@ typedef struct {							// CSM state variables
 extern TBook_t TBook;
 extern osTimerId_t  	timers[3];
 
-extern int						stIdx( int iSt );
+extern void						assertValidState( int iState );
 extern void 					USBmode( bool start);
 extern void   				playRecAudio( void );
 extern void						saveRecAudio( char *arg );

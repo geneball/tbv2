@@ -9,13 +9,16 @@
 #include "inputMgr.h"			// osMsg_TBEvents
 #include "fileOps.h"			// decodeAudio
 
+extern bool FSysPowerAlways;
+extern bool SleepWhenIdle;
 
 static uint32_t 			startPlayingTS;
 static uint32_t 			PlayLoopBattCheck = 30*60*1000;		// 30min
 void 					controlTest(  ){									// CSM test procedure
 	TB_Event *evt;
 	osStatus_t status;
-	TBook.iCurrSt = stIdx( TB_Config.initState );
+	assertValidState(TB_Config.initState );
+	TBook.iCurrSt = TB_Config.initState;
 	TBook.cSt = TBookCSM[ TBook.iCurrSt ];
 	TBook.currStateName = TBook.cSt->nm;	//DEBUG -- update currSt string
   bool playforever = false;
@@ -203,6 +206,4 @@ void 					controlTest(  ){									// CSM test procedure
 		osMemoryPoolFree( TBEvent_pool, evt );
 	}
 }
-
-
 
