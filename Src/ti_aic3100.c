@@ -1583,13 +1583,19 @@ void 						cdc_SpeakerEnable( bool enable ){														// enable/disable spea
 }
 
 void						cdc_PowerUp( void ){
-	gSet( gBOOT1_PDN, 1 );  // OUT: set power_down ACTIVE to so codec doesn't try to PowerUP
-	gSet( gEN_5V, 1 );			// OUT: 1 to supply 5V to codec		AP6714 EN		
-	gSet( gEN1V8, 1 );		  // OUT: 1 to supply 1.8 to codec  TLV74118 EN		
-	tbDelay_ms( 40 ); //DEBUG 20 ); 		 	// wait for voltage regulators
+  // AIC3100 power up sequence based on sections 7.3.1-4 of Datasheet: https://www.ti.com/lit/ds/symlink/tlv320aic3100.pdf
+	gSet( gBOOT1_PDN, 0 );			// put codec in reset state
 	
-	gSet( gBOOT1_PDN, 0 );  //  set power_down INACTIVE to Power on the codec 
-	tbDelay_ms( 10 ); //DEBUG 5); 		 			//  wait for it to start up
+	gSet( gEN_5V, 1 );					// power up codec SPKVDD 
+
+	gSet( gEN_IOVDD_N, 0 );			// power up codec IOVDD 
+	gSet( gEN1V8, 1 );					// power up codec DVDD  ("shortly" after IOVDD)
+	tbDelay_ms( 20 );  		 			// wait for voltage regulators
+	
+	gSet( gEN_AVDD_N, 0 );			// power up codec AVDD & HPVDD (at least 10ns after DVDD)
+	
+	gSet( gBOOT1_PDN, 1 );  		// set codec RESET_N inactive to Power on the codec 
+	tbDelay_ms( 5 );  		 			//  wait for it to start up
 }
 // external interface functions
 void 						cdc_Init( ){ 																								// Init codec & I2C (i2s_stm32f4xx.c)
@@ -1695,7 +1701,7 @@ dbgEvt( TB_akPwrDn, 0,0,0,0);
 	I2Cdrv->Uninitialize( );								// deconfigures SCL & SDA pins, evt handler
 	
 	gSet( gPA_EN, 0 );				// amplifier off
-	gSet( gBOOT1_PDN, 1 );    // OUT: set power_down ACTIVE to Power Down the codec 
+	gSet( gBOOT1_PDN, 0 );    // OUT: set power_down ACTIVE to Power Down the codec 
 	gSet( gEN_5V, 0 );				// OUT: 1 to supply 5V to codec		AP6714 EN		
 	gSet( gEN1V8, 0 );			  // OUT: 1 to supply 1.8 to codec  TLV74118 EN		
 }

@@ -152,15 +152,25 @@ void 											initPwrSignals( void ){					// configure power GPIO pins, & EXTI
 	FileSysPower( true );				// power up eMMC & SD 3V supply
 	
   // Configure audio power control 
-	gConfigOut( gEN_5V );				// 1 to supply 5V to codec-- enable AP6714 regulator
-	gConfigOut( gEN1V8 );				// 1 to supply 1.8 to codec-- enable TLV74118 regulator	
-	gConfigOut( gBOOT1_PDN );		// _: 0 to power down codec-- boot1_pdn on AK4637
-	gConfigOut( gPA_EN );				// 1 to power headphone jack
-	gSet( gEN_5V, 0 );					// initially codec OFF
-	gSet( gEN1V8, 0 );					// initially codec OFF
-	gSet( gBOOT1_PDN, 1 );			// initially codec OFF
-	gSet( gPA_EN, 0 );					// initially audio external amplifier OFF
+	gConfigOut( gEN_5V );				// 1 to supply 5V to codec-- enable AP6714 regulator  -- powers AIC3100 SPKVDD
+	gConfigOut( gEN1V8 );				// 1 to supply 1.8 to codec-- enable TLV74118 regulator	-- powers AIC3100 DVDD
+  gConfigOut( gBOOT1_PDN );		// 0 to reset codec -- RESET_N on AIC3100 (boot1_pdn on AK4637)
+	gSet( gEN_5V, 0 );					// initially codec SPKVDD unpowered
+	gSet( gEN1V8, 0 );					// initially codec DVDD unpowered
+	gSet( gBOOT1_PDN, 0 );			// initially codec in reset state
 	
+#if defined(TBook_V2_Rev3)
+	gConfigOut( gEN_IOVDD_N );	// 0 to supply 3V to AIC3100 IOVDD	
+	gConfigOut( gEN_AVDD_N );		// 0 to supply 3V to AIC3100 AVDD & HPVDD
+	gSet( gEN_IOVDD_N, 1 );			// initially codec IOVDD unpowered
+	gSet( gEN_AVDD_N, 1 );			// initially codec AVDD & HPVDD unpowered
+#endif
+	
+#if defined(TBook_V2_Rev1)
+	gConfigOut( gPA_EN );				// 1 to power headphone jack
+  gSet( gPA_EN, 0 );					// initially audio external amplifier OFF
+#endif
+
 	tbDelay_ms( 5 ); //DEBUG: 3 );		// wait 3 msec to make sure everything is stable
 }
 void											startADC( int chan ){						// set up ADC for single conversion on 'chan', then start 

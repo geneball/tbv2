@@ -25,6 +25,8 @@ typedef enum {			// GPIO_ID -- gpio signal IDs
 	gEN_5V,					// TB_V2_Rev1: 	PD4
 	gEN1V8,					// TB_V2_Rev1: 	PD5
 	g3V3_SW_EN,			// TB_V2_Rev1: 	PD6
+	gEN_IOVDD_N,		// TB_V2_Rev1: 	N/A			TB_V2_Rev3:  PE4
+	gEN_AVDD_N,			// TB_V2_Rev1: 	N/A			TB_V2_Rev3:  PE5
 	gEMMC_RSTN,			// TB_V2_Rev1: 	PE10
 	gSPI4_NSS,			// TB_V2_Rev1: 	PE11
 	gSPI4_SCK,			// TB_V2_Rev1: 	PE12

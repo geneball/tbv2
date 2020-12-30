@@ -7,6 +7,8 @@
 #ifndef TBOOKV2_H
 #define TBOOKV2_H
 
+#include "main.h"
+
 #include "stm32f412vx.h"
 //#define UID_BASE                     0x1FFF7A10U           /*STM32F412 !< Unique device ID register base address */
 //	#include "I2C_STM32F4xx.h"			
@@ -67,10 +69,10 @@ static GPIO_Signal gpioSignals[] = {  	// GPIO signal definitions
 	{ gADC_PRIMARY,	"PA3"				},	// IN:  analog disposable battery voltage level:	ADC1_channel3 	(powermanager.c)
 	{ gADC_THERM,	  "PC2"				},	// IN:  analog 
 #if defined(TBOOK_V2_Rev1)
-	{ gPWR_FAIL_N, 	"PD0_"			},	// IN:  0 => power fail signal 										(powermanager.c)
+	{ gPWR_FAIL_N, 	"PD0"			  },	// IN:  0 => power fail signal 										(powermanager.c)
 #endif
-#if defined(TBOOK_V2_Rev3)
-	{ gPWR_FAIL_N, 	"PE2_"			},	// IN:  0 => power fail signal 										(powermanager.c)
+#if defined(TBook_V2_Rev3)
+	{ gPWR_FAIL_N, 	"PE2"			  },	// IN:  0 => power fail signal 										(powermanager.c)
 #endif
 	{ gADC_ENABLE, 	"PE15"			},	// OUT: 1 to enable battery voltage measurement 	(powermanager.c)
 	{ gSC_ENABLE, 	"PD1"				},	// OUT: 1 to enable SuperCap			 								(powermanager.c)
@@ -79,6 +81,8 @@ static GPIO_Signal gpioSignals[] = {  	// GPIO signal definitions
 #endif
 #if defined(TBOOK_V2_Rev3)
 	{ gPA_EN, 			"PD7"				},	// OUT: 1 to power speaker & hphone								(powermanager.c)
+	{ gEN_IOVDD_N,	"PE4"				},	// OUT: 0 to power AIC3100 codec rail IOVDD
+	{ gEN_AVDD_N,		"PE5"				},	// OUT: 0 to power AIC3100 codec rail AVDD
 #endif
 	{ gEN_5V, 			"PD4"				},	// OUT: 1 to supply 5V to codec		AP6714 EN				(powermanager.c)
 	{ gEN1V8, 			"PD5"				},	// OUT: 1 to supply 1.8 to codec  TLV74118 EN			(powermanager.c)	
@@ -96,12 +100,7 @@ static GPIO_Signal gpioSignals[] = {  	// GPIO signal definitions
 	{ gBAT_CE,	  	"PD0"				},  // OUT: 1 to enable charging 			MCP73871 CE 	  (powermanager.c)
 	{ gBAT_TE_N,		"PD13"			},  // OUT: 0 to enable safety timer 	MCP73871 TE_	  (powermanager.c)
 #endif
-
-#ifdef AK4637
-#endif
-	
-#ifdef AIC3100
-	{ gBOOT1_PDN, 	"PB2_" 			},	// OUT: 0 to power_down codec 	 AK4637 PDN 			(powermanager.c)
+	{ gBOOT1_PDN, 	"PB2" 			},	// OUT: 0 to power_down codec 	 AK4637 PDN 			(powermanager.c)
 
 	//******* I2C pins must match definitions in RTE_Device.h: ConfigWizard: I2C1
 	{ gI2C1_SCL, 		"PB8|4" 		},	// AIC3100 I2C_SCL 								(RTE_Device.h I2C1 altFn=4)
@@ -113,7 +112,6 @@ static GPIO_Signal gpioSignals[] = {  	// GPIO signal definitions
 	{ gI2S2_CK,			"PB13|5"		},	// AIC3100 BCL				 						(RTE_I2SDevice.h I2S0==SPI2 altFn=5) 
 //NSTUFF	{ gI2S2_MCK,		"PC6|5"			},	// AIC3100 MCLK   				(RTE_I2SDevice.h I2S0==SPI2 altFn=5)
 	{ gI2S3_MCK,		"PC7|6"			},	// AIC3100 MCLK 	 								(RTE_I2SDevice.h I2S3==SPI2 altFn=6)
-#endif
 
 	//******* SPI4 pins must match definitions in RTE_Device.h: ConfigWizard: SPI4
 	{ gSPI4_NSS, 		"PE11|5"		}, 	// W25Q64JVSS  NOR flash U8 			(RTE_Device.h SPI4 altFn=5)
