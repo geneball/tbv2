@@ -85,7 +85,7 @@
 #include "tbook.h"						// includes main.h with GPIO_IDs:   gI2S2_SD,	gI2S2_WS,	gI2S2_CK,	gI2S2_MCK
 
 #include "I2S_STM32F4xx.h"		// could be SAI instead of I2S
-#include "ak4xxx.h"
+#include "audio.h"
 #include <math.h>
 
 /* REPLACED: RTE_Device configuration
@@ -285,7 +285,7 @@ static void		 								I2S3_ClockEnable( bool enab ){ 								// enable/disable I
 	} 
 }
 static int32_t 								I2S_Configure( I2S_RESOURCES *i2s, uint32_t freq, bool monoMode, bool slaveMode, bool xmt ){ 		// set audio frequency
-#ifdef TBOOKREV2B
+#ifdef TBOOK_V2
 		// RM0402  STM32F412xx Reference Manual
 		//  I2SCLK from PLLI2S = 48MHz by default
 		//  	fs = PLLI2S/ (256*( 2*I2SDIV + ODD )
@@ -303,7 +303,7 @@ static int32_t 								I2S_Configure( I2S_RESOURCES *i2s, uint32_t freq, bool mo
 		i2s_inst->I2SPR   = 0;		// reset unused PreScaler
 		
 		// MUST be AFTER SPI2->I2SCFGR.I2SCFG is set to SLAVE_TX
-		ak_SetMasterFreq( freq );			// set AK4637 to MasterMode, 12MHz ref input to PLL, audio @ 'freq'
+		cdc_SetMasterFreq( freq );			// set AK4637 to MasterMode, 12MHz ref input to PLL, audio @ 'freq'
 	} else {	// NOT USED
 		/*
 		// configure to generate MCK at freq -- for master mode transmission
@@ -449,7 +449,7 @@ dbgEvt( TB_saiInit, 0,0,0,0);
   // Configure WS Pin  (stm32F103zg: PB12 (SPI2_NSS / I2S2_WS))
 #endif
 	
-#ifdef TBOOKREV2B
+#ifdef TBOOK_V2
 	// RM0402  STM32F412xx Reference Manual  6.3.23
   //  I2SCLK comes from PLLI2S 
 	//  set to 48 MHz from HSE by setCpuClk()
@@ -536,7 +536,7 @@ dbgEvt( TB_saiPower, state, 0,0,0);
       NVIC_DisableIRQ( DMA1_Stream3_IRQn );     		// Disable SPI2_RX DMA IRQ
       NVIC_ClearPendingIRQ( DMA1_Stream3_IRQn );  	// Clear pending PI2_RX DMA interrupts
 
-			ak_PowerDown();					// power down AK4637 & I2C1 device
+			cdc_PowerDown();					// power down AK4637 & I2C1 device
  //     RCC->APB1ENR &= ~RCC_APB1ENR_I2C1EN; 	// disable I2C1 device
 
       RCC->APB1ENR &= ~RCC_APB1ENR_SPI2EN; 	// disable SPI2 device (i2s2 & i2s2_ext) 
@@ -556,7 +556,7 @@ dbgEvt( TB_saiPower, state, 0,0,0);
       if ((i2s->info->flags & I2S_FLAG_INITIALIZED) == 0U) { return ARM_DRIVER_ERROR; }
       if ((i2s->info->flags & I2S_FLAG_POWERED)     != 0U) { return ARM_DRIVER_OK; }
 
-			ak_Init();				// power up and initialize I2C & codec
+			cdc_Init();				// power up and initialize I2C & codec
 			
       // Clear driver variables
 			reset_I2S_Info( i2s );
@@ -632,10 +632,10 @@ static int32_t 								I2S2only_Send( const void *data, uint32_t nSamples, I2S_R
 	cfg |= DMA_SxCR_DBM;																						// double buffer, M0AR first
 	dma->CR = cfg;
 	
-	ak_SpeakerEnable( true );			// power up codec & amplifier (if not already)
-	ak_SetMute( false );
+	cdc_SpeakerEnable( true );			// power up codec & amplifier (if not already)
+	cdc_SetMute( false );
 
-	// clocks from codec are stable at selected frequency-- from ak_SetMasterFreq()
+	// clocks from codec are stable at selected frequency-- from cdc_SetMasterFreq()
 	dma->CR |= DMA_SxCR_EN;											// enable DMA
 	i2s->xmt_inst->CR2 |= I2S_CR2_TXDMAEN;			// enable TXDMA for I2S device
 	i2s->xmt_inst->I2SCFGR |= I2S_MODE_ENAB;		// enable I2S device-- starts transmitting audio
@@ -678,7 +678,7 @@ static int32_t 								I2S2ext_Receive( void *data, uint32_t nSamples, I2S_RESOU
 		dma->NDTR = nSamples;
 
 		dma->M1AR = (uint32_t) &Call2Marker;		// CALL 2 MARKER that M1AR hasn't been provided yet
-		// clocks from codec are stable at selected frequency-- from ak_SetMasterFreq()
+		// clocks from codec are stable at selected frequency-- from cdc_SetMasterFreq()
 
 		info->status.rx_busy = 1U;  							// Set Send active flag
 		info->status.rx_overflow = 0U;  					// Clear RX overflow flag
@@ -715,7 +715,7 @@ static int32_t 								I2S2ext_Receive( void *data, uint32_t nSamples, I2S_RESOU
 	dma->CR = cfg;
 
 	// 2nd buffer ready, start transfer into M0AR
-	ak_RecordEnable( true );															// power up mic, ADC, ALC, filters
+	cdc_RecordEnable( true );															// power up mic, ADC, ALC, filters
 		
 	i2s->xmt_inst->I2SCFGR &=  ~I2S_MODE_ENAB;						// make sure I2S is disabled while changing config
 	i2s->xmt_inst->I2SCFGR = I2S_MODE | I2S_CFG_SLAVE_TX; // set I2S2 into I2SMode & I2SCFG = Slave xmt --- INSURE THAT EXTERNAL CK GETS ROUTED TO I2S2ext

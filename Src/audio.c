@@ -494,7 +494,7 @@ static void 				startPlayback( void ){												// preload buffers & start pla
 
 	ledFg( TB_Config.fgPlaying );  // Turn ON green LED: audio file playing 
 	pSt.state = pbPlaying;
-	ak_SetMute( false );		// unmute
+	cdc_SetMute( false );		// unmute
 
 	Driver_SAI0.Send( pSt.Buff[0]->data, BuffWds );		// start first buffer 
 	Driver_SAI0.Send( pSt.Buff[1]->data, BuffWds );		// & set up next buffer 
@@ -508,7 +508,7 @@ static void 				startPlayback( void ){												// preload buffers & start pla
 
 static void					haltPlayback(){																// shutdown device, free buffs & update timestamps
 	int msec;
-	ak_SetMute( true );	// (redundant) mute
+	cdc_SetMute( true );	// (redundant) mute
 	Driver_SAI0.Control( ARM_SAI_ABORT_SEND, 0, 0 );	// shut down I2S device
 	freeBuffs();
   

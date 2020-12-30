@@ -193,7 +193,7 @@ static void 	mediaThread( void *arg ){						// communicates with audio codec for
 		
 		if ( (flags & MEDIA_SET_VOL) != 0 ){			// request to set volume
 			logEvtNI( "setVol", "vol", mAudioVolume );
-			ak_SetVolume( mAudioVolume );
+			cdc_SetVolume( mAudioVolume );
 		}
 		
 		if ( (flags & MEDIA_SET_SPD) != 0 )				// request to set speed (NYI)
