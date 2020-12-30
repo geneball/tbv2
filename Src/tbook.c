@@ -7,7 +7,7 @@
 #include "fs_evr.h"					// FileSys components
 #include "fileOps.h"				// decode & encrypt audio files
 
-const char * 	TBV2_Version 				= "V2.07 of 18-Jul-2020";
+const char * 	TBV2_Version 				= "V3.01 of 30-Dec-2020";
 
 //
 // Thread stack sizes
@@ -91,13 +91,16 @@ void copyFile( const char *src, const char * dst ){
 int PlayDBG = 0;
 void 								saiEvent( uint32_t event );
 
-void debugLoop( ){
+void debugLoop( bool autoUSB ){			// called if boot-PLUS, no file system,  autoUSB => usbMode
 	if ( fsNDevs==0 ) dbgLog( "no storage avail \n" );
 	else dbgLog( "no TBook on %s \n", fsDevs[0]  );
 
 	MediaState st = Ready;
 	int ledCntr = 0;
 	bool curPl,prvPl, curMi,prvMi, curTr,prvTr, curLH,prvLH, curRH,prvRH = false;
+	
+	initLogger();			// init Event log
+	logEvtNI( "DebugLoop", "NFSys", fsNDevs );
 	
 	while ( true ){
 		ledCntr++;
@@ -136,12 +139,10 @@ void debugLoop( ){
 				if (curRH && !prvRH) 
 					adjPlayPosition( 2 );
 				prvRH = curRH;
-		
-				
 			}
 		}
 		
-		if ( fsNDevs > 0 && gGet( gHOME ) && !isMassStorageEnabled()){  // HOME => if have a filesystem but no data -- try USB MSC
+		if ( fsNDevs > 0 &&  !isMassStorageEnabled() && ( autoUSB || gGet( gHOME ))){  // HOME => if have a filesystem but no data -- try USB MSC
 			gSet( gRED, 1 );
 			for ( int i=fsNDevs; fsDevs[i]!=NULL; i++ ) fsDevs[i] = NULL;
 			enableMassStorage( fsDevs[0], fsDevs[1], fsDevs[2], fsDevs[3] );		// just put 1st device on USB
@@ -198,14 +199,7 @@ void talking_book( void *arg ) {
 	
 	initPowerMgr();			// set up GPIO signals for controlling & monitoring power -- enables MemCard
 	
-	if ( osKernelGetState() != osKernelRunning )
-		debugLoop();	// no OS, so straight to debugLoop, no fileSys check & no mediaManager
-	
-	usrLog( "%s\n", CPU_ID );
-	usrLog( "%s\n", TB_ID );
-
-	initMediaPlayer( );
-	
+	// eMMC &/or SDCard are powered up-- check to see if we have usable devices
 	EventRecorderEnable( evrEAOD, 			EvtFsCore_No, EvtFsMcSPI_No );  	//FileSys library 
 	for (int i=0; fsDevs[i]!=NULL; i++ ){
 		fsStatus stat = fsMount( fsDevs[i] );
@@ -217,8 +211,17 @@ void talking_book( void *arg ) {
 	}
 	EventRecorderDisable( evrAOD, 			EvtFsCore_No, EvtFsMcSPI_No );  	//FileSys library 
 	dbgLog( " NDv=%d \n", fsNDevs );
+
+	if ( osKernelGetState() != osKernelRunning ) // no OS, so straight to debugLoop (no threads)
+		debugLoop( fsNDevs > 0 );	
+	
+	usrLog( "%s\n", CPU_ID );
+	usrLog( "%s\n", TB_ID );
+
+	initMediaPlayer( );
+	
 	if ( fsNDevs == 0 )
-		debugLoop( );
+		debugLoop( false );
 	else {
 		if ( strcmp( fsDevs[0], "M0:" )!=0 ){ 	// not M0: !
 			flashCode( 10 );		// R G R G : not M0:
@@ -239,7 +242,7 @@ void talking_book( void *arg ) {
 		if ( !fexists( TBP[pCSM_VERS] ) && fexists( "M0:/system/status.txt" ))
 			copyFile( TBP[pCSM_VERS], "M0:/system/status.txt" );  // backward compatibility
 		if ( gGet( gMINUS ) || !fexists( TBP[pCSM_VERS] ))	
-			debugLoop( );
+			debugLoop( true );	// go straight to USB mode
 	}
 
 

@@ -38,7 +38,7 @@ int  										main( void ){
   flashInit();		// init Keypad for debugging
 	if ( gGet( gPLUS )){  //  PLUS => tbook with no OS -> debugLoop
 		flashCode( 10 );
-		talking_book( NULL );   
+		talking_book( NULL );   // call without OS
 	}
 	
 	initIDs();

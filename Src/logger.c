@@ -129,7 +129,7 @@ void						closeLog(){
 	//checkLog(); //DEBUG
 }
 
-void dateStr( char *s, fsTime dttm ){
+void 						dateStr( char *s, fsTime dttm ){
 	sprintf( s, "%d-%d-%d %02d:%02d", dttm.year, dttm.mon, dttm.day, dttm.hr, dttm.min );
 }
 void						logPowerUp( bool reboot ){											// re-init logger after reboot, USB or sleeping

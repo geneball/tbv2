@@ -260,10 +260,9 @@ void						i2c_Upd(){																									// write values of any modified cod
 void 						i2c_CheckRegs(){																						// Debug -- read codec regs
 	#ifdef VERIFY_WRITTENDATA	
 		for ( int i = 0; i < codecNREGS; i++ ){
-			uint8_t reg = RegDefault[i].reg;
-			uint8_t defval = RegDefault[i].def;
-			uint8_t val = Codec_RdReg( reg );
-			cntErr( Cdc_DefReg, defval, val, reg, 9 );	
+			uint8_t defval = codec_regs[i].reset_val;
+			uint8_t val = Codec_RdReg( i );
+			cntErr( Cdc_DefReg, defval, val, i, 9 );	
 		}
 		i2c_ReportErrors();
 	#endif
