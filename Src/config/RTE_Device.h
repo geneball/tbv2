@@ -2472,7 +2472,7 @@
 
 //     <o0.0> VBUS Sensing Pin
 //     <i> Enable or disable VBUS sensing
-#define RTE_OTG_FS_VBUS_SENSING_PIN     1
+#define RTE_OTG_FS_VBUS_SENSING_PIN     0
 //   </e>
 
 //   <e> Host [Driver_USBH0]
