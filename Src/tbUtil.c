@@ -92,7 +92,7 @@ void 										GPIO_DefineSignals( GPIO_Signal def[] ){
 
 
 void										gUnconfig( GPIO_ID id ){			// reset GPIO to default
-#if defined( TBOOKREV2B )	
+#if defined( TBOOK_V2 )	
 	GPIO_PinConfigure( gpio_def[ id ].port, gpio_def[ id ].pin, GPIO_MODE_INPUT, GPIO_OTYP_PUSHPULL, GPIO_SPD_LOW, GPIO_PUPD_NONE );
 	GPIO_AFConfigure ( gpio_def[ id ].port, gpio_def[ id ].pin, AF0 );   // reset to AF0
 //#undefine STM3210E_EVAL
@@ -102,7 +102,7 @@ void										gUnconfig( GPIO_ID id ){			// reset GPIO to default
 #endif
 }
 void										gConfigI2S( GPIO_ID id ){		// config gpio as high speed pushpull in/out
-#if defined( TBOOKREV2B )	
+#if defined( TBOOK_V2 )	
 	GPIO_PinConfigure( gpio_def[ id ].port, gpio_def[ id ].pin, GPIO_MODE_AF, GPIO_OTYP_PUSHPULL, GPIO_SPD_FAST, GPIO_PUPD_NONE );
 	GPIO_AFConfigure ( gpio_def[ id ].port, gpio_def[ id ].pin, gpio_def[ id ].altFn );   // set AF
 #endif
@@ -111,7 +111,7 @@ void										gConfigI2S( GPIO_ID id ){		// config gpio as high speed pushpull i
 #endif
 }
 void										gConfigOut( GPIO_ID id ){		// config gpio as low speed pushpull output -- power control, etc
-#if defined( TBOOKREV2B )	
+#if defined( TBOOK_V2 )	
 	AFIO_REMAP af = gpio_def[ id ].altFn;
 	GPIO_MODE md = af!=0? GPIO_MODE_AF : GPIO_MODE_OUT;
 	GPIO_PinConfigure( gpio_def[ id ].port, gpio_def[ id ].pin, md, GPIO_OTYP_PUSHPULL, GPIO_SPD_LOW, GPIO_PUPD_NONE );
@@ -122,7 +122,7 @@ void										gConfigOut( GPIO_ID id ){		// config gpio as low speed pushpull ou
 #endif
 }
 void										gConfigIn( GPIO_ID key, bool pulldown ){		// configure GPIO as low speed input, either pulldown or pullup
-#if defined( TBOOKREV2B )	
+#if defined( TBOOK_V2 )	
 	GPIO_PinConfigure( gpio_def[ key ].port, gpio_def[ key ].pin, GPIO_MODE_INPUT, GPIO_OTYP_PUSHPULL, GPIO_SPD_LOW, pulldown? GPIO_PUPD_PDN : GPIO_PUPD_PUP );
 	GPIO_AFConfigure ( gpio_def[ key ].port, gpio_def[ key ].pin, AF0 );   //  AF 0
 #endif
@@ -134,7 +134,7 @@ void										gConfigKey( GPIO_ID key ){		// configure GPIO as low speed pulldow
 	gConfigIn( key, true );	  // pulldown
 }
 void										gConfigADC( GPIO_ID id ){		// configure GPIO as ANALOG input ( battery voltage levels )
-#if defined( TBOOKREV2B )	
+#if defined( TBOOK_V2 )	
 	GPIO_PinConfigure( gpio_def[ id ].port, gpio_def[ id ].pin, GPIO_MODE_ANALOG, GPIO_OTYP_PUSHPULL, GPIO_SPD_LOW, GPIO_PUPD_NONE );
 	GPIO_AFConfigure ( gpio_def[ id ].port, gpio_def[ id ].pin, gpio_def[ id ].altFn );   //  set AF
 #endif
@@ -209,6 +209,26 @@ void										tbCloseFile( FILE * f ){												// close file errLog if error
 	int st = fclose( f );
 	if ( st != fsOK ) errLog("fclose => %d", st );
 }
+fsStatus fsMount( char *drv ){		// try to finit() & mount()  drv:   finit() code, fmount() code
+		fsStatus stat = finit( drv );  		// init file system driver for device
+	  if ( stat != fsOK ){
+			//dbgLog( "finit( %s ) got %d \n", drv, stat );
+			return stat;
+		}
+		EventRecorderDisable( evrAOD, 	 EvtFsCore_No, EvtFsMcSPI_No );  	//FS:  only Error 
+		stat = fmount( drv );
+		if ( stat==fsOK ) return stat;
+
+		if ( stat == fsNoFileSystem ){
+			EventRecorderEnable( EventRecordAll, 	EvtFsCore_No, EvtFsMcSPI_No );  	//FileSys library 
+			stat = fformat( drv, "/FAT32" );
+			if ( stat == fsOK ) return stat;   // successfully formatted
+			
+			dbgLog( "formating %s got %d \n", drv, stat );
+			return stat;
+		}
+		return stat;
+}
 void 										FileSysPower( bool enable ){										// power up/down eMMC & SD 3V supply
 	if ( FSysPowerAlways )
 		enable = true;
@@ -221,12 +241,7 @@ void 										FileSysPower( bool enable ){										// power up/down eMMC & SD 
 		gSet( g3V3_SW_EN, 1 );			// enable at start up, for FileSys access
 		
 		tbDelay_ms( 100 );
-		int st = finit( "M0:" );
-		if ( st != fsOK ) 
-			errLog("finit => %d", st );
-		st = fmount("M0:");
-		if ( st != fsOK ) 
-			errLog("fmount => %d", st );
+		fsStatus st = fsMount( "M0:" );
 		FSysPowered = true;
 
 	} else {
@@ -235,7 +250,7 @@ void 										FileSysPower( bool enable ){										// power up/down eMMC & SD 
 		int st = funinit( "M0:" );
 		if ( st != fsOK ) 
 			errLog("funinit => %d", st );
-		
+	
 		gSet( g3V3_SW_EN, 0 );			// shut off 3V supply to SDIO
 		FSysPowered = false;
 	}

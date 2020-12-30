@@ -70,25 +70,7 @@ void setDev( char *fname, const char *dev ){  // replace front of fname with dev
 	for (int i=0; i< strlen(dev); i++ )
 	  fname[i] = dev[i];
 }
-fsStatus fsMount( char *drv ){		// try to finit() & mount()  drv:   finit() code, fmount() code
-		fsStatus stat = finit( drv );  		// init file system driver for device
-	  if ( stat != fsOK ){
-			//dbgLog( "finit( %s ) got %d \n", drv, stat );
-			return stat;
-		}
-		EventRecorderDisable( evrAOD, 	 EvtFsCore_No, EvtFsMcSPI_No );  	//FS:  only Error 
-		stat = fmount( drv );
-		if ( stat==fsOK ) return stat;
 
-		if ( stat == fsNoFileSystem ){
-			stat = fformat( drv, "/FAT32" );
-			if ( stat == fsOK ) return stat;   // successfully formatted
-			
-			dbgLog( "formating %s got %d \n", drv, stat );
-			return stat;
-		}
-		return stat;
-}
 static char * fsDevs[] = { "M0:", "M1:", "N0:", "F0:", "F1:", NULL };
 static int    fsNDevs = 0;
 

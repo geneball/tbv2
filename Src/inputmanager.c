@@ -136,7 +136,8 @@ void 					handleInterrupt( bool fromThread ){					// called for external interru
 	enableInputs( fromThread );			// no detectedUpKey -- re-enable interrupts
 }
 // STM3210E_EVAL  EXTI ints 0 Wk, 				3 JDn, 				5-9 JCe/Key, 					10-15 Tam&JRi/JLe/JUp
-// TBOOKREV2B  		EXTI ints 0 Hom, 1 Pot, 3 Tab, 4 Plu, 5-9 Min/LHa/Sta/Cir, 	10-15 RHa/Tre
+// TBOOK_V2_Rev1	EXTI ints 0 Hom, 1 Pot, 3 Tab, 4 Plu, 5-9 Min/LHa/Sta/Cir, 	10-15 RHa/Tre
+//****** TBOOK_V2_Rev3	EXTI ints 0 Hom, 1 Pot, 3 Tab, 4 Plu, 5-9 Min/LHa/Sta/Cir, 	10-15 RHa/Tre
 // BOTH:  EXTI0 EXTI3 EXTI9_5 EXTI15_10
 void 					EXTI0_IRQHandler(void){  		// call handleInterrupt( )
   handleInterrupt( false );
@@ -150,8 +151,8 @@ void 					EXTI9_5_IRQHandler(void){  	// call handleInterrupt( )
 void 					EXTI15_10_IRQHandler(void){ // call handleInterrupt( )
 	handleInterrupt( false );
 }
-// TBOOKREV2B ONLY:  EXTI1 EXTI4
-#if defined ( TBOOKREV2B )
+// TBOOK_V2 ONLY:  EXTI1 EXTI4
+#if defined ( TBOOK_V2 )
 void 					EXTI1_IRQHandler(void){   	// call handleInterrupt( )
   handleInterrupt( false );
 }
@@ -174,7 +175,7 @@ void					configInputKey( KEY k ){		// set up GPIO & external interrupt
 			case (int)GPIOE:  portCode = 4; break;
 			case (int)GPIOF:  portCode = 5; break;
 			case (int)GPIOG:  portCode = 6; break;
-#if defined( TBOOKREV2B )
+#if defined( TBOOK_V2 )
 			case (int)GPIOH:  portCode = 7; break;
 #endif
 		}
@@ -186,7 +187,7 @@ void					configInputKey( KEY k ){		// set up GPIO & external interrupt
 #if defined( STM3210E_EVAL )		
 		AFIO->EXTICR[ iWd ] = ( AFIO->EXTICR[ iWd ] & ~msk ) | val;		// replace bits <fbit..fbit+3> with portCode
 #endif
-#if defined( TBOOKREV2B )		
+#if defined( TBOOK_V2 )		
 		SYSCFG->EXTICR[ iWd ] = ( SYSCFG->EXTICR[ iWd ] & ~msk ) | val;		// replace bits <fbit..fbit+3> with portCode
 #endif
 		

@@ -72,6 +72,7 @@ extern FILE * 		tbOpenWrite( const char * nm );									// repower if necessary,
 extern FILE * 		tbOpenWriteBinary( const char * nm );						// repower if necessary, & open file
 extern void				tbCloseFile( FILE * f );												// close file, errLog if error
 extern void 			FileSysPower( bool enable );										// power up/down eMMC & SD 3V supply
+extern fsStatus 	fsMount( char *drv );														// try to finit() & mount()  drv:   finit() code, fmount() code
 
 extern void 			talking_book ( void *argument );
 extern void 			showRTC( void );

@@ -12,9 +12,17 @@
 // **************************************************************************************
 //      select board pins & options
 	
-// define TBOOKREV2B for Feb2020 Rev2B board -- here or in target_options/C/Define
-// #define TBOOKREV2B	
-#if defined( TBOOKREV2B )
+
+// define TBOOK_V2 for TBook V2 boards (Feb or Dec 2020)-- here or in target_options/C/Define
+#define TBOOK_V2	
+#if defined( TBOOK_V2 )
+	// define TBOOK_V2_Rev3 for Dec2020 TB_V2_Rev3 board
+	#define TBook_V2_Rev3
+
+	// define TBOOK_V2_Rev1 for Feb2020 Rev2B board 
+	#define TBook_V2_Rev1
+//#define TBOOKREV2B
+
 	#include "tbook_rev2.h"
 #endif
 
