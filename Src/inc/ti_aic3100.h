@@ -97,14 +97,7 @@ typedef struct { 		// AIC_reg_def -- definitions for TLV320AIC3100 registers to 
 	uint8_t W1_required;  //  bits that MUST be written as 1
 	char * nm;
 	uint8_t curr_val;			// last value written to (or read from) this register of chip
-	uint8_t next_val;			// value to be written in next update
 	} AIC_REG;
-
-	
-#define  rgPgCtrl			0
-#define  rgClkGenMux 	4
-#define  rgPllPR 			5
-#define  rgPllJ 			6
 
 typedef __packed struct { // pg=0  reg=4 
 		unsigned int CODEC_IN		: 2;		// d0..1
@@ -122,6 +115,7 @@ typedef __packed struct { // pg=0  reg=6
 		unsigned int PLL_J			: 6;		// d0..5
 		unsigned int z2					: 2;		// d6..7
 } TI_PLL_J_val;
+	
 
 
 // audio codec functions --  aic3100
