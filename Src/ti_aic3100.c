@@ -19,51 +19,61 @@ static ARM_DRIVER_I2C *		I2Cdrv = 				&Driver_I2C1;
 #define VERIFY_WRITTENDATA 
 #endif /* VERIFY_WRITTENDATA */
 
-static uint8_t 	tiFmtVolume;
-static bool			tiSpeakerOn 	= false;
-static bool			tiMuted			 	= false;
+static int8_t 	cdcFmtVolume;
+static bool			cdcSpeakerOn 		= false;
+static bool			cdcMuted			 	= false;
 
-const int 			I2C_Xmt = 0;
-const int 			I2C_Rcv = 1;
-const int 			I2C_Evt = 2;		// errors reported from ISR 
-
+static int 			aicCurrPg = 0;			// keeps track of currently selected register page
+static int 			WatchReg   = 0;			//DEBUG: log register read/write ops for a specific codec register
 
 // AIC_REG{ pg, reg, reset_val, W1_allowed, W1_required, nm, curr_val, next_val }
 AIC_REG					codec_regs[] = {	// array of info for codec registers in use -- must include Page_Select for all pages in use
 //********** AIC3100 PAGE 0
-// pg,reg, reset, can1, must1,  "nm",																		curr, next (set to reset)
-   0,   0, 0x00, 0xFF, 0x00, "Page_Select_Register",										0x00, 0x00,	// must include Page_Select for all pages in use
-   0,   1, 0x00, 0x01, 0x00, "Software_Reset_Register",									0x00, 0x00,
-   0,   3, 0x02, 0x02, 0x00, "OT_FLAG",																	0x02, 0x02,
-   0,   4, 0x00, 0x0F, 0x00, "Clock-Gen_Muxing",												0x00, 0x00,
-   0,   5, 0x11, 0xFF, 0x00, "PLL_P&R-VAL",															0x11, 0x11,
-   0,   6, 0x04, 0x3F, 0x00, "PLL_J-VAL",																0x04, 0x04,
-   0,   7, 0x00, 0x3F, 0x00, "PLL_D-VAL_MSB",														0x00, 0x00,
-   0,   8, 0x00, 0xFF, 0x00, "PLL_D-VAL_LSB",														0x00, 0x00,
-   0,  11, 0x01, 0xFF, 0x00, "DAC_NDAC_VAL",														0x01, 0x01,
-   0,  12, 0x01, 0xFF, 0x00, "DAC_MDAC_VAL",														0x01, 0x01,
-   0,  13, 0x00, 0x03, 0x00, "DAC_DOSR_VAL_MSB",												0x00, 0x00,
-   0,  14, 0x80, 0xFF, 0x00, "DAC_DOSR_VAL_LSB",												0x80, 0x80,
-   0,  15, 0x80, 0xFF, 0x00, "DAC_IDAC_VAL",														0x80, 0x80,
-   0,  16, 0x08, 0x0F, 0x00, "DAC_MAC_Engine_Interpolation",						0x08, 0x08,
-   0,  18, 0x01, 0xFF, 0x00, "ADC_NADC_VAL",														0x01, 0x01,
-   0,  19, 0x01, 0xFF, 0x00, "ADC_MADC_VAL",														0x01, 0x01,
-   0,  20, 0x80, 0xFF, 0x00, "ADC_AOSR_VAL",														0x80, 0x80,
-// 0,  21, 0x80, 0xFF, 0x00, "ADC_IADC_VAL",
-// 0,  22, 0x04, 0x0F, "ADC_MAC_Engine_Decimation",
-// 0,  25, 0x00, 0x07, "CLKOUT_MUX",
-// 0,  26, 0x01, 0xFF, "CLKOUT_M_VAL",
-   0,  27, 0x00, 0xFD, 0x00, "Codec_Interface_Control1",								0x00, 0x00,
+// pg,reg, reset, can1, must1,  "nm",																		curr
+   0,   0, 0x00, 0xFF, 0x00, "Page_Select_Register",                    0x00,  // must include Page_Select for all pages in use
+   0,   1, 0x00, 0x01, 0x00, "Software_Reset_Register",                 0x00,
+	 0,   3, 0x66, 0x02, 0x00, "OT_FLAG",                                 0x66,  // X bits D2, D5,D6 set in practice-- actual: 0x66 not 0x02
+   0,   4, 0x00, 0x0F, 0x00, "ClkGen_Mux",                        			0x00,  
+   0,   5, 0x11, 0xFF, 0x00, "PLL_P&R",                             		0x11,  
+   0,   6, 0x04, 0x3F, 0x00, "PLL_J",                              			0x04,  
+   0,   7, 0x00, 0x3F, 0x00, "PLL_D_Hi",                          			0x00,  
+   0,   8, 0x00, 0xFF, 0x00, "PLL_D_Lo",                          			0x00,
+   0,  11, 0x01, 0xFF, 0x00, "DAC_NDAC",                           		 	0x01,  
+   0,  12, 0x01, 0xFF, 0x00, "DAC_MDAC",                           			0x01,  
+   0,  13, 0x00, 0x03, 0x00, "DAC_DOSR_Hi",                        			0x00,
+   0,  14, 0x80, 0xFF, 0x00, "DAC_DOSR_Lo",                        			0x80,  
+   0,  15, 0x80, 0xFF, 0x00, "DAC_IDAC_VAL",                            0x80,  
+   0,  16, 0x08, 0x0F, 0x00, "DAC_MAC_Engine_Interpolation",            0x08, 
+   0,  18, 0x01, 0xFF, 0x00, "ADC_NADC_VAL",                            0x01, 
+   0,  19, 0x01, 0xFF, 0x00, "ADC_MADC_VAL",                            0x01,  
+   0,  20, 0x80, 0xFF, 0x00, "ADC_AOSR_VAL",                            0x80,  
+   0,  21, 0x80, 0xFF, 0x00, "ADC_IADC_VAL",                            0x80,  
+   0,  22, 0x04, 0xFF, 0x00, "ADC_PRB_Engine_Decimation",               0x04,  // use actual: 0x04 not 0x80 (reserved)
+   0,  25, 0x00, 0x07, 0x00, "ClkOut_Mux",                              0x00,  
+   0,  26, 0x01, 0xFF, 0x00, "ClkOut_M",                            		0x01,  
+   0,  27, 0x00, 0xFD, 0x00, "InfcCtrl1",                								0x00,
+   0,  29, 0x00, 0x3F, 0x00, "InfcCtrl2",                								0x00,
+   0,  30, 0x01, 0xFF, 0x00, "BClk_N",                              		0x01,
+   0,  33, 0x00, 0xFF, 0x00, "InfcCtrl3",			 													0x00,	 
+   0,  36, 0x80, 0x00, 0x00, "ADC_Flag_Reg",														0x80,		// use actual: 0x80 not 0x00
+   0,  37, 0x00, 0x00, 0x00, "DAC_Flag_Reg",                       			0x00,
+   0,  53, 0x12, 0x1F, 0x00, "DOutCtrl",                            		0x12,
+   0,  60, 0x01, 0x3F, 0x00, "DAC_Instruction_Set",                     0x01,
+   0,  61, 0x04, 0x1F, 0x00, "ADC_Instruction_Set",                     0x04,
+   0,  62, 0x00, 0x77, 0x00, "Programmable_Instruction_Mode_Control",   0x00,
+   0,  63, 0x14, 0xFF, 0x00, "DAC_Dpath",                               0x14,
+   0,  64, 0x0C, 0x0F, 0x00, "DAC_Vol_Ctl",                             0x0C,
+   0,  65, 0x00, 0xFF, 0x00, "DAC_LVol_Ctl",                            0x00,
+   0,  66, 0x00, 0xFF, 0x00, "DAC_RVol_Ctl",                        		0x00,
+   0,  67, 0x00, 0x9F, 0x00, "Headset_Detection",                       0x00,
+   0,  68, 0x6F, 0x7F, 0x00, "DRC_Control",                             0x6F,  // use actual reset 0x6f (DRC enabled)
 #ifdef PG0_XTRA_USED
 // 0,  28, 0x00, 0xFF, "Data_Slot_Offset_Programmability",
-// 0,  29, 0x00, 0x3F, "Codec_Interface_Control2",
-// 0,  30, 0x01, 0xFF, "BCLK_N_VAL",
 // 0,  31, 0x00, 0xFF, "Codec_Secondary_Interface_Control1",
 // 0,  32, 0x00, 0xEF, "Codec_Secondary_Interface_Control2",
 // 0,  33, 0x00, 0xFF, "Codec_Secondary_Interface_Control3",
 // 0,  34, 0x00, 0xAF, "I2C_Bus_Condition",
 // 0,  36, 0x00, 0x00, "ADC_Flag_Register",
-// 0,  37, 0x00, 0x00, "DAC_Flag_Register",
 // 0,  38, 0x00, 0x00, "DAC_Flag_Register",
 // 0,  39, 0x00, 0x00, "Overflow_Flags",
 // 0,  44, 0x00, 0x00, "Interrupt_Flags-DAC",
@@ -74,19 +84,7 @@ AIC_REG					codec_regs[] = {	// array of info for codec registers in use -- must
 // 0,  49, 0x00, 0xFF, "INT2_Control_Register",
 // 0,  50, 0x00, 0xF0, "INT1&INT2_Control_Register",
 // 0,  51, 0x00, 0xFD, "GPIO1_Control",
-// 0,  53, 0x12, 0x1F, "DOUT_Control",
 // 0,  54, 0x02, 0x06, "DIN_Control",
-#endif
-   0,  60, 0x01, 0x3F, 0x00, "DAC_Instruction_Set",											0x01, 0x01,
-// 0,  61, 0x04, 0x1F, "ADC_Instruction_Set",
-// 0,  62, 0x00, 0x77, "Programmable_Instruction_Mode_Control",
-   0,  63, 0x14, 0xFF, 0x00, "DAC_Datapath_SETUP",											0x14, 0x14,
-   0,  64, 0x0C, 0x0F, 0x00, "DAC_VOLUME_CONTROL",											0x0C, 0x0C,
-   0,  65, 0x00, 0xFF, 0x00, "DAC_Left_Volume_Control",									0x00, 0x00,
-   0,  66, 0x00, 0xFF, 0x00, "DAC_Right_Volume_Control",								0x00, 0x00,
-// 0,  67, 0x00, 0x9F, "Headset_Detection",
-   0,  68, 0x0F, 0x7F, 0x00, "DRC_Control",															0x0F, 0x0F,
-#ifdef PG0_XTRA_USED
 // 0,  69, 0x38, 0x7F, "DRC_Control",
 // 0,  70, 0x00, 0xFF, "DRC_Control",
 // 0,  71, 0x00, 0xFF, "Left_Beep_Generator",
@@ -119,29 +117,30 @@ AIC_REG					codec_regs[] = {	// array of info for codec registers in use -- must
 #endif
 
 //********** AIC3100 PAGE 1
-// pg,reg, reset, can1, must1,  "nm",																		curr, next (set to reset)
-   1,   0, 0x00, 0x00, 0x00, "Page_Select_Register",										0x00, 0x00, // must include Page_Select for all pages in use
-   1,  30, 0x00, 0x03, 0x00, "Headphone_Speaker_Amp_Error_Control",			0x00, 0x00,	// Not Used by init
-   1,  31, 0x04, 0xDE, 0x04, "Headphone_Drivers",												0x04, 0x04,
-   1,  32, 0x06, 0xFE, 0x06, "Class-D_Drivers",													0x06, 0x06,
-   1,  33, 0x3E, 0xFF, 0x00, "HP_Output_Drivers_POP_Removal_Settings", 	0x3E, 0x3E,
-// 1,  34, 0x00, 0xFF, "Output_Driver_PGA_Ramp-Down_Period_Control",
-   1,  35, 0x00, 0xFF, 0x00, "LDAC_and_RDAC_Output_Routing", 						0x00, 0x00,
-   1,  36, 0x7F, 0xFF, 0x00, "Left_Analog_Vol_to_HPL",									0x7F, 0x7F,
-   1,  37, 0x7F, 0xFF, 0x00, "Right_Analog_Vol_to_HPR",									0x7F, 0x7F,
-   1,  38, 0x7F, 0xFF, 0x00, "Left_Analog_Vol_to_SPL",									0x7F, 0x7F,
-// 1,  39, 0x7F, 0xFF, "Right_Analog_Vol_to_SPR",
-   1,  40, 0x02, 0x7E, 0x02, "HPL_Driver",															0x02, 0x02,
-   1,  41, 0x02, 0x7E, 0x02, "HPR_Driver",															0x02, 0x02,	
-   1,  42, 0x00, 0x1D, 0x00, "SPK_Driver",															0x00, 0x00,
-// 1,  43, 0x00, 0x9E, "SPR_Driver",
-// 1,  44, 0x20, 0xFF, "HP_Driver_Control",
-// 1,  45, 0x86, 0xFF, "SP_Driver_Control",
-   1,  46, 0x00, 0x8B, 0x00, "MICBIAS",																	0x00, 0x00,
-// 1,  47, 0x80, 0xFF, "ADC_PGA",
-   1,  48, 0x00, 0xFC, 0x00, "ADC_Input_P",															0x00, 0x00,
-   1,  49, 0x00, 0xF0, 0x00, "ADC_Input_M",															0x00, 0x00,
-// 1,  50, 0x00, 0xE0, "Input_CM",
+// pg,reg, reset, can1, must1,  "nm",																		curr
+   1,   0, 0x01, 0x00, 0x00, "Page_Select_Register",                    0x01,  // 1:0 reads as 0x01
+   1,  30, 0x00, 0x03, 0x00, "Headphone_Speaker_Amp_Error_Control",     0x00,  // Not Used by init
+   1,  31, 0x04, 0xDE, 0x04, "Headphone_Drivers",                       0x04, 
+   1,  32, 0x06, 0xFE, 0x06, "Cl-D_Drv",                                0x06, 
+   1,  33, 0x3E, 0xFF, 0x00, "HP_Output_Drivers_POP_Removal_Settings",  0x3E, 
+   1,  34, 0x00, 0xFF, 0x00, "Output_Driver_PGA_Ramp-Down_Period_Ctrl", 0x00, 
+   1,  35, 0x00, 0xFF, 0x00, "LnRDAC_Out",                              0x00,
+   1,  36, 0x7F, 0xFF, 0x00, "Left_Analog_Vol_to_HPL",                  0x7F, 
+   1,  37, 0x7F, 0xFF, 0x00, "Right_Analog_Vol_to_HPR",                 0x7F,
+   1,  38, 0x7F, 0xFF, 0x00, "LAnlg_V_SPL",                             0x7F,
+   1,  39, 0x7F, 0xFF, 0x00, "RAnlg_V_SPR",                             0x7F,
+   1,  40, 0x02, 0x7E, 0x02, "HPL_Driver",                              0x02,
+   1,  41, 0x02, 0x7E, 0x02, "HPR_Driver",                              0x02, 
+   1,  42, 0x00, 0x1D, 0x00, "SPK_Driver",                              0x00,
+   1,  44, 0x20, 0xFF, 0x00, "HP_Driver_Control",                       0x20, // use actual: 0x20 not 0x00 (debounce 8usec)
+   1,  46, 0x00, 0x8B, 0x00, "MICBIAS",                                 0x00,
+   1,  47, 0x80, 0xFF, 0x00, "MIC_PGA",                                 0x80,
+   1,  48, 0x00, 0xFC, 0x00, "ADC_Input_P",                             0x00,
+   1,  49, 0x00, 0xF0, 0x00, "ADC_Input_M",                             0x00,
+   1,  50, 0x00, 0xE0, 0x00, "Input_CM",                                0x00,
+   1,  51, 0x00, 0xFD, 0x00, "GPIO1_InOut_Pin_Ctrl",                    0x00,
+#ifdef PG1_XTRAS
+#endif
 #ifdef PG3_7_XTRAS
 // 3,   0, 0x00, 0x00, "Page_Select_Register",
 // 3,  16, 0x81, 0xFF, "Timer_Clock_MCLK_Divider",
@@ -401,9 +400,9 @@ AIC_REG					codec_regs[] = {	// array of info for codec registers in use -- must
 // 5, 127, 0x00, 0xFF, "C127_LSB",
 #endif
 //********** AIC3100 PAGE 8
-// pg,reg, reset, can1, must1,  "nm",																		curr, next (set to reset)
-   8,   0, 0x00, 0x00, 0x00, "Page_Select_Register",										0x00, 0x00, // must include Page_Select for all pages in use
-   8,   1, 0x00, 0x05, 0x00, "DAC_Coefficient_RAM_Control",							0x00, 0x00,
+// pg,reg, reset, can1, must1,  "nm",																		curr, 
+   8,   0, 0x08, 0x00, 0x00, "Page_Select_Register",                    0x08,  // 8:0 reads as 0x08
+   8,   1, 0x00, 0x05, 0x00, "DAC_Coefficient_RAM_Control",             0x00,
 #ifdef PG8_15_XTRAS
 // 8,   2, 0x7F, 0xFF, "C1_MSB",
 // 8,   3, 0xFF, 0xFF, "C1_LSB",
@@ -1420,11 +1419,167 @@ AIC_REG					codec_regs[] = {	// array of info for codec registers in use -- must
 // 15, 125, 0x00, 0xFF, "C254_LSB",
 // 15, 126, 0x00, 0xFF, "C255_MSB",
 #endif
-  16,   0, 0x00, 0x00, 0x00, "LAST_ENTRY_MARKER",												0x00, 0x00		// last entry marker
+  16,   0, 0x00, 0x00, 0x00, "LAST_ENTRY_MARKER",                       0x00  // last entry marker
 };
-	
-int							codecNREGS = (sizeof(codec_regs)/sizeof(AIC_REG));
+int							codecNREGS = (sizeof(codec_regs)/sizeof(AIC_REG)) - 1;  // exclude last entry marker
+
+// define constants to match slots of codec_regs -- verified by 
+ const int  P0_R0_Page_Select_Register                   =  0;
+ const int  P0_R1_Software_Reset_Register                =  1;
+ const int  P0_R3_OT_FLAG                                =  2;
+const int   P0_R4_ClockGen_Muxing                        =  3;
+ const int  P0_R5_PLL_P_R_VAL                            =  4;
+ const int  P0_R6_PLL_J_VAL                              =  5;
+ const int  P0_R7_PLL_D_VAL_16B                          =  6;
+ const int  P0_R8_PLL_D_VAL_LSB                          =  7;
+ const int  P0_R11_DAC_NDAC_VAL                          =  8;
+ const int  P0_R12_DAC_MDAC_VAL                          =  9;
+ const int  P0_R13_DAC_DOSR_VAL_16B                      = 10;
+const int   P0_R14_DAC_DOSR_VAL_LSB                      = 11;
+ const int  P0_R15_DAC_IDAC_VAL                          = 12;
+ const int  P0_R16_DAC_MAC_Engine_Interpolation          = 13;
+ const int  P0_R18_ADC_NADC_VAL                          = 14;
+ const int  P0_R19_ADC_MADC_VAL                          = 15;
+ const int  P0_R20_ADC_AOSR_VAL                          = 16;
+ const int  P0_R21_ADC_IADC_VAL                          = 17;
+const int   P0_R22_ADC_MAC_Engine_Decimation             = 18;
+ const int  P0_R25_CLKOUT_MUX                            = 19;
+ const int  P0_R26_CLKOUT_M_VAL                          = 20;
+ const int  P0_R27_Codec_Interface_Control1              = 21;
+const int   P0_R29_Codec_Interface_Control2              = 22;
+ const int  P0_R30_BCLK_N_VAL                            = 23;
+ const int  P0_R33_Codec_Interface_Control3              = 24;
+ const int  P0_R36_ADC_Flag_Register                     = 25;
+ const int  P0_R37_DAC_Flag_Register                     = 26;
+ const int  P0_R53_DOUT_Pin_Control                      = 27;
+ const int  P0_R60_DAC_Instruction_Set                   = 28;
+ const int  P0_R61_ADC_Instruction_Set                   = 29;
+ const int  P0_R62_Programmable_Instruction_Mode_Control = 30;
+ const int  P0_R63_DAC_Datapath_SETUP                    = 31;
+ const int  P0_R64_DAC_VOLUME_CONTROL                    = 32;
+ const int  P0_R65_DAC_Left_Volume_Control               = 33;
+ const int  P0_R66_DAC_Right_Volume_Control              = 34;
+ const int  P0_R67_Headset_Detection                     = 35;
+ const int  P0_R68_DRC_Control                           = 36;
  
+const int   P1_R0_Page_Select_Register                   = 37;
+ const int  P1_R30_Headphone_Speaker_Amp_Error_Control   = 38;
+ const int  P1_R31_Headphone_Drivers                     = 39;
+ const int  P1_R32_ClassD_Drivers                        = 40;
+ const int  P1_R33_HP_Output_Drivers_POP_Rem_Settings    = 41;
+ const int  P1_R34_Out_Driver_PGA_RampDown_Period_Ctrl   = 42;
+ const int  P1_R35_LDAC_and_RDAC_Output_Routing          = 43;
+ const int  P1_R36_Left_Analog_Vol_to_HPL                = 44;
+ const int  P1_R37_Right_Analog_Vol_to_HPR               = 45;
+ const int  P1_R38_Left_Analog_Vol_to_SPL                = 46;
+const int   P1_R39_Right_Analog_Vol_to_SPR               = 47;
+ const int  P1_R40_HPL_Driver                            = 48;
+ const int  P1_R41_HPR_Driver                            = 49;
+ const int  P1_R42_SPK_Driver                            = 50;
+ const int  P1_R44_HP_Driver_Control                     = 51;
+ const int  P1_R46_MICBIAS                               = 52;
+ const int  P1_R47_MIC_PGA                               = 53;
+ const int  P1_R48_ADC_Input_P                           = 54;
+ const int  P1_R49_ADC_Input_M                           = 55;
+ const int  P1_R50_Input_CM                              = 56;
+ const int  P1_R51_GPIO1_Pin_Ctrl                        = 57;
+ const int  P8_R0_Page_Select_Register                   = 58;
+const int   P8_R1_DAC_Coefficient_RAM_Control            = 59;
+#if !defined (VERIFY_WRITTENDATA)  
+// Uncomment this line to enable verifying data sent to codec after each write operation (for debug purpose)
+#define VERIFY_WRITTENDATA 
+#endif /* VERIFY_WRITTENDATA */
+
+void 						aicSetCurrPage( uint8_t page ){
+	if ( page == aicCurrPg ) 		// already on correct page?
+		return;
+
+	i2c_wrReg( 0, page );			// write current page's PageSelectRegister with new page
+	dbgLog( "1 PgSw: %d \n", page );
+	aicCurrPg = page;
+}
+uint8_t					aicGetReg( int idx ){
+	uint8_t	pg = codec_regs[ idx ].pg;
+	uint8_t reg = codec_regs[ idx ].reg;
+
+	aicSetCurrPage( pg );
+	uint8_t val = i2c_rdReg( reg );
+	if ( WatchReg<0 || idx==WatchReg )
+		dbgLog( "Rd %d:%02d == 0x%02x \n", pg, reg, val );
+	return val;
+}
+void						aicSetReg( int idx, uint8_t val ){
+	uint8_t pg = codec_regs[ idx ].pg;
+	uint8_t reg = codec_regs[ idx ].reg;
+	
+	val = ( val & codec_regs[idx].W1_allowed ) | codec_regs[idx].W1_required;		// mask off bits that must be 0, and set bits that must be 1
+	
+	aicSetCurrPage( pg );
+	if ( WatchReg<0 || idx==WatchReg )
+		dbgLog( "Wr %d:%02d <- 0x%02x \n", pg, reg, val );
+
+	i2c_wrReg( reg, val );	// write register of AIC3100
+	codec_regs[idx].curr_val = val;
+	
+	#ifdef VERIFY_WRITTENDATA
+		int chkVal = i2c_rdReg( reg );
+		if ( chkVal != val && idx!=P0_R1_Software_Reset_Register )
+			dbgLog( "Read after write mismatch %d:%02d wr 0x%02x rd 0x%02x \n", pg, reg, val, chkVal );
+	#endif /* VERIFY_WRITTENDATA */
+}
+void						aicSet16Bits( int idx, uint16_t val ){	// write (val>>8) to idx, (val & 0xFF) to idx+1
+	uint8_t pg = codec_regs[ idx ].pg;
+	uint8_t reg = codec_regs[ idx ].reg;
+	if ( codec_regs[ idx+1 ].pg != pg || codec_regs[ idx+1 ].reg != reg+1 )
+		dbgLog("! set16: i%d/%d not paired\n", idx, idx+1);
+	
+	aicSetCurrPage( pg );
+	
+	if ( WatchReg<0 || idx==WatchReg )
+		dbgLog( "Wr %d:%02d/%02d <- 0x%04x \n", pg, reg,reg+1, val );
+	
+	i2c_wrReg( reg, val >> 8 );
+	codec_regs[idx].curr_val = val;
+	
+	i2c_wrReg( reg+1, val & 0xFF );
+	codec_regs[idx].curr_val = val;
+	
+	#ifdef VERIFY_WRITTENDATA
+		uint16_t chkVal = ( i2c_rdReg( reg )<<8 ) | i2c_rdReg( reg+1 );
+		if ( chkVal != val )
+			dbgLog( "! Read after write mismatch  %d:%02d_%02d wr 0x%04x rd 0x%04x \n", pg, reg,reg+1, val, chkVal );
+	#endif /* VERIFY_WRITTENDATA */
+	
+}
+
+void 						i2c_CheckRegs(){																						// Debug -- read codec regs
+	const 					uint8_t		Cdc_DefReg = 3;
+	int nErrs = 0;
+	#ifdef VERIFY_WRITTENDATA	
+		int svWReg = WatchReg;
+	  WatchReg = codecNREGS+1;
+		for ( int i = 0; i < codecNREGS; i++ ){
+			//uint8_t reg = codec_regs[i].reg;
+			uint8_t defval = codec_regs[i].reset_val;
+			uint8_t val = aicGetReg( i ); 
+			codec_regs[i].curr_val = val;
+			
+			cntErr( Cdc_DefReg, defval, val, i, 9 );	
+			if (defval != val) nErrs++;
+		}
+		WatchReg = svWReg;
+		i2c_ReportErrors();
+	#endif
+}
+void						i2c_Upd(){
+}
+void						verifyCodecReg( int idx, int pg, int reg ){				// verify that codec_regs[idx] is entry for pg : reg
+	int cr_pg = codec_regs[ idx ].pg;
+	int cr_reg = codec_regs[ idx ].reg;
+	if ( cr_pg != pg || cr_reg != reg )
+		dbgLog( "! v_codec_reg!: idx=%d  %d:%d != %d:%d \n", idx, pg, reg, cr_pg, cr_reg );
+}
+
 static int 											LastVolume 	= 0;			// retain last setting, so audio restarts at last volume
 
 void						cdc_RecordEnable( bool enable ){
@@ -1518,16 +1673,23 @@ RecordTestCnt++;
 #endif
 }
 void 						cdc_SpeakerEnable( bool enable ){														// enable/disable speaker -- using mute to minimize pop
-	if ( tiSpeakerOn==enable )   // no change?
+	if ( cdcSpeakerOn==enable )   // no change?
 		return;
 	
-	tiSpeakerOn = enable;
-	dbgEvt( TB_akSpkEn, enable,0,0,0);
+	cdcSpeakerOn = enable;
+	dbgEvt( TB_cdcSpkEn, enable,0,0,0);
 
 	if ( enable ){ 	
-#if defined( AIC3100 )
-		//TODO AIC3100
-#endif
+		#if defined( AIC3100 )
+			// power-on DAC -- left channel only
+			aicSetReg( P1_R35_LDAC_and_RDAC_Output_Routing, 0x40 );	// P1_R35: DacLtoMix: 01 Mic&Rnowhere: 00 0000
+			aicSetReg( P1_R32_ClassD_Drivers, 							0x80 );	// P1_R32: SpkrAmpPwrOn: 1
+			aicSetReg( P1_R42_SPK_Driver, 									0x00 );	// P1_R42: SpkrAmpGain: 00  SpkrMuteOff: 0
+			aicSetReg( P1_R38_Left_Analog_Vol_to_SPL, 			0x80 );	// R1_38: LchanOutToSpkr: 1  SPKgain: 000 0000 (0dB)
+		// power-on DAC, starts I2S transfer clocks
+			aicSetReg( P0_R63_DAC_Datapath_SETUP, 					0x90 );	// P0_R63: PwrLDAC: 1  PwrRDAC: 0  LDACleft: 01  RDACoff: 00  DACvol1step: 00
+			dbgLog( "2 AIC DAC -> Spkr unmuted\n");
+		#endif
 		#if defined( AK4343 )
 			// power up speaker amp & codec by setting power bits with mute enabled, then disabling mute
 			Codec_SetRegBits( AK_Signal_Select_1, AK_SS1_SPPSN, 0 );						// set power-save (mute) ON (==0)
@@ -1559,9 +1721,9 @@ void 						cdc_SpeakerEnable( bool enable ){														// enable/disable spea
 		#endif
 	} else {			
 		//  power down by enabling mute, then shutting off power
-#if defined( AIC3100 )
-		//TODO AIC3100
-#endif
+		#if defined( AIC3100 )				//TODO AIC3100
+			dbgLog( "2 AIC disable Spkr\n");
+		#endif
 		#if defined( AK4343 )
 			Codec_SetRegBits( AK_Signal_Select_1, AK_SS1_SPPSN, 0 );						// set power-save (mute) ON (==0)
 			Codec_SetRegBits( AK_Power_Management_1, AK_PM1_SPK | AK_PM1_DAC, AK_PM1_SPK | AK_PM1_DAC );	// set spkr & DAC power ON
@@ -1584,38 +1746,57 @@ void 						cdc_SpeakerEnable( bool enable ){														// enable/disable spea
 
 void						cdc_PowerUp( void ){
   // AIC3100 power up sequence based on sections 7.3.1-4 of Datasheet: https://www.ti.com/lit/ds/symlink/tlv320aic3100.pdf
-	gSet( gBOOT1_PDN, 0 );			// put codec in reset state
+	//  delays as recommended by Marc on 12/31/20
+	gSet( gBOOT1_PDN, 0 );			// put codec in reset state PB2
 	
-	gSet( gEN_5V, 1 );					// power up codec SPKVDD 
+	gSet( gEN_5V, 1 );					// power up EN_V5 for codec SPKVDD PD4
+	tbDelay_ms( 200 );  		 		// wait for voltage regulators  // Marc: 200ms
 
-	gSet( gEN_IOVDD_N, 0 );			// power up codec IOVDD 
-	gSet( gEN1V8, 1 );					// power up codec DVDD  ("shortly" after IOVDD)
-	tbDelay_ms( 20 );  		 			// wait for voltage regulators
+	gSet( gEN_IOVDD_N, 0 );			// power up codec IOVDD PE4
+	tbDelay_ms( 100 );  		 		// wait for voltage regulators  // Marc: 100ms
+	gSet( gEN1V8, 1 );					// power up EN1V8 for codec DVDD PD5 ("shortly" after IOVDD)
+	tbDelay_ms( 10 );  		 			// wait for voltage regulators
 	
-	gSet( gEN_AVDD_N, 0 );			// power up codec AVDD & HPVDD (at least 10ns after DVDD)
+	gSet( gEN_AVDD_N, 0 );			// power up codec AVDD & HPVDD PE5 (at least 10ns after DVDD)
+	tbDelay_ms( 100 );  		 		//  wait for it to start up  // Marc: 100ms
 	
-	gSet( gBOOT1_PDN, 1 );  		// set codec RESET_N inactive to Power on the codec 
-	tbDelay_ms( 5 );  		 			//  wait for it to start up
+	gSet( gBOOT1_PDN, 1 );  		// set codec RESET_N inactive to Power on the codec PB2
+	tbDelay_ms( 10 );  		 			//  wait for it to start up
+	dbgLog( "2 AIC3100 powered up\n");
 }
 // external interface functions
 void 						cdc_Init( ){ 																								// Init codec & I2C (i2s_stm32f4xx.c)
-	dbgEvt( TB_akInit, 0,0,0,0);
+	dbgEvt( TB_cdcInit, 0,0,0,0);
 
-	if ( codec_regs[ codecNREGS-1 ].pg != 16 || codec_regs[ codecNREGS-1 ].reg != 0 )
-		dbgLog( "codecNREGS problem: NREGS=%d  sz(c_regs)=%d sz(AIC)=%d", codecNREGS, sizeof(codec_regs), sizeof(AIC_REG) );
+	// make sure aic index constats match codec_regs[] entries
+	verifyCodecReg( codecNREGS, 16, 0 );	// marker at end
+	verifyCodecReg( P0_R4_ClockGen_Muxing, 0, 4 );
+	verifyCodecReg( P0_R14_DAC_DOSR_VAL_LSB, 0, 14 );
+	verifyCodecReg( P0_R22_ADC_MAC_Engine_Decimation, 0, 22 );
+	verifyCodecReg( P0_R29_Codec_Interface_Control2, 0, 29 );
+	verifyCodecReg( P1_R0_Page_Select_Register, 1, 0 );
+	verifyCodecReg( P1_R39_Right_Analog_Vol_to_SPR, 1, 39 );
+	verifyCodecReg( P8_R1_DAC_Coefficient_RAM_Control, 8, 1 );
 	
 //	memset( &akC, 0, sizeof( AK4637_Registers ));
-	tiSpeakerOn 		= false;
-	tiMuted			 	= false;
+	cdcSpeakerOn 		= false;
+	cdcMuted			 	= false;
 
 	cdc_PowerUp(); 		// power-up codec
   i2c_Init();  			// powerup & Initialize the Control interface of the Audio Codec
 
+	uint8_t rst = 1;  // software reset bit -- hardware returns to 0
+	uint32_t st = tbTimeStamp();
+	aicSetReg( P1_R46_MICBIAS,		0x8A );  				// P1_R46: MICBIAS output at 2.5V even without headset detected, Software Power Down enabled
+	
+	aicSetReg( P0_R1_Software_Reset_Register, rst );		// initiate software reset
+	while ( rst != 0 ){
+		rst = aicGetReg( P0_R1_Software_Reset_Register );
+	}
+	dbgLog( "2 AIC Sft Reset took %d ms \n", tbTimeStamp()-st );
+	
 	i2c_CheckRegs();		// check all default register values & report
 
-#if defined( AIC3100 )
-	//TODO  AIC3100
-#endif
 	#if defined( AK4343 )
 		Codec_SetRegBits( AK_Signal_Select_1, AK_SS1_SPPSN, 0 );		// set power-save (mute) ON (==0)  (REDUNDANT, since defaults to 0)
 	#endif
@@ -1696,44 +1877,72 @@ void 						cdc_Init( ){ 																								// Init codec & I2C (i2s_stm32f4
 
 
 void 						cdc_PowerDown( void ){																				// power down entire codec (i2s_stm..)
-dbgEvt( TB_akPwrDn, 0,0,0,0);
+dbgEvt( TB_cdcPwrDn, 0,0,0,0);
+	#if defined( AIC3100 )	//TODO power down DAC channel, wait till P0_R37_Power_Status_d7_d3 == 0, then power down MDAC, then NDAC 
+	  const int MAX_DAC_PWR_WAIT = 10000;
+	//AIC3100: follow pg 65 rules
+		aicSetReg( P0_R63_DAC_Datapath_SETUP, 	0x14 ); // P0_R63: DAC L & R Pwr Off -- pg 65: begins internal sequence
+	
+		uint8_t pwrLR = 0x88;
+		int cnt = 0;
+		while ( pwrLR != 0 && cnt < MAX_DAC_PWR_WAIT ){	// wait till DACs power down
+			pwrLR = aicGetReg( P0_R37_DAC_Flag_Register ) & 0x88;  // P0_R37: D7=LDACPwrd, D3=RDACPwrd
+			cnt++;
+		}
+		if ( cnt == MAX_DAC_PWR_WAIT ) dbgLog( "! DACs failed to turn off" );
+
+		// now shut down M_DAC & N_DAC dividers and finally, PLL 
+		aicSetReg( P0_R11_DAC_NDAC_VAL, 	0x01 ); 	 // P0_R11: NDAC_PWR: 0 reset val-- powers down NDAC
+		aicSetReg( P0_R12_DAC_MDAC_VAL, 	0x01 ); 	 // P0_R12: NDAC_PWR: 0 reset val-- powers down MDAC
+		aicSetReg( P0_R5_PLL_P_R_VAL, 		0x11 ); 	 // P0_R04: PLL_PWR: 0  PLL_P: 001 PLL_R: 0001 = 0x11   powers down PLL (MUST BE LAST pg 68)
+	#endif
+	
 	I2Cdrv->PowerControl( ARM_POWER_OFF );	// power down I2C
 	I2Cdrv->Uninitialize( );								// deconfigures SCL & SDA pins, evt handler
 	
+	// reset, then power down codec chip
 	gSet( gPA_EN, 0 );				// amplifier off
 	gSet( gBOOT1_PDN, 0 );    // OUT: set power_down ACTIVE to Power Down the codec 
 	gSet( gEN_5V, 0 );				// OUT: 1 to supply 5V to codec		AP6714 EN		
 	gSet( gEN1V8, 0 );			  // OUT: 1 to supply 1.8 to codec  TLV74118 EN		
+	gSet( gEN_IOVDD_N, 1 );		// power down codec IOVDD PE4
+	gSet( gEN_AVDD_N, 1 );		// power down codec AVDD & HPVDD PE5 (at least 10ns after DVDD)
+	dbgLog( "2 AIC3100 powered down\n");
 }
 //
 //
 static uint8_t testVol = 0x19;			// DEBUG
 void		 				cdc_SetVolume( uint8_t Volume ){														// sets volume 0..10  ( mediaplayer )
-
-//	const uint8_t akMUTEVOL = 0xCC, akMAXVOL = 0x18, akVOLRNG = akMUTEVOL-akMAXVOL;		// ak4637 digital volume range to use
-#if defined( AIC3100 )
-	//TODO  AIC3100
-	const uint8_t tiMUTEVOL = 0xCC, tiMAXVOL = 0x18, tiVOLRNG = tiMUTEVOL-tiMAXVOL;		// aic3100 digital volume range to use
-#endif
 	uint8_t v = Volume>10? 10 : Volume; 
 
 	LastVolume = v;
 	if ( audGetState()!=Playing ) return;			// just remember for next cdc_Init()
-	
-	// Conversion of volume from user scale [0:10] to audio codec AK4343 scale  [akMUTEVOL..akMAXVOL] == 0xCC..0x18 
-  //   values >= 0xCC force mute on AK4637
-  //   limit max volume to 0x18 == 0dB (to avoid increasing digital level-- causing resets?)
-  tiFmtVolume = tiMUTEVOL - ( v * tiVOLRNG )/10; 
 
+	#if defined( AIC3100 )
+	//TODO  AIC3100
+		const int8_t cdcMUTEVOL = -127, cdcMAXVOL = 48;
+		const uint8_t cdcVOLRNG = cdcMAXVOL - cdcMUTEVOL;		// aic3100 digital volume range to use
+		cdcFmtVolume = cdcMUTEVOL + (v * cdcVOLRNG)/10;
+	#endif
+	#if defined( AK4637 )
+		const uint8_t cdcMUTEVOL = 0xCC, cdcMAXVOL = 0x18, cdcVOLRNG = cdcMUTEVOL-cdcMAXVOL;		// ak4637 digital volume range to use
+		// Conversion of volume from user scale [0:10] to audio codec scale [cdcMUTEVOL..cdcMAXVOL]  (AK cc..18) (TI 81..c0)
+		//   values >= 0xCC force mute on AK4637
+		//   limit max volume to 0x18 == 0dB (to avoid increasing digital level-- causing resets?)
+		cdcFmtVolume = cdcMUTEVOL - ( v * cdcVOLRNG )/10; 
+	#endif
+	
 	if (Volume==99)	//DEBUG
-		{ tiFmtVolume = testVol; 	testVol--; }	//DEBUG: test if vol>akMAXVOL causes problems
+		{ cdcFmtVolume = testVol; 	testVol--; }	//DEBUG: test if vol>akMAXVOL causes problems
 	
 //	logEvtNI( "setVol", "vol", v );
-	dbgEvt( TB_akSetVol, Volume, tiFmtVolume,0,0);
-	dbgLog( "tiSetVol v=%d tiV=0x%x \n", v, tiFmtVolume );
-#if defined( AIC3100 )
-	//TODO  AIC3100
-#endif
+	dbgEvt( TB_cdcSetVol, Volume, cdcFmtVolume,0,0);
+	dbgLog( "2 cdcSetVol v=%d cdcV=0x%x \n", v, cdcFmtVolume );
+	#if defined( AIC3100 )
+		// AIC3100 -- left channel volume:  -127..48 => -63.5dB .. 24dB
+		aicSetReg( P0_R65_DAC_Left_Volume_Control, cdcFmtVolume	 ); 		 // P0_R65: -127..48 (0x81..0x30)
+		dbgLog( "2 AIC Lvol %d \n", cdcFmtVolume );
+	#endif
 	#if defined( AK4343 )
 		Codec_WrReg( AK_Lch_Digital_Volume_Control, akFmtVolume );  // Left Channel Digital Volume control
 		Codec_WrReg( AK_Rch_Digital_Volume_Control, akFmtVolume );  // Right Channel Digital Volume control
@@ -1745,19 +1954,133 @@ void		 				cdc_SetVolume( uint8_t Volume ){														// sets volume 0..10  (
 }
 
 void		 				cdc_SetMute( bool muted ){																	// true => enable mute on codec  (audio)
-	if ( tiMuted==muted ) return;
-	dbgEvt( TB_akSetMute, muted,0,0,0);
-	tiMuted = muted;
+	if ( cdcMuted==muted ) return;
+	dbgEvt( TB_cdcSetMute, muted,0,0,0);
+	cdcMuted = muted;
 	
-#if defined( AIC3100 )
-	//TODO  AIC3100
-#endif
+	#if defined( AIC3100 )
+		if ( muted ){
+			aicSetReg( P1_R42_SPK_Driver, 0x00	 ); 			// P1_R42: SpkrAmpGain: 00  SpkrMuteOff: 0
+			aicSetReg( P0_R64_DAC_VOLUME_CONTROL, 0x0C );	// P0_R64: LMuteOn: 1  RMuteOn: 1 LRsep: 00
+			dbgLog( "2 AIC mute: SpkrAmp, L&R mutes on \n" );
+		} else {
+			aicSetReg( P0_R64_DAC_VOLUME_CONTROL, 0x04 );	// P0_R64: LMuteOn: 0  RMuteOn: 1 LRsep: 00
+			aicSetReg( P1_R42_SPK_Driver, 0x04	 ); 			// P1_R42: SpkrAmpGain: 00  SpkrMuteOff: 1
+			dbgLog( "2 AIC unmute: SpkrAmp & L mutes off, SpkrAmp=6dB \n" );
+		}
+	#endif
 //	akR.R.MdCtr3.SMUTE = (muted? 1 : 0);
 	i2c_Upd();
 }
+void 						debugTimingRegs(){																					// configure ClkOut & report Reg values
+	uint8_t regList[] = { 
+		P0_R4_ClockGen_Muxing, 	
+		P0_R5_PLL_P_R_VAL, 		
+		P0_R6_PLL_J_VAL, 					
+		P0_R7_PLL_D_VAL_16B, 			
+		P0_R8_PLL_D_VAL_LSB,
+		P0_R11_DAC_NDAC_VAL, 		
+		P0_R12_DAC_MDAC_VAL, 	
+		P0_R13_DAC_DOSR_VAL_16B, 	
+		P0_R14_DAC_DOSR_VAL_LSB, 	
+		P0_R25_CLKOUT_MUX,
+		P0_R26_CLKOUT_M_VAL,		
+		P0_R27_Codec_Interface_Control1,			
+		P0_R29_Codec_Interface_Control2,		
+		P0_R30_BCLK_N_VAL,
+		P0_R33_Codec_Interface_Control3,
+		P0_R37_DAC_Flag_Register, 
+		P0_R53_DOUT_Pin_Control, 											
+		P0_R63_DAC_Datapath_SETUP,  
+		P0_R64_DAC_VOLUME_CONTROL,
+		P0_R65_DAC_Left_Volume_Control,
+		P1_R32_ClassD_Drivers, 
+		P1_R35_LDAC_and_RDAC_Output_Routing,
+		P1_R38_Left_Analog_Vol_to_SPL,
+		P1_R42_SPK_Driver, 
+		P1_R46_MICBIAS
+	};
+	
+	//DEBUG ONLY - configure CLKOUT to DOUT
+	// select ClkOut source: 0=MCLK 3=PLL_CLK  4=DAC_CLK  5=DAC_MOD_CLK
+	tbDelay_ms(20);			// let debug printf catch up
+	if (gGet( gHOME )){  					// HOM => PLL_CLK to ClkOut
+		aicSetReg( P0_R25_CLKOUT_MUX, 			0x03 );		
+		dbgLog( "2 HOM: PLL_Clk => ClkOut \n");
+	} else if (gGet( gCIRCLE)){  	// CIR => DAC_CLK
+		aicSetReg( P0_R25_CLKOUT_MUX, 			0x04 );		
+		dbgLog( "2 CIR: DAC_Clk => ClkOut \n");
+	} else if (gGet( gRHAND)){  	// RH => DAC_MOD_CLK
+		aicSetReg( P0_R25_CLKOUT_MUX, 			0x05 );		
+		dbgLog( "2 RH: DAC_MOD_Clk => ClkOut \n");
+	} else {											// default => MClk
+		aicSetReg( P0_R25_CLKOUT_MUX, 			0x00 );				// select ClkOut source: 000=MCLK 011=PLL_CLK  100=DAC_CLK  101=DAC_MOD_CLK
+		dbgLog( "2 def: MClk => ClkOut \n");
+	}
+	const int ClkOutM = 10;
+	aicSetReg( P0_R26_CLKOUT_M_VAL, 		0x80 + ClkOutM );  // PWR & set divider for ClkOut /ClkOutM
+
+
+	if (gGet( gMINUS )){
+		aicSetReg( P0_R53_DOUT_Pin_Control,	0x04 );			// MINUS: DOUT gets GPout = 0
+		dbgLog( "2 MINUS: DOUT = 0 \n");
+	} else if (gGet( gPLUS )){
+		aicSetReg( P0_R53_DOUT_Pin_Control,	0x05 );			// PLUS: DOUT gets GPout = 1
+		dbgLog( "2 PLUS: DOUT = 1 \n");
+	} else {
+		aicSetReg( 		P0_R53_DOUT_Pin_Control,0x16 );		// default: DOUT gets CLKOUT (from CLKOUT_MUX)
+		dbgLog( "2 def: DOUT = MClk/%d \n", ClkOutM );
+	}
+		
+	for ( int i=0; i < sizeof(regList); i++ ){
+		uint8_t ridx = regList[i];
+		uint8_t val = aicGetReg( ridx );
+		dbgLog( "2 P%dR%02d %12s = %3d 0x%02x \n", codec_regs[ridx].pg, codec_regs[ridx].reg, codec_regs[ridx].nm, val, val );
+	}
+}
+
 void						cdc_SetMasterFreq( int freq ){															// set AK4637 to MasterMode, 12MHz ref input to PLL, audio @ 'freq', start PLL  (i2s_stm32f4xx)
 	#if defined( AIC3100 )
-		//TODO  AIC3100
+		// choose parameters for codec PLL
+		int PLL = 92; // 84=84.672MHz  92=92.160MHz, or 98 = 98.304MHz
+		int MDAC = 90, NDAC = 2;  // 0..128 divisors of PLL_CLK 
+		switch ( freq ){
+				case  8000:	PLL=92; MDAC=90; NDAC= 2; break;
+				case 11025:	PLL=84; MDAC= 5; NDAC=24; break;
+				case 12000:	PLL=92; MDAC=40; NDAC= 3; break;
+				case 16000:	PLL=98; MDAC=16; NDAC= 6; break;
+				case 22050:	PLL=84; MDAC= 5; NDAC=12; break;
+				case 24000:	PLL=92; MDAC=10; NDAC= 6; break;
+				case 32000:	PLL=98; MDAC=16; NDAC= 3; break;
+				case 44100:	PLL=84; MDAC= 5; NDAC= 6; break;
+				case 48000:	PLL=92; MDAC= 5; NDAC= 6; break;
+		}
+		// configure PLL for 12MHz MCLK to generate audio at 'freq'
+		// PLL_CLK = MCLK * R * J.D / P   (R=1 & P=1)
+		int PLL_J, PLL_D;
+		if (PLL == 84)		{  PLL_J = 7;  PLL_D = 0560; }  // J.D = 7.0560 * 12MHz => 84.672MHz
+		else if (PLL==92)	{  PLL_J = 7;  PLL_D = 6800; }  // J.D = 7.6800 * 12MHz => 92.160MHz
+		else if (PLL==98)	{  PLL_J = 8;  PLL_D = 1920; }  // J.D = 8.1920 * 12MHz => 98.304MHz
+		dbgLog( "2 AIC3100 PLL= 12MHz * %d.%04d \n", PLL_J, PLL_D );
+		// AIC3100 configuration:
+		//   MClk is fed 12MHz from STM32F412 I2S3_MCLK-- set up by I2S3_ClockEnable() in I2S_stm32F4xx.c
+		//   codec mode I2S 16-bit, output WClk & BClk
+		//   external MClk is input to PLL_ClkIn & PLL_Clk as Codec_ClkIn
+		
+		aicSetReg( 		P0_R27_Codec_Interface_Control1, 0x0C );// P0_R27:  I2S: 00  Wd16: 00 BClkOut: 1 WClkOut: 1  Rx: 0 DOut: 0  = 00001100 = 0x0C;
+		aicSetReg( 		P0_R4_ClockGen_Muxing, 	0x03 ); 				// P0_R04: 0000 PLL=MClk: 00 Codec=PLL: 11 = 0x03
+		aicSetReg( 		P0_R6_PLL_J_VAL, 				PLL_J 		); 		// P0_R06: PLL_J      ( integer part of PLL multiplier J.D )
+		aicSet16Bits( P0_R7_PLL_D_VAL_16B, 		PLL_D );  			// P0_R07/08: PLL_D    fraction D (0..9999)
+		aicSetReg( 		P0_R5_PLL_P_R_VAL, 			0x91 ); 		 		// P0_R04: PLL_PWR: 1  PLL_P: 001 PLL_R: 0001 = 0x91   powers up PLL with these parameters
+		aicSetReg( 		P0_R11_DAC_NDAC_VAL, 		0x80 + NDAC );	// P0_R11: NDAC_VAL  ( NDAC_PWR + NDAC divider value ) 
+		aicSetReg( 		P0_R12_DAC_MDAC_VAL, 		0x80 + MDAC );	// P0_R12: MDAC_VAL  ( MDAC_PWR + MDAC divider value ) 
+		aicSet16Bits( P0_R13_DAC_DOSR_VAL_16B, 64 );  				// P0_R13/14: DOSR_VAL = 0x0040   ( for DOSR = 64 )
+		aicSetReg( 		P0_R29_Codec_Interface_Control2, 0x05 );// P0_R29: BDIV_CLKIN = DAC_MOD_CLK, BCLK&WCLK always active
+		aicSetReg( 		P0_R33_Codec_Interface_Control3, 0x00 ); // P0_R33: pri BCLK: 0 (internal), pri WCLK: 00 (Dac_fs) pri DOUT: 0 codec
+		aicSetReg( 		P0_R30_BCLK_N_VAL, 			0x80 + 2 );  		// P0_R30: BCLK N_VAL = 2  ( with DOSR = 64, BCLK = DAC_FS * 32 )
+		dbgLog( "2 AIC: BCLK = CLK / %d / %d / %d = 32* %d \n", NDAC, MDAC, 2, freq );
+
+		debugTimingRegs();
 	#endif
 	#if defined( AK4637 )
 	// set up AK4637 to run in MASTER mode, using PLL to generate audio clock at 'freq'
