@@ -18,6 +18,12 @@ extern int							codecNREGS;				// number of codec registers defined								-- t
 void 						i2c_CheckRegs( void );								// Debug -- read codec regs
 void						i2c_Upd( void );											// write values of any modified codec registers
 
+void 						i2c_wrReg( uint8_t Reg, uint8_t Value); // external from codecI2C
+uint8_t					i2c_rdReg( uint8_t Reg );								// external from codecI2C
+
+void 		 				cntErr( int8_t grp, int8_t exp, int8_t got, int32_t iReg, int16_t caller );  // count and/or report ak errors
+void  					i2c_ReportErrors( void );							// report I2C error counts
+
 void 						i2c_Init( void );											// init I2C & codec
 void						i2c_Reinit(int lev );									// lev&1 SWRST, &2 => RCC reset, &4 => device re-init
 void						i2c_PowerUp( void );									// supply power to codec, & disable PDN, before re-init

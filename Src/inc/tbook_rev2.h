@@ -25,7 +25,7 @@
 #endif
 
 #ifdef AIC3100
-// I2C slave address for tlv320aic3100 based on 30 in initscript	--  shifted <<1 by I2C, so differs from HAL 0x27 which is masked with 0xFFFE
+// I2C slave address for tlv320aic3100 0x18 specified by AIC3100 datasheet pg 20 (matches start byte of 0x30 in eval bd initscript)
 #define AUDIO_I2C_ADDR                     0x18
 #endif 
 
@@ -42,8 +42,8 @@
 
 // Alternate Functions based on STM32F412xE/G datasheet: Table 11 pg.67
 
-// TBOOK_V2_Rev1  EXTI ints 0 Hom, 1 Pot, 3 Tab, 4 Plu, 5-9 Min/LHa/Sta/Cir, 10-15 RHa/Tre
-// TBOOK_V2_Rev3  EXTI ints 0 Hom, 1 Pot, 3 Tab, 4 Plu, 5-9 Min/LHa/Sta/Cir, 10-15 RHa/Tre, 2 Pwr_Fail_N
+// TBook_V2_Rev1  EXTI ints 0 Hom, 1 Pot, 3 Tab, 4 Plu, 5-9 Min/LHa/Sta/Cir, 10-15 RHa/Tre
+// TBook_V2_Rev3  EXTI ints 0 Hom, 1 Pot, 3 Tab, 4 Plu, 5-9 Min/LHa/Sta/Cir, 10-15 RHa/Tre, 2 Pwr_Fail_N
 static GPIO_Signal gpioSignals[] = {  	// GPIO signal definitions
 	// GPIO_ID  signal  								eg   'PA4'   => GPIOA, pin 4, active high  
 	//          "Pxdd_|cc" where:				e.g. 'PE12_' => GPIOE, pin 12, active low
@@ -68,7 +68,7 @@ static GPIO_Signal gpioSignals[] = {  	// GPIO signal definitions
 	{ gADC_LI_ION, 	"PA2"				},	// IN:  analog rechargable battery voltage level: ADC1_channel2 	(powermanager.c)
 	{ gADC_PRIMARY,	"PA3"				},	// IN:  analog disposable battery voltage level:	ADC1_channel3 	(powermanager.c)
 	{ gADC_THERM,	  "PC2"				},	// IN:  analog 
-#if defined(TBOOK_V2_Rev1)
+#if defined(TBook_V2_Rev1)
 	{ gPWR_FAIL_N, 	"PD0"			  },	// IN:  0 => power fail signal 										(powermanager.c)
 #endif
 #if defined(TBook_V2_Rev3)
@@ -76,11 +76,10 @@ static GPIO_Signal gpioSignals[] = {  	// GPIO signal definitions
 #endif
 	{ gADC_ENABLE, 	"PE15"			},	// OUT: 1 to enable battery voltage measurement 	(powermanager.c)
 	{ gSC_ENABLE, 	"PD1"				},	// OUT: 1 to enable SuperCap			 								(powermanager.c)
-#if defined(TBOOK_V2_Rev1)
-	{ gPA_EN, 			"PD3"				},	// OUT: 1 to power speaker & hphone								(powermanager.c)
+#if defined(TBook_V2_Rev1)
+	{ gPA_EN, 			"PD3"				},	// OUT: 1 to power U3 apmplifier									(powermanager.c)
 #endif
-#if defined(TBOOK_V2_Rev3)
-	{ gPA_EN, 			"PD7"				},	// OUT: 1 to power speaker & hphone								(powermanager.c)
+#if defined(TBook_V2_Rev3)
 	{ gEN_IOVDD_N,	"PE4"				},	// OUT: 0 to power AIC3100 codec rail IOVDD
 	{ gEN_AVDD_N,		"PE5"				},	// OUT: 0 to power AIC3100 codec rail AVDD
 #endif
@@ -92,11 +91,11 @@ static GPIO_Signal gpioSignals[] = {  	// GPIO signal definitions
 	{ gBAT_STAT1,		"PD8"				},  // IN:  charge_status[0]     			MCP73871 STAT1  (powermanager.c)
 	{ gBAT_STAT2,		"PD9"				},  // IN:  charge_status[1]     			MCP73871 STAT2  (powermanager.c)
 	{ gBAT_PG_N,		"PD10"			},  // IN:  0 => power is good   			configured as active High to match MCP73871 Table 5.1
-#if defined(TBOOK_V2_Rev1)
+#if defined(TBook_V2_Rev1)
 	{ gBAT_CE,	  	"PD11"			},  // OUT: 1 to enable charging 			MCP73871 CE 	  (powermanager.c)
 	{ gBAT_TE_N,		"PD12"			},  // OUT: 0 to enable safety timer 	MCP73871 TE_	  (powermanager.c)
 #endif
-#if defined(TBOOK_V2_Rev3)
+#if defined(TBook_V2_Rev3)
 	{ gBAT_CE,	  	"PD0"				},  // OUT: 1 to enable charging 			MCP73871 CE 	  (powermanager.c)
 	{ gBAT_TE_N,		"PD13"			},  // OUT: 0 to enable safety timer 	MCP73871 TE_	  (powermanager.c)
 #endif
@@ -110,7 +109,7 @@ static GPIO_Signal gpioSignals[] = {  	// GPIO signal definitions
 	{ gI2S2ext_SD,	"PB14|6"		},	// AIC3100 DOUT 									(RTE_I2SDevice.h I2S0==SPI2 altFn=6)
 	{ gI2S2_WS,			"PB12|5"		},	// AIC3100 WCLK             			(RTE_I2SDevice.h I2S0==SPI2 altFn=5)
 	{ gI2S2_CK,			"PB13|5"		},	// AIC3100 BCL				 						(RTE_I2SDevice.h I2S0==SPI2 altFn=5) 
-//NSTUFF	{ gI2S2_MCK,		"PC6|5"			},	// AIC3100 MCLK   				(RTE_I2SDevice.h I2S0==SPI2 altFn=5)
+//NoStuff	{ gI2S2_MCK,		"PC6|5"			},	// AIC3100 MCLK   				(RTE_I2SDevice.h I2S0==SPI2 altFn=5)
 	{ gI2S3_MCK,		"PC7|6"			},	// AIC3100 MCLK 	 								(RTE_I2SDevice.h I2S3==SPI2 altFn=6)
 
 	//******* SPI4 pins must match definitions in RTE_Device.h: ConfigWizard: SPI4
@@ -123,25 +122,25 @@ static GPIO_Signal gpioSignals[] = {  	// GPIO signal definitions
 	{ gUSB_DM, 			"PA11|10"		},	// std pinout assumed by USBD (altFn=10)
 	{ gUSB_DP, 			"PA12|10"		},	// std pinout assumed by USBD (altFn=10)
 	{ gUSB_ID, 			"PA10|10"		},	// std pinout assumed by USBD (altFn=10)
-#if defined(TBOOK_V2_Rev3)
+#if defined(TBook_V2_Rev3)
 	{ gUSB_VBUS, 		"PA9|10"		},	// std pinout assumed by USBD (altFn=10))
 #endif
 	
-#if defined(TBOOK_V2_Rev1)
+#if defined(TBook_V2_Rev1)
 	{ gQSPI_CLK, 			"PB1|9"		},	// W25Q64JVSS & MT29F4G01 clock for NOR and NAND Flash (altFn=9)
 #endif
-#if defined(TBOOK_V2_Rev3)
+#if defined(TBook_V2_Rev3)
 	{ gQSPI_CLK_A, 		"PD3|9"		},	// U5 W25Q64JVSS clock for NOR and NAND Flash (altFn=9)
 	{ gQSPI_CLK_B, 		"PB1|9"		},	// U4 MT29F4G01 clock for NOR and NAND Flash (altFn=9)
 #endif
 
 	{ gMCO2,					"PC9|0"		},  // MCO2 to TP for external SystemClock/4
 	
-#if defined(TBOOK_V2_Rev1)
+#if defined(TBook_V2_Rev1)
 	{ gQSPI_BK1_IO0, 	"PC9|9"		},	// W25Q64JVSS  NOR flash  U5 (altFn=9)
 	{ gQSPI_BK1_IO1, 	"PC10|9"	},	// W25Q64JVSS  NOR flash  U5 (altFn=9)
 #endif
-#if defined(TBOOK_V2_Rev3)
+#if defined(TBook_V2_Rev3)
 	{ gQSPI_BK1_IO0, 	"PD11|9"	},	// W25Q64JVSS  NOR flash  U5 (altFn=9)
 	{ gQSPI_BK1_IO1, 	"PD12|9"	},	// W25Q64JVSS  NOR flash  U5 (altFn=9)
 #endif
@@ -158,10 +157,10 @@ static GPIO_Signal gpioSignals[] = {  	// GPIO signal definitions
 	//******* SDIO pins must match definitions in RTE_Device.h: ConfigWizard: SDIO
 	{ gSDIO_DAT0, 		"PB4|12"	},  // SDcard & eMMC SDIO D0  (RTE_Device.h MCI0)  (altFn=12)
 	{ gSDIO_DAT1, 		"PA8|12"	},  // SDcard & eMMC SDIO D1  (RTE_Device.h MCI0)  (altFn=12)
-#if defined(TBOOK_V2_Rev1)
+#if defined(TBook_V2_Rev1)
 	{ gSDIO_DAT2, 		"PA9|12"	},  // SDcard & eMMC SDIO D2  (RTE_Device.h MCI0)  (altFn=12)
 #endif
-#if defined(TBOOK_V2_Rev3)
+#if defined(TBook_V2_Rev3)
 	{ gSDIO_DAT2, 		"PC10|12"	},  // SDcard & eMMC SDIO D2  (RTE_Device.h MCI0)  (altFn=12)
 #endif
 	{ gSDIO_DAT3, 		"PB5|12"	},  // SDcard & eMMC SDIO D3  (RTE_Device.h MCI0)  (altFn=12)
