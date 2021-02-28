@@ -12,9 +12,19 @@
 //    other IDs are assigned for GPIO pins used in different implementations
 typedef enum {			// GPIO_ID -- gpio signal IDs  
 	gORANGE, gBLUE,		// LEDs on STM3210E_EVAL & STM32F412_DISCOG
-    gRED,	gGREEN,  	// LEDs on TBook keypad & STM3210E_EVAL & STM32F412_DISCOG
+  gRED,					// TB_V2_Rev1:  PE1
+	gGREEN,				// TB_V2_Rev1:  PE0		// LEDs on TBook keypad & STM3210E_EVAL & STM32F412_DISCOG
 	gINVALID,			// marker for end of definition array
-	gHOME, gCIRCLE, gPLUS, gMINUS, gTREE, gLHAND, gRHAND, gPOT, gSTAR, gTABLE,
+	gHOME, 				// TB_V2_Rev1: 	PA0
+	gCIRCLE, 			// TB_V2_Rev1: 	PE9
+	gPLUS, 				// TB_V2_Rev1: 	PA4
+	gMINUS, 			// TB_V2_Rev1: 	PA5
+	gTREE, 				// TB_V2_Rev1: 	PA15
+	gLHAND, 			// TB_V2_Rev1: 	PB7
+	gRHAND, 			// TB_V2_Rev1: 	PB10
+	gPOT, 				// TB_V2_Rev1: 	PC1
+	gSTAR, 				// TB_V2_Rev1: 	PE8
+	gTABLE,				// TB_V2_Rev1: 	PE3
 // defs for all the other TB_V2 gpio assignments
 	gBOARD_REV,			// TB_V2_Rev1: 	N/A			TB_V2_Rev3:  PB0
 	gADC_LI_ION,		// TB_V2_Rev1: 	PA2

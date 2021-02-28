@@ -295,7 +295,7 @@ static int32_t 								I2S_Configure( I2S_RESOURCES *i2s, uint32_t freq, bool mo
 		SPI_TypeDef *i2s_inst = xmt? i2s->xmt_inst : i2s->rcv_inst;
 		i2s_inst->I2SCFGR &=  ~I2S_MODE_ENAB;						// make sure I2S is disabled while changing config
 		
-	if ( slaveMode ){ // USE AK4637 PLL to generate accurate clock -- I2S3 generates 12MHz ref clock on I2S3_MCK
+	if ( slaveMode ){ // USE odec PLL to generate accurate clock -- I2S3 generates 12MHz ref clock on I2S3_MCK
 		// set SPI2 I2SCFGR & I2SPR registers
 		i2s_inst->I2SCFGR = I2S_MODE | (xmt? I2S_CFG_SLAVE_TX : I2S_CFG_SLAVE_RX);  // I2SMode & I2SCFG = Slave xmt or rcv
 		// defaults:  I2SSTD = 00 = Phillips, DATLEN = 00, CHLEN = 0  16bits/channel
@@ -303,7 +303,7 @@ static int32_t 								I2S_Configure( I2S_RESOURCES *i2s, uint32_t freq, bool mo
 		i2s_inst->I2SPR   = 0;		// reset unused PreScaler
 		
 		// MUST be AFTER SPI2->I2SCFGR.I2SCFG is set to SLAVE_TX
-		cdc_SetMasterFreq( freq );			// set AK4637 to MasterMode, 12MHz ref input to PLL, audio @ 'freq'
+		cdc_SetMasterFreq( freq );			// set codec to MasterMode, 12MHz ref input to PLL, audio @ 'freq'
 	} else {	// NOT USED
 		/*
 		// configure to generate MCK at freq -- for master mode transmission
@@ -465,7 +465,7 @@ dbgEvt( TB_saiInit, 0,0,0,0);
 	//  USB/SDIO clk = VCO_clk / Q	
 	// 	I2S_clk = VCO_clk / R		
 	
-  // I22_clk = (HSE * PLLI2S_N / PLLI2S_M) / PLLI2S_R 
+  // I2S_clk = (HSE * PLLI2S_N / PLLI2S_M) / PLLI2S_R 
 	int I2S_M = 4; 		// 8HHz external HSE => 2MHz VCOin
 	int I2S_N = 96;		// => VCOclk = 192MHz
 	int I2S_R = 4; 		// => I2S3 = 48MHz	
@@ -495,7 +495,8 @@ dbgEvt( TB_saiInit, 0,0,0,0);
 	// configure GPIOs using gpio_id's from tbook_rev2b.h -- also specifies AFn for STM32F412
 	gConfigI2S( gI2S2_CK );  		// TBookV2B { gI2S2_CK,			"PB13|5"	},	// AK4637 BICK == CK == SCK 			(RTE_I2SDevice.h I2S0==SPI2 altFn=5) 
 	gConfigI2S( gI2S2_SD );  		// TBookV2B { gI2S2_SD,			"PB15|5"	},	// AK4637 SDTI == MOSI 						(RTE_I2SDevice.h I2S0==SPI2 altFn=5)
-	gConfigI2S( gI2S2ext_SD );  // TBookV2B { gI2S2ext_SD,	"PB14|6"	},	// AK4637 SDTO  									(RTE_I2SDevice.h I2S0==SPI2 altFn=6)
+//DEBUG-	disable SDTO so it can be used for debug output?
+  gConfigI2S( gI2S2ext_SD );  // TBookV2B { gI2S2ext_SD,	"PB14|6"	},	// AK4637 SDTO  									(RTE_I2SDevice.h I2S0==SPI2 altFn=6)
 	gConfigI2S( gI2S2_WS );  		// TBookV2B { gI2S2_WS,			"PB12|5"	},	// AK4637 FCK  == NSS == WS 			(RTE_I2SDevice.h I2S0==SPI2 altFn=5)
 
 	// Configure MCK Pin  (using I2S3_MCK on TBookRev2B)

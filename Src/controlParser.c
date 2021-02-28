@@ -101,7 +101,7 @@ TBPackage_t * readContent( const char * pkgPath, int pkgIdx ){		// parse list_of
 	Pkg->path = allocStr( pkgPath );
 	buildPath( pth, pkgPath, "package", ".wav" );
 	Pkg->packageName = allocStr( pth );
-	logEvtNINS( "load Package", "idx", pkgIdx, "path", pkgPath );
+	logEvtNINS( "loadPkg", "idx", pkgIdx, "path", pkgPath );
 	
 	char 		line[200], dt[30];			// up to 200 characters per line
 	fsTime tm;
@@ -257,6 +257,6 @@ void 					readControlDef( void ){				// parse control.def => Config & TBookCSM[]
 		}
 		//TODO: verify cst->evtNxtState[] are all valid 
 	}
-	dbgLog( "CSM.def has %d CGroups & %d states \n", nCGrps, nCSMstates );
+	dbgLog( "C CSM.def has %d CGroups & %d states \n", nCGrps, nCSMstates );
 }
 // controlParser.cpp 

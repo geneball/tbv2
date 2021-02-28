@@ -20,8 +20,7 @@
 	#define TBook_V2_Rev3
 
 	// define TBOOK_V2_Rev1 for Feb2020 Rev2B board 
-	#define TBook_V2_Rev1
-//#define TBOOKREV2B
+//	#define TBook_V2_Rev1
 
 	#include "tbook_rev2.h"
 #endif

@@ -102,11 +102,11 @@ void								audInitState( void ){													// set up playback State in pSt
   memset( pSt.wavHdr, 0x00, WaveHdrBytes );
 	
 	if ( nFreeBuffs != MxBuffs ) 
-		dbgLog("audInit: missing buffs %d \n", nFreeBuffs );
+		dbgLog( "! audInit: missing buffs %d \n", nFreeBuffs );
 	if ( pSt.audF != NULL ){
-		dbgLog("audInit close audF\n");
+		dbgLog( "! audInit close audF\n");
 		tbCloseFile( pSt.audF );  //int res = fclose( pSt.audF );
-		//if ( res!=fsOK ) dbgLog( "audInit fclose => %d \n", res );
+		//if ( res!=fsOK ) dbgLog( "! audInit fclose => %d \n", res );
 	}
 	pSt.audF = NULL;
 	
@@ -231,11 +231,11 @@ void								audPlayDone(){																// close, report errs, => idle
 	if ( pSt.audF!=NULL ){ // normally closed by loadBuff
 		tbCloseFile( pSt.audF );  //int res = fclose( pSt.audF );
 		FileSysPower( false );		// power down SDIO after playback
-		//if ( res!=fsOK ) dbgLog( "PlyDn fclose => %d \n", res );
+		//if ( res!=fsOK ) dbgLog( "! PlyDn fclose => %d \n", res );
 		pSt.audF = NULL;
 	}
 	if ( pSt.ErrCnt > 0 ){
-		dbgLog( "%d audio Errs, Lst=0x%x \n", pSt.ErrCnt, pSt.LastError );
+		dbgLog( "! %d audio Errs, Lst=0x%x \n", pSt.ErrCnt, pSt.LastError );
 		logEvtNINI( "PlyErr", "cnt", pSt.ErrCnt, "last", pSt.LastError );
 	}
 	pSt.state = pbIdle;
@@ -248,7 +248,7 @@ void 								audStopAudio( void ){													// abort any leftover operation
 	
 	if (st == Recording ){
 		if ( pSt.state==pbRecording ){
-			dbgLog("stopAud Rec %x\n", pSt.audF );
+			dbgLog( "! stopAud Rec %x\n", pSt.audF );
 			haltRecord();		// shut down dev, update timestamps
 			audRecordComplete();  // close file, report errors
 		}
@@ -266,7 +266,7 @@ void 								audStopAudio( void ){													// abort any leftover operation
 		freeBuffs();
 		pSt.stats->Left++;		// update stats for interrupted operation
 		int pct = audPlayPct();
-		dbgLog( "audStop %d \n", pct );
+		dbgLog( "! audStop %d \n", pct );
 		pSt.stats->LeftSumPct += pct;
 		if ( pct < pSt.stats->LeftMinPct ) pSt.stats->LeftMinPct = pct;
 		if ( pct > pSt.stats->LeftMaxPct ) pSt.stats->LeftMaxPct = pct;
@@ -403,6 +403,7 @@ void								audLoadBuffs(){																// called on mediaThread to preload a
 
 
 void 								audPlaybackComplete( void ){									// shut down after completed playback
+	dbgLog( "D PlyC: %d samp/ %d msec \n", pSt.nPlayed, pSt.msPlayed );
 	haltPlayback();
   audPlayDone();		
 
@@ -420,7 +421,6 @@ void 								audRecordComplete( void ){										// last buff recorded, finish s
 	freeBuffs( );
 	audSaveBuffs();			// write all filled SvBuff[]
 	tbCloseFile( pSt.audF );  //int err = fclose( pSt.audF );
-	//if ( err != fsOK ) dbgLog("recCom fclose => %d \n", err );
 	ledFg( NULL );
 	
 	dbgEvt( TB_audRecClose, pSt.nSaved, pSt.buffNum, minFreeBuffs, 0);

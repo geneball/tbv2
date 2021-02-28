@@ -92,7 +92,7 @@ static void 				decodeMp3( char *fpath ){			// decode fname (.mp3) & copy to .wa
 		strcat( fpath, ".mp3" );
 		mp3ToWav( fpath );
 	} else 
-	  dbgLog( "%s already decoded\n", fpath );
+	  dbgLog( "7 %s already decoded\n", fpath );
 }
 static bool					endsWith( char *nm, char *sfx ){
 	int nmlen = strlen( nm ), slen = strlen( sfx );
