@@ -197,8 +197,10 @@ FILE * 									tbOpenReadBinary( const char * nm ){						// repower if necessar
 	FileSysPower( true );
 	return fopen( nm, "rb" );
 }
-FILE *									tbOpenWrite( const char * nm ){									// repower if necessary, & open file
+FILE *									tbOpenWrite( const char * nm ){									// repower if necessary, & open file (delete if already exists)
 	FileSysPower( true );
+	if ( fexists( nm )) 
+		fdelete( nm, NULL );
 	return fopen( nm, "w" );
 }
 FILE * 									tbOpenWriteBinary( const char * nm ){						// repower if necessary, & open file
@@ -209,10 +211,23 @@ void										tbCloseFile( FILE * f ){												// close file errLog if error
 	int st = fclose( f );
 	if ( st != fsOK ) errLog("fclose => %d", st );
 }
+void										tbRenameFile( const char *src, const char *dst ){  // rename path to path 
+	// delete dst if it exists (why path is needed)
+	// fails if paths are in the same directory
+	if ( fexists( dst )){
+		fdelete( dst, NULL );
+	}
+	char *fpart = strrchr( dst, '/' )+1;  // ptr to file part of path
+	
+	uint32_t stat = frename( src, fpart );		// rename requires no path
+	if (stat != fsOK) 
+		errLog( "frename %s to %s => %d \n", src, dst, stat );
+}
+
 fsStatus fsMount( char *drv ){		// try to finit() & mount()  drv:   finit() code, fmount() code
 		fsStatus stat = finit( drv );  		// init file system driver for device
 	  if ( stat != fsOK ){
-			//dbgLog( "finit( %s ) got %d \n", drv, stat );
+			dbgLog( "3 finit( %s ) got %d \n", drv, stat );
 			return stat;
 		}
 		EventRecorderDisable( evrAOD, 	 EvtFsCore_No, EvtFsMcSPI_No );  	//FS:  only Error 
@@ -364,7 +379,7 @@ void measureSystick(){
 	const int NTS = 6;
 	int msTS[ NTS ], minTS = 1000000, maxTS=0, sumTS=0;
 	
-	dbgLog("Systick @ %d MHz \n", SystemCoreClock/1000000 );
+	dbgLog( "1 Systick @ %d MHz \n", SystemCoreClock/1000000 );
 	for (int i=0; i<NTS; i++){
 		int tsec1 = RTC->TR & 0x70, tsec2 = tsec1;   // tens of secs: 0..5
 		while ( tsec1 == tsec2 ){
@@ -378,9 +393,9 @@ void measureSystick(){
 			if ( df > maxTS ) maxTS = df;
 		}
 	}
-	dbgLog("Mn/mx: %d..%d \n", minTS, maxTS );
-	dbgLog("Avg: %d \n",  sumTS/(NTS-1) );
-	dbgLog("Ld: %d \n", SysTick->LOAD );
+	dbgLog( "1 Mn/mx: %d..%d \n", minTS, maxTS );
+	dbgLog( "1 Avg: %d \n",  sumTS/(NTS-1) );
+	dbgLog( "1 Ld: %d \n", SysTick->LOAD );
 }
 
 static uint32_t lastTmStmp = 0;
@@ -477,14 +492,53 @@ void 										usrLog( const char * fmt, ... ){
 	va_end( arg_ptr );
 	disableLCD();
 }
+
+int DebugMask =    // uncomment lines to enable dbgLog() calls starting with 'X'
+	//  0x01 +	// 1 system clock
+	//	0x02 +	// 2 audio codec debugging
+	//	0x04 +	// 3 file sys
+	//	0x08 +	// 4 threads & initialization
+	//	0x10 +	// 5 power checks
+	//	0x20 +	// 6 logging
+	//	0x40 +	// 6 mp3 decoding
+	//	0x80 +	// 8 recording
+	//	0x100 +	// 9 led
+	//	0x200 +	// A keyboard
+	//	0x400 +	// B token table
+	//	0x800 +	// C CSM
+	//	0x1000 + // D audio playback
+0;
+
 void 										dbgLog( const char * fmt, ... ){
 	va_list arg_ptr;
 	va_start( arg_ptr, fmt );
 	enableLCD();
 	setTxtColor( LCD_COLOR_BLUE );
 //	printf("d: ");
-	vprintf( fmt, arg_ptr );
-	va_end( arg_ptr );
+	bool show = true;
+	// messages can be prefixed with a digit-- then only show if that bit of DebugMask = 1
+	// no digit => always show
+	switch(fmt[0]){
+		case '1': show = (DebugMask & 0x01)!=0; break;		// system clock
+		case '2': show = (DebugMask & 0x02)!=0; break;		// audio debugging
+		case '3': show = (DebugMask & 0x04)!=0; break;		// file sys
+		case '4': show = (DebugMask & 0x08)!=0; break;		// threads & initialization
+		case '5': show = (DebugMask & 0x10)!=0; break;	// power checks
+		case '6': show = (DebugMask & 0x20)!=0; break;	// logging
+		case '7': show = (DebugMask & 0x40)!=0; break;	// mp3 decoding
+		case '8': show = (DebugMask & 0x80)!=0; break;	// recording
+		case '9': show = (DebugMask & 0x100)!=0; break;	// led
+		case 'A': show = (DebugMask & 0x200)!=0; break;	// keyboard
+		case 'B': show = (DebugMask & 0x400)!=0; break;	// token table
+		case 'C': show = (DebugMask & 0x800)!=0; break;	// CSM
+		case 'D': show = (DebugMask & 0x1000)!=0; break;	// audio playback
+		default:
+			break;
+	}
+	if (show){
+		vprintf( fmt, arg_ptr );
+		va_end( arg_ptr );
+	}
 	disableLCD();
 }
 void 										errLog( const char * fmt, ... ){
@@ -496,7 +550,7 @@ void 										errLog( const char * fmt, ... ){
 	vsprintf( msg, fmt, arg_ptr );
 	va_end( arg_ptr );
 	logEvtNS( "errLog", "msg", msg );
-	printf("%s \n", msg );
+//	printf("%s \n", msg );
 	disableLCD();
 }
 
@@ -514,12 +568,10 @@ void 										tbErr( const char * fmt, ... ){									// report fatal error
 		printf( "%s \n", s );
 		logEvtS( "***tbErr", s );
 		dbgEvtS( TB_Error, s );
-//		logPowerDown();			// try to save log
+		__breakpoint(0);		// halt if in debugger
+	
+		USBmode( true );
 	}
-	__breakpoint(0);		// halt if in debugger
-	
-	
-	ledFg( TB_Config.fgTB_Error ); 
 	while ( true ){ }
 }
 void										tbShw( const char *s, char **p1, char **p2 ){  	// assign p1, p2 to point into s for debugging
