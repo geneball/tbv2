@@ -508,33 +508,32 @@ int DebugMask =    // uncomment lines to enable dbgLog() calls starting with 'X'
 	//	0x800 +	// C CSM
 	//	0x1000 + // D audio playback
 0;
+bool										dbgEnab( char ch ){
+	switch( ch ){
+		case '1': return (DebugMask & 0x01)!=0; 		// system clock
+		case '2': return (DebugMask & 0x02)!=0; 		// audio debugging
+		case '3': return (DebugMask & 0x04)!=0; 		// file sys
+		case '4': return (DebugMask & 0x08)!=0; 		// threads & initialization
+		case '5': return (DebugMask & 0x10)!=0; 	// power checks
+		case '6': return (DebugMask & 0x20)!=0; 	// logging
+		case '7': return (DebugMask & 0x40)!=0; 	// mp3 decoding
+		case '8': return (DebugMask & 0x80)!=0; 	// recording
+		case '9': return (DebugMask & 0x100)!=0; 	// led
+		case 'A': return (DebugMask & 0x200)!=0; 	// keyboard
+		case 'B': return (DebugMask & 0x400)!=0; 	// token table
+		case 'C': return (DebugMask & 0x800)!=0; 	// CSM
+		case 'D': return (DebugMask & 0x1000)!=0; 	// audio playback
+		default:
+			return true; 	// no digit => always show
+	}
+}
 
 void 										dbgLog( const char * fmt, ... ){
 	va_list arg_ptr;
 	va_start( arg_ptr, fmt );
 	enableLCD();
 	setTxtColor( LCD_COLOR_BLUE );
-//	printf("d: ");
-	bool show = true;
-	// messages can be prefixed with a digit-- then only show if that bit of DebugMask = 1
-	// no digit => always show
-	switch(fmt[0]){
-		case '1': show = (DebugMask & 0x01)!=0; break;		// system clock
-		case '2': show = (DebugMask & 0x02)!=0; break;		// audio debugging
-		case '3': show = (DebugMask & 0x04)!=0; break;		// file sys
-		case '4': show = (DebugMask & 0x08)!=0; break;		// threads & initialization
-		case '5': show = (DebugMask & 0x10)!=0; break;	// power checks
-		case '6': show = (DebugMask & 0x20)!=0; break;	// logging
-		case '7': show = (DebugMask & 0x40)!=0; break;	// mp3 decoding
-		case '8': show = (DebugMask & 0x80)!=0; break;	// recording
-		case '9': show = (DebugMask & 0x100)!=0; break;	// led
-		case 'A': show = (DebugMask & 0x200)!=0; break;	// keyboard
-		case 'B': show = (DebugMask & 0x400)!=0; break;	// token table
-		case 'C': show = (DebugMask & 0x800)!=0; break;	// CSM
-		case 'D': show = (DebugMask & 0x1000)!=0; break;	// audio playback
-		default:
-			break;
-	}
+	bool show = dbgEnab( fmt[0] );	// messages can be prefixed with a digit-- then only show if that bit of DebugMask = 1
 	if (show){
 		vprintf( fmt, arg_ptr );
 		va_end( arg_ptr );

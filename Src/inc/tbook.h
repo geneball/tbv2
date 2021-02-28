@@ -90,6 +90,7 @@ extern void 			dbgEvtD( int id, const void *d, int len );
 extern void 			dbgEvtS( int id, const char *d );
 
 extern void 			usrLog( const char * fmt, ... );
+extern bool				dbgEnab( char ch );		// check if debugging for 'ch' is enabled
 extern void 			dbgLog( const char * fmt, ... );
 extern void 			errLog( const char * fmt, ... );
 extern void 			tbErr( const char * fmt, ... );							// report fatal error

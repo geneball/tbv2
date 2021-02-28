@@ -1973,6 +1973,8 @@ void		 				cdc_SetMute( bool muted ){																	// true => enable mute on 
 	i2c_Upd();
 }
 void 						debugTimingRegs(){																					// configure ClkOut & report Reg values
+	if ( !dbgEnab( '2' )) return;
+	
 	uint8_t regList[] = { 
 		P0_R4_ClockGen_Muxing, 	
 		P0_R5_PLL_P_R_VAL, 		
