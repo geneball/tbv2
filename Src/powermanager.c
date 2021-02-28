@@ -14,7 +14,7 @@ extern bool						firstBoot;						// true if 1st run after data loaded
 #define 									PM_NOPWR  1											// id for osEvent signaling NOPWR interrupt
 #define 									PM_PWRCHK 2											// id for osTimerEvent signaling periodic power check
 #define 									PM_ADCDONE  4										// id for osEvent signaling period power check interrupt
-#define 									PWR_TIME_OUT 300000							// 5min periodic power check
+#define 									PWR_TIME_OUT 15000							// do initial power check after 15sec
 
 enum PwrStat { TEMPFAULT=0, xxx=1, CHARGING=2, LOWBATT=3, CHARGED=4, xxy=5, NOLITH=6, NOUSBPWR=7 };
 
@@ -58,6 +58,8 @@ extern void 							ADC_IRQHandler( void );					// override default (weak) ADC_Ha
 static void 							powerThreadProc( void *arg );		// forward
 static void 							initPwrSignals( void );					// forward
 
+static int								currPwrTimerMS;
+
 void checkPowerTimer(void *arg);                          // forward for timer callback function
 
 void											initPowerMgr( void ){						// initialize PowerMgr & start thread
@@ -82,11 +84,9 @@ void											initPowerMgr( void ){						// initialize PowerMgr & start thread
 	if ( Dbg.thread[1] == NULL ) 
 		tbErr( "powerThreadProc not created" );
 		
-	int timerMS = TB_Config.powerCheckMS;
-	if ( timerMS==0 ) 
-		timerMS = PWR_TIME_OUT;
-	osTimerStart( pwrCheckTimer, timerMS );
-	dbgLog( "PowerMgr OK \n" );
+	currPwrTimerMS = PWR_TIME_OUT;
+	osTimerStart( pwrCheckTimer, currPwrTimerMS );
+	dbgLog( "4 PowerMgr OK \n" );
 }
 void											setPowerCheckTimer( int timerMs ){
 	osTimerStop( pwrCheckTimer );
@@ -155,15 +155,15 @@ void 											initPwrSignals( void ){					// configure power GPIO pins, & EXTI
 	gConfigOut( gEN_5V );				// 1 to supply 5V to codec-- enable AP6714 regulator  -- powers AIC3100 SPKVDD
 	gConfigOut( gEN1V8 );				// 1 to supply 1.8 to codec-- enable TLV74118 regulator	-- powers AIC3100 DVDD
   gConfigOut( gBOOT1_PDN );		// 0 to reset codec -- RESET_N on AIC3100 (boot1_pdn on AK4637)
-	gSet( gEN_5V, 0 );					// initially codec SPKVDD unpowered
-	gSet( gEN1V8, 0 );					// initially codec DVDD unpowered
-	gSet( gBOOT1_PDN, 0 );			// initially codec in reset state
+	gSet( gEN_5V, 0 );					// initially codec SPKVDD unpowered PD4
+	gSet( gEN1V8, 0 );					// initially codec DVDD unpowered PD5
+	gSet( gBOOT1_PDN, 0 );			// initially codec in reset state  PB2
 	
 #if defined(TBook_V2_Rev3)
 	gConfigOut( gEN_IOVDD_N );	// 0 to supply 3V to AIC3100 IOVDD	
 	gConfigOut( gEN_AVDD_N );		// 0 to supply 3V to AIC3100 AVDD & HPVDD
-	gSet( gEN_IOVDD_N, 1 );			// initially codec IOVDD unpowered
-	gSet( gEN_AVDD_N, 1 );			// initially codec AVDD & HPVDD unpowered
+	gSet( gEN_IOVDD_N, 1 );			// initially codec IOVDD unpowered  PE4
+	gSet( gEN_AVDD_N, 1 );			// initially codec AVDD & HPVDD unpowered PE5
 #endif
 	
 #if defined(TBook_V2_Rev1)
@@ -315,6 +315,10 @@ void											setupRTC( fsTime time ){				// init RTC & set based on fsTime
 }
 void											checkPowerTimer( void *arg ){		// timer to signal periodic power status check
 	osEventFlagsSet( pwrEvents, PM_PWRCHK );						// wakeup powerThread for power status check
+	if ( currPwrTimerMS != TB_Config.powerCheckMS ){		// update delay (after initial check)
+		currPwrTimerMS = TB_Config.powerCheckMS;
+		setPowerCheckTimer( currPwrTimerMS );
+	}
 }
 char 											RngChar( int lo, int hi, int val ){   // => '-', '0', ... '9', '!' 
 	if (val < lo) return '-';
@@ -339,34 +343,23 @@ void											startPowerCheck( enum PwrStat pstat ){
 bool											powerChanged(){
 	bool changed = pS.chkCnt==1;
 	if ( pS.prvStat != pS.Stat ){ 
-		dbgLog("pwrStat %d => %d \n", pS.prvStat, pS.Stat );
+		dbgLog( "5 pwrStat %d => %d \n", pS.prvStat, pS.Stat );
 		changed = true;
 	}
 	if ( (pS.LiMV > 2000) 			!= pS.hadLi ){
-		dbgLog("LiIon %d \n", pS.LiMV );
+		dbgLog( "5 LiIon %d \n", pS.LiMV );
 		changed = true;
 	}
 	if ( (pS.VBatMV > 2000)			!= pS.hadVBat ){
-		dbgLog("VBat %d \n", pS.VBatMV );
+		dbgLog( "5 VBat %d \n", pS.VBatMV );
 		changed = true;
 	}
 	if ( (pS.PrimaryMV > 2000)	!= pS.hadPrimary ){
-		dbgLog("Primary %d \n", pS.PrimaryMV );
+		dbgLog( "5 Primary %d \n", pS.PrimaryMV );
 		changed = true;
 	}
 	return changed;
 }
-/*void 											checkPowerChange( char *nm, int newVal, bool *pSvVal ){
-	if ( !firstCheck ){
-		if ( newVal == *pSvVal ) return;  // no change
-		pwrChanged = true;
-		if ( newVal )
-			dbgLog( " Gained %s\n", nm);
-		else
-			dbgLog( " Lost %s\n", nm);
-	}	
-	*pSvVal = newVal; 
-} */
 
 const int LiLOW = 3400;     // mV at  ~5% capacity
 const int LiMED = 3600;			// mV at ~40%
@@ -444,8 +437,8 @@ void 											checkPower( ){				// check and report power status
 		sprintf(pwrStat, "%c L%c%c%c P%c B%c T%c", sUsb, sLi,sCh,sLt, sPr, sBk, sMt); 
 		logEvtNS( "PwrCheck","Stat",	pwrStat ); 
 
-		dbgLog( "srTB: %d %4d %3d %4d\n", pstat, pS.VRefMV, pS.MpuTempMV, pS.VBatMV );
-		dbgLog( "LtLP: %3d %4d %4d\n", pS.LiThermMV, pS.LiMV, pS.PrimaryMV );
+		dbgLog( "5 srTB: %d %4d %3d %4d\n", pstat, pS.VRefMV, pS.MpuTempMV, pS.VBatMV );
+		dbgLog( "5 LtLP: %3d %4d %4d\n", pS.LiThermMV, pS.LiMV, pS.PrimaryMV );
 		if ( pS.MpuTempMV > HiMpuTemp ){
 			logEvtNI("MpuTemp", "mV", pS.MpuTempMV );
 			sendEvent( MpuHot, pS.MpuTempMV );
@@ -453,11 +446,11 @@ void 											checkPower( ){				// check and report power status
 	  if ( pS.haveUSB ){		// charger status is only meaningful if we haveUSB power
 			switch ( pstat ){
 				case CHARGED:						// CHARGING complete
-					logEvtNI("BattCharged", "mV", pS.LiMV ); 
+					logEvtNI("Charged", "mV", pS.LiMV ); 
 					sendEvent( BattCharged, pS.LiMV ); 			
 					break; 
 				case CHARGING: 					// started charging
-					logEvtNI("BattCharging", "mV", pS.LiMV ); 
+					logEvtNI("Charging", "mV", pS.LiMV ); 
 					sendEvent( BattCharging, pS.LiMV );	
 					if ( pS.LiThermMV > HiLiTemp ){		// lithium thermistor is only active while charging
 						logEvtNI("LiTemp", "mV", pS.LiThermMV );
@@ -465,7 +458,7 @@ void 											checkPower( ){				// check and report power status
 					}
 					break;
 				case TEMPFAULT:					// LiIon charging fault (temp?)
-					logEvtNI("ChargeFault", "LiTherm mV", pS.LiThermMV ); 
+					logEvtNI("ChrgeFlt", "LiTherm mV", pS.LiThermMV ); 
 					sendEvent( ChargeFault,  pS.LiMV );	
 					break;
 				case LOWBATT:						// LiIon is low  (no USB)
@@ -574,7 +567,7 @@ void 											EXTI4_IRQHandler(void){  				// NOPWR ISR
 void 											wakeup(){												// resume operation after sleep power-down
 }
 static void 							powerThreadProc( void *arg ){		// powerThread -- catches PM_NOPWR from EXTI: NOPWR interrupt
-	dbgLog( "pwrThr: 0x%x 0x%x \n", &arg, &arg + POWER_STACK_SIZE );
+	dbgLog( "4 pwrThr: 0x%x 0x%x \n", &arg, &arg + POWER_STACK_SIZE );
 	while( true ){
 		int flg = osEventFlagsWait( pwrEvents, PM_NOPWR | PM_PWRCHK, osFlagsWaitAny, osWaitForever );	
 		
