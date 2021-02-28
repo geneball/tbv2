@@ -62,7 +62,7 @@ static enum mad_flow 				input( void *st, struct mad_stream *stream ){										
 //  }	
 	
   int len = fread( rdaddr, 1, rdlen, dcdr_st->fmp3 );     // fill rest of buffer
-	dbgLog("mp3 in: nf=%x addr=%x rdlen=%d len=%d\n", stream->next_frame, rdaddr, rdlen, len );
+	dbgLog( "7 mp3 in: nf=%x addr=%x rdlen=%d len=%d\n", stream->next_frame, rdaddr, rdlen, len );
   if ( len==0 ){  // end of file encountered
 		memset( dcdr_st->in_buff, 0, BUFF_SIZ );	// set buff to 0
 		tbCloseFile( dcdr_st->fmp3 );		// fclose( dcdr_st->fmp3 );
@@ -197,7 +197,7 @@ void 												mp3ToWav( const char *nm ){		// decode nm.mp3 to nm.wav
   dcdr_st->fwav = tbOpenWriteBinary( fnm ); //fopen( fnm, "wb");
 
   if ( dcdr_st->fmp3==NULL || dcdr_st->fwav==NULL ){ 
-		dbgLog("Mp3 fopen %s: %d %d \n", fnm, dcdr_st->fmp3, dcdr_st->fwav );
+		dbgLog( "7 Mp3 fopen %s: %d %d \n", fnm, dcdr_st->fmp3, dcdr_st->fwav );
 		return;
 	}
 	

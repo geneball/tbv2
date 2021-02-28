@@ -59,11 +59,11 @@ void 					enableInputs( bool fromThread ){							// check for any unprocessed In
 		bool kdn = gGet( keydef[k].id );	// gets LOGICAL value of port/pin
 		if ( kdn != keydef[k].down ){			// should == current state
 			char *sig = keydef[k].signal; 
-			dbgLog( "%s K%d %s dn%d \n", fromThread?"*":"I", k, sig, keydef[k].down );
+			dbgLog( "! %s K%d %s dn%d \n", fromThread?"*":"I", k, sig, keydef[k].down );
 			int pendR = EXTI->PR, iw = keydef[k].intq >> 5UL, irq = NVIC->ICPR[iw];
 			dbgEvt(TBkeyMismatch, k, (fromThread<<8) + kdn, pendR, irq );
 			if (irq != 0 || pendR!= 0) 
-				dbgLog( "pR%04x ICPR[%d]%04x \n", pendR, iw, irq );
+				dbgLog( "! pR%04x ICPR[%d]%04x \n", pendR, iw, irq );
 			handleInterrupt( true );		// re-invoke, to process missed transition
 			return;
 		}
@@ -136,8 +136,8 @@ void 					handleInterrupt( bool fromThread ){					// called for external interru
 	enableInputs( fromThread );			// no detectedUpKey -- re-enable interrupts
 }
 // STM3210E_EVAL  EXTI ints 0 Wk, 				3 JDn, 				5-9 JCe/Key, 					10-15 Tam&JRi/JLe/JUp
-// TBOOK_V2_Rev1	EXTI ints 0 Hom, 1 Pot, 3 Tab, 4 Plu, 5-9 Min/LHa/Sta/Cir, 	10-15 RHa/Tre
-//****** TBOOK_V2_Rev3	EXTI ints 0 Hom, 1 Pot, 3 Tab, 4 Plu, 5-9 Min/LHa/Sta/Cir, 	10-15 RHa/Tre
+// TBook_V2_Rev1	EXTI ints 0 Hom, 1 Pot, 3 Tab, 4 Plu, 5-9 Min/LHa/Sta/Cir, 	10-15 RHa/Tre
+//****** TBook_V2_Rev3	EXTI ints 0 Hom, 1 Pot, 3 Tab, 4 Plu, 5-9 Min/LHa/Sta/Cir, 	10-15 RHa/Tre
 // BOTH:  EXTI0 EXTI3 EXTI9_5 EXTI15_10
 void 					EXTI0_IRQHandler(void){  		// call handleInterrupt( )
   handleInterrupt( false );
@@ -183,7 +183,7 @@ void					configInputKey( KEY k ){		// set up GPIO & external interrupt
 		int pin = keydef[k].pin;
 		int iWd = pin >> 2, iPos = (pin & 0x3), fbit = iPos<<2;
 		int msk = (0xF << fbit), val = (portCode << fbit);
-		//dbgLog( "K%d %s ICR[%d] m%04x v%04x \n", k, keydef[ k ].signal, iWd, msk, val );
+		dbgLog( "A K%d %s ICR[%d] m%04x v%04x \n", k, keydef[ k ].signal, iWd, msk, val );
 #if defined( STM3210E_EVAL )		
 		AFIO->EXTICR[ iWd ] = ( AFIO->EXTICR[ iWd ] & ~msk ) | val;		// replace bits <fbit..fbit+3> with portCode
 #endif
@@ -271,7 +271,7 @@ void 					keypadTestKey( KEY evt, int dntime ) {		// verify function of keypad
 // 
 // inputManager-- manager thread
 void 					inputThread( void *arg ){			// converts signals from keypad ISR's to events on controlManager queue
-	dbgLog( "inThr: 0x%x 0x%x \n", &arg, &arg + INPUT_STACK_SIZE );
+	dbgLog( "4 inThr: 0x%x 0x%x \n", &arg, &arg + INPUT_STACK_SIZE );
 	Event eTyp;
 	while (true){
 		uint32_t wkup = osEventFlagsWait( osFlag_InpThr, KEYPAD_EVT, osFlagsWaitAny, osWaitForever );
@@ -304,7 +304,7 @@ void 					inputThread( void *arg ){			// converts signals from keypad ISR's to e
 					if ( KTest.Active ){
 						keypadTestKey( KSt.detectedUpKey, dntime );
 					} else {
-						dbgLog(" key: %s\n", eventNm( eTyp ));
+						dbgLog( "A key: %s\n", eventNm( eTyp ));
 						sendEvent( eTyp, dntime );			// add event to queue
 					}
 				}
@@ -344,7 +344,7 @@ void 					initInputManager( void ){ 			// initializes keypad & starts thread
 
 	//PowerManager::getInstance()->registerPowerEventHandler( handlePowerEvent );
 	//registerPowerEventHandler( handlePowerEvent );	
-	dbgLog( "InputMgr OK \n" );
+	dbgLog( "4 InputMgr OK \n" );
 }
 void 					sendEvent( Event key, int32_t arg ){	// log & send TB_Event to CSM
 	if ( key==eNull || key==anyKey || key==eUNDEF || (int)key<0 || (int)key>(int)eUNDEF )
