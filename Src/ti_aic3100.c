@@ -2077,7 +2077,7 @@ void						cdc_SetMasterFreq( int freq ){															// set AK4637 to MasterMo
 		aicSetReg( 		P0_R11_DAC_NDAC_VAL, 		0x80 + NDAC );	// P0_R11: NDAC_VAL  ( NDAC_PWR + NDAC divider value ) 
 		aicSetReg( 		P0_R12_DAC_MDAC_VAL, 		0x80 + MDAC );	// P0_R12: MDAC_VAL  ( MDAC_PWR + MDAC divider value ) 
 		aicSet16Bits( P0_R13_DAC_DOSR_VAL_16B, 64 );  				// P0_R13/14: DOSR_VAL = 0x0040   ( for DOSR = 64 )
-		aicSetReg( 		P0_R29_Codec_Interface_Control2, 0x05 );// P0_R29: BDIV_CLKIN = DAC_MOD_CLK, BCLK&WCLK always active
+		aicSetReg( 		P0_R29_Codec_Interface_Control2, 0x01 );// P0_R29: BDIV_CLKIN = DAC_MOD_CLK, BCLK&WCLK not always active
 		aicSetReg( 		P0_R33_Codec_Interface_Control3, 0x00 ); // P0_R33: pri BCLK: 0 (internal), pri WCLK: 00 (Dac_fs) pri DOUT: 0 codec
 		aicSetReg( 		P0_R30_BCLK_N_VAL, 			0x80 + 2 );  		// P0_R30: BCLK N_VAL = 2  ( with DOSR = 64, BCLK = DAC_FS * 32 )
 		dbgLog( "2 AIC: BCLK = CLK / %d / %d / %d = 32* %d \n", NDAC, MDAC, 2, freq );
