@@ -341,6 +341,7 @@ void 								audPauseResumeAudio( void ){									// signal playback to request 
 				// subsequent call to audPauseResumeAudio() will start playing at pSt.msPlayed msec
 			pct = audPlayPct();
 			dbgEvt( TB_audPause, pct, pSt.msPlayed, pSt.nPlayed, 0);
+		  dbgLog( "2 pausePlay at %d ms \n", pSt.msPlayed );
 			logEvtNININI( "plPause", "ms", pSt.msPlayed, "pct", pct, "nS", pSt.nPlayed  );
 			pSt.stats->Pause++;
 			break;
@@ -348,6 +349,7 @@ void 								audPauseResumeAudio( void ){									// signal playback to request 
 		case pbPaused:
 			// resuming == restarting at msPlayed
 			dbgEvt( TB_audResume, pSt.msPlayed, 0,0,0);
+		  dbgLog( "2 resumePlay at %d ms \n", pSt.msPlayed );
 			logEvt( "plResume" );
 			pSt.stats->Resume++;
 			if ( pSt.audType==audWave ) 
@@ -360,6 +362,7 @@ void 								audPauseResumeAudio( void ){									// signal playback to request 
 			audSaveBuffs();			// write all filled SvBuff[], file left open
 		
 			dbgEvt( TB_recPause, 0,0,0,0);
+		  dbgLog( "2 pauseRec at %d ms \n", pSt.msRecorded );
 			ledFg( TB_Config.fgRecordPaused );	// blink red: while paused  
 				// subsequent call to audPauseResumeAudio() will append new recording 
 			logEvtNINI( "recPause", "ms", pSt.msRecorded, "nS", pSt.nSaved );
@@ -370,6 +373,7 @@ void 								audPauseResumeAudio( void ){									// signal playback to request 
 			// resuming == continue recording
 			dbgEvt( TB_recResume, pSt.msRecorded, 0,0,0);
 			logEvt( "recResume" );
+		  dbgLog( "2 resumeRec at %d ms \n", pSt.msRecorded );
 			pSt.stats->RecResume++;
 			Driver_SAI0.PowerControl( ARM_POWER_FULL );		// power audio back up
 			ctrl = ARM_SAI_CONFIGURE_RX | ARM_SAI_MODE_SLAVE  | ARM_SAI_ASYNCHRONOUS | ARM_SAI_PROTOCOL_I2S | ARM_SAI_DATA_SIZE(16);

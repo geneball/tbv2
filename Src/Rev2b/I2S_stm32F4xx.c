@@ -495,7 +495,6 @@ dbgEvt( TB_saiInit, 0,0,0,0);
 	// configure GPIOs using gpio_id's from tbook_rev2b.h -- also specifies AFn for STM32F412
 	gConfigI2S( gI2S2_CK );  		// TBookV2B { gI2S2_CK,			"PB13|5"	},	// AK4637 BICK == CK == SCK 			(RTE_I2SDevice.h I2S0==SPI2 altFn=5) 
 	gConfigI2S( gI2S2_SD );  		// TBookV2B { gI2S2_SD,			"PB15|5"	},	// AK4637 SDTI == MOSI 						(RTE_I2SDevice.h I2S0==SPI2 altFn=5)
-//DEBUG-	disable SDTO so it can be used for debug output?
   gConfigI2S( gI2S2ext_SD );  // TBookV2B { gI2S2ext_SD,	"PB14|6"	},	// AK4637 SDTO  									(RTE_I2SDevice.h I2S0==SPI2 altFn=6)
 	gConfigI2S( gI2S2_WS );  		// TBookV2B { gI2S2_WS,			"PB12|5"	},	// AK4637 FCK  == NSS == WS 			(RTE_I2SDevice.h I2S0==SPI2 altFn=5)
 

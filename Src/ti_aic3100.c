@@ -1523,7 +1523,7 @@ void						aicSetReg( int idx, uint8_t val ){
 	
 	#ifdef VERIFY_WRITTENDATA
 		int chkVal = i2c_rdReg( reg );
-		if ( chkVal != val && idx!=P0_R1_Software_Reset_Register )
+		if ( chkVal != val && (idx!=P0_R1_Software_Reset_Register) && (idx!=P1_R42_SPK_Driver) )
 			dbgLog( "Read after write mismatch %d:%02d wr 0x%02x rd 0x%02x \n", pg, reg, val, chkVal );
 	#endif /* VERIFY_WRITTENDATA */
 }
@@ -1877,7 +1877,7 @@ void 						cdc_Init( ){ 																								// Init codec & I2C (i2s_stm32f4
 
 
 void 						cdc_PowerDown( void ){																				// power down entire codec (i2s_stm..)
-dbgEvt( TB_cdcPwrDn, 0,0,0,0);
+	dbgEvt( TB_cdcPwrDn, 0,0,0,0);
 	#if defined( AIC3100 )	//TODO power down DAC channel, wait till P0_R37_Power_Status_d7_d3 == 0, then power down MDAC, then NDAC 
 	  const int MAX_DAC_PWR_WAIT = 10000;
 	//AIC3100: follow pg 65 rules

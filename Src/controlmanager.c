@@ -503,7 +503,7 @@ static void 					eventTest(  ){										// report Events until DFU (pot table)
 
 void 									initControlManager( void ){				// initialize control manager 	
 	// init to odd values so changes are visible
-	TB_Config.default_volume = 8; 
+	TB_Config.default_volume = 5; 		// lower for TB_V2_R3
 	TB_Config.default_speed = 3;
 	TB_Config.powerCheckMS = 10000;				// set by setPowerCheckTimer()
 	TB_Config.shortIdleMS = 3000;
