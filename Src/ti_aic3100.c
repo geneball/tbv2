@@ -1584,8 +1584,19 @@ static int 											LastVolume 	= 0;			// retain last setting, so audio restar
 
 void						cdc_RecordEnable( bool enable ){
 #if defined( AIC3100 )
+	if ( enable ){ 	
+			// power-on ADC -- left channel only
+		//	aicSetReg( P1_R35_LDAC_and_RDAC_Output_Routing, 0x40 );	// P1_R35: DacLtoMix: 01 Mic&Rnowhere: 00 0000
+		//	aicSetReg( P1_R32_ClassD_Drivers, 							0x80 );	// P1_R32: SpkrAmpPwrOn: 1
+		//	aicSetReg( P1_R38_Left_Analog_Vol_to_SPL, 			0x80 );	// R1_38: LchanOutToSpkr: 1  SPKgain: 000 0000 (0dB)
+		//	aicSetReg( P0_R63_DAC_Datapath_SETUP, 					0x90 );	// P0_R63: PwrLDAC: 1  PwrRDAC: 0  LDACleft: 01  RDACoff: 00  DACvol1step: 00
+			dbgLog( "2 AIC ADC on,  Mic on \n");
+	}	else {
+			dbgLog( "2 AIC ADC off \n");
+	}
 	//TODO  AIC3100
 #endif
+	
 #if defined( AK4637 )
 	if ( enable ){
 		// from AK4637 datasheet:
