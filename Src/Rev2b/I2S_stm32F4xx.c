@@ -536,7 +536,7 @@ dbgEvt( TB_saiPower, state, 0,0,0);
       NVIC_DisableIRQ( DMA1_Stream3_IRQn );     		// Disable SPI2_RX DMA IRQ
       NVIC_ClearPendingIRQ( DMA1_Stream3_IRQn );  	// Clear pending PI2_RX DMA interrupts
 
-			cdc_PowerDown();					// power down AK4637 & I2C1 device
+			cdc_PowerDown();					// power down codec & I2C1 device
  //     RCC->APB1ENR &= ~RCC_APB1ENR_I2C1EN; 	// disable I2C1 device
 
       RCC->APB1ENR &= ~RCC_APB1ENR_SPI2EN; 	// disable SPI2 device (i2s2 & i2s2_ext) 

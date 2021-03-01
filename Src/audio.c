@@ -513,6 +513,7 @@ static void 				startPlayback( void ){												// preload buffers & start pla
 static void					haltPlayback(){																// shutdown device, free buffs & update timestamps
 	int msec;
 	cdc_SetMute( true );	// (redundant) mute
+	cdc_SpeakerEnable( false );	// turn off speaker
 	Driver_SAI0.Control( ARM_SAI_ABORT_SEND, 0, 0 );	// shut down I2S device
 	freeBuffs();
   

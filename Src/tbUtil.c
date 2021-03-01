@@ -495,7 +495,7 @@ void 										usrLog( const char * fmt, ... ){
 
 int DebugMask =    // uncomment lines to enable dbgLog() calls starting with 'X'
 	//  0x01 +	// 1 system clock
-	//	0x02 +	// 2 audio codec debugging
+		0x02 +	// 2 audio codec debugging
 	//	0x04 +	// 3 file sys
 	//	0x08 +	// 4 threads & initialization
 	//	0x10 +	// 5 power checks

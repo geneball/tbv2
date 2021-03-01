@@ -1681,14 +1681,13 @@ void 						cdc_SpeakerEnable( bool enable ){														// enable/disable spea
 
 	if ( enable ){ 	
 		#if defined( AIC3100 )
+		  cdc_SetMute( true );		// no noise during transition
 			// power-on DAC -- left channel only
 			aicSetReg( P1_R35_LDAC_and_RDAC_Output_Routing, 0x40 );	// P1_R35: DacLtoMix: 01 Mic&Rnowhere: 00 0000
 			aicSetReg( P1_R32_ClassD_Drivers, 							0x80 );	// P1_R32: SpkrAmpPwrOn: 1
-			aicSetReg( P1_R42_SPK_Driver, 									0x00 );	// P1_R42: SpkrAmpGain: 00  SpkrMuteOff: 0
 			aicSetReg( P1_R38_Left_Analog_Vol_to_SPL, 			0x80 );	// R1_38: LchanOutToSpkr: 1  SPKgain: 000 0000 (0dB)
-		// power-on DAC, starts I2S transfer clocks
 			aicSetReg( P0_R63_DAC_Datapath_SETUP, 					0x90 );	// P0_R63: PwrLDAC: 1  PwrRDAC: 0  LDACleft: 01  RDACoff: 00  DACvol1step: 00
-			dbgLog( "2 AIC DAC -> Spkr unmuted\n");
+			dbgLog( "2 AIC DAC -> Spkr, Spkr on \n");
 		#endif
 		#if defined( AK4343 )
 			// power up speaker amp & codec by setting power bits with mute enabled, then disabling mute
@@ -1722,7 +1721,9 @@ void 						cdc_SpeakerEnable( bool enable ){														// enable/disable spea
 	} else {			
 		//  power down by enabling mute, then shutting off power
 		#if defined( AIC3100 )				//TODO AIC3100
-			dbgLog( "2 AIC disable Spkr\n");
+		  cdc_SetMute( true );		// no noise during transition
+			aicSetReg( P1_R32_ClassD_Drivers, 							0x00 );	// P1_R32: SpkrAmpPwrOn: 0
+			dbgLog( "2 AIC Spkr off \n");
 		#endif
 		#if defined( AK4343 )
 			Codec_SetRegBits( AK_Signal_Select_1, AK_SS1_SPPSN, 0 );						// set power-save (mute) ON (==0)
@@ -1959,11 +1960,11 @@ void		 				cdc_SetMute( bool muted ){																	// true => enable mute on 
 	cdcMuted = muted;
 	
 	#if defined( AIC3100 )
-		if ( muted ){
+		if ( muted ){		// enable mute -- both channels
 			aicSetReg( P1_R42_SPK_Driver, 0x00	 ); 			// P1_R42: SpkrAmpGain: 00  SpkrMuteOff: 0
 			aicSetReg( P0_R64_DAC_VOLUME_CONTROL, 0x0C );	// P0_R64: LMuteOn: 1  RMuteOn: 1 LRsep: 00
 			dbgLog( "2 AIC mute: SpkrAmp, L&R mutes on \n" );
-		} else {
+		} else {	// disable left channel mute
 			aicSetReg( P0_R64_DAC_VOLUME_CONTROL, 0x04 );	// P0_R64: LMuteOn: 0  RMuteOn: 1 LRsep: 00
 			aicSetReg( P1_R42_SPK_Driver, 0x04	 ); 			// P1_R42: SpkrAmpGain: 00  SpkrMuteOff: 1
 			dbgLog( "2 AIC unmute: SpkrAmp & L mutes off, SpkrAmp=6dB \n" );
