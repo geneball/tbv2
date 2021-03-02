@@ -1962,7 +1962,7 @@
   #error "Invalid SD_DAT1 Pin Configuration!"
 #endif
 //       <o> SDIO_D2 Pin <0=>PC10 <1=>PA9
-#define   RTE_SDIO_D2_PORT_ID           1
+#define   RTE_SDIO_D2_PORT_ID           0
 #if      (RTE_SDIO_D2_PORT_ID == 0)
   #define RTE_SDIO_D2_PORT              GPIOC
   #define RTE_SDIO_D2_PIN               GPIO_PIN_10

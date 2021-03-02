@@ -92,7 +92,7 @@ void 										GPIO_DefineSignals( GPIO_Signal def[] ){
 
 
 void										gUnconfig( GPIO_ID id ){			// reset GPIO to default
-#if defined( TBOOKREV2B )	
+#if defined( TBOOK_V2 )	
 	GPIO_PinConfigure( gpio_def[ id ].port, gpio_def[ id ].pin, GPIO_MODE_INPUT, GPIO_OTYP_PUSHPULL, GPIO_SPD_LOW, GPIO_PUPD_NONE );
 	GPIO_AFConfigure ( gpio_def[ id ].port, gpio_def[ id ].pin, AF0 );   // reset to AF0
 //#undefine STM3210E_EVAL
@@ -102,7 +102,7 @@ void										gUnconfig( GPIO_ID id ){			// reset GPIO to default
 #endif
 }
 void										gConfigI2S( GPIO_ID id ){		// config gpio as high speed pushpull in/out
-#if defined( TBOOKREV2B )	
+#if defined( TBOOK_V2 )	
 	GPIO_PinConfigure( gpio_def[ id ].port, gpio_def[ id ].pin, GPIO_MODE_AF, GPIO_OTYP_PUSHPULL, GPIO_SPD_FAST, GPIO_PUPD_NONE );
 	GPIO_AFConfigure ( gpio_def[ id ].port, gpio_def[ id ].pin, gpio_def[ id ].altFn );   // set AF
 #endif
@@ -111,7 +111,7 @@ void										gConfigI2S( GPIO_ID id ){		// config gpio as high speed pushpull i
 #endif
 }
 void										gConfigOut( GPIO_ID id ){		// config gpio as low speed pushpull output -- power control, etc
-#if defined( TBOOKREV2B )	
+#if defined( TBOOK_V2 )	
 	AFIO_REMAP af = gpio_def[ id ].altFn;
 	GPIO_MODE md = af!=0? GPIO_MODE_AF : GPIO_MODE_OUT;
 	GPIO_PinConfigure( gpio_def[ id ].port, gpio_def[ id ].pin, md, GPIO_OTYP_PUSHPULL, GPIO_SPD_LOW, GPIO_PUPD_NONE );
@@ -122,7 +122,7 @@ void										gConfigOut( GPIO_ID id ){		// config gpio as low speed pushpull ou
 #endif
 }
 void										gConfigIn( GPIO_ID key, bool pulldown ){		// configure GPIO as low speed input, either pulldown or pullup
-#if defined( TBOOKREV2B )	
+#if defined( TBOOK_V2 )	
 	GPIO_PinConfigure( gpio_def[ key ].port, gpio_def[ key ].pin, GPIO_MODE_INPUT, GPIO_OTYP_PUSHPULL, GPIO_SPD_LOW, pulldown? GPIO_PUPD_PDN : GPIO_PUPD_PUP );
 	GPIO_AFConfigure ( gpio_def[ key ].port, gpio_def[ key ].pin, AF0 );   //  AF 0
 #endif
@@ -134,7 +134,7 @@ void										gConfigKey( GPIO_ID key ){		// configure GPIO as low speed pulldow
 	gConfigIn( key, true );	  // pulldown
 }
 void										gConfigADC( GPIO_ID id ){		// configure GPIO as ANALOG input ( battery voltage levels )
-#if defined( TBOOKREV2B )	
+#if defined( TBOOK_V2 )	
 	GPIO_PinConfigure( gpio_def[ id ].port, gpio_def[ id ].pin, GPIO_MODE_ANALOG, GPIO_OTYP_PUSHPULL, GPIO_SPD_LOW, GPIO_PUPD_NONE );
 	GPIO_AFConfigure ( gpio_def[ id ].port, gpio_def[ id ].pin, gpio_def[ id ].altFn );   //  set AF
 #endif
@@ -197,8 +197,10 @@ FILE * 									tbOpenReadBinary( const char * nm ){						// repower if necessar
 	FileSysPower( true );
 	return fopen( nm, "rb" );
 }
-FILE *									tbOpenWrite( const char * nm ){									// repower if necessary, & open file
+FILE *									tbOpenWrite( const char * nm ){									// repower if necessary, & open file (delete if already exists)
 	FileSysPower( true );
+	if ( fexists( nm )) 
+		fdelete( nm, NULL );
 	return fopen( nm, "w" );
 }
 FILE * 									tbOpenWriteBinary( const char * nm ){						// repower if necessary, & open file
@@ -208,6 +210,39 @@ FILE * 									tbOpenWriteBinary( const char * nm ){						// repower if necessa
 void										tbCloseFile( FILE * f ){												// close file errLog if error
 	int st = fclose( f );
 	if ( st != fsOK ) errLog("fclose => %d", st );
+}
+void										tbRenameFile( const char *src, const char *dst ){  // rename path to path 
+	// delete dst if it exists (why path is needed)
+	// fails if paths are in the same directory
+	if ( fexists( dst )){
+		fdelete( dst, NULL );
+	}
+	char *fpart = strrchr( dst, '/' )+1;  // ptr to file part of path
+	
+	uint32_t stat = frename( src, fpart );		// rename requires no path
+	if (stat != fsOK) 
+		errLog( "frename %s to %s => %d \n", src, dst, stat );
+}
+
+fsStatus fsMount( char *drv ){		// try to finit() & mount()  drv:   finit() code, fmount() code
+		fsStatus stat = finit( drv );  		// init file system driver for device
+	  if ( stat != fsOK ){
+			dbgLog( "3 finit( %s ) got %d \n", drv, stat );
+			return stat;
+		}
+		EventRecorderDisable( evrAOD, 	 EvtFsCore_No, EvtFsMcSPI_No );  	//FS:  only Error 
+		stat = fmount( drv );
+		if ( stat==fsOK ) return stat;
+
+		if ( stat == fsNoFileSystem ){
+			EventRecorderEnable( EventRecordAll, 	EvtFsCore_No, EvtFsMcSPI_No );  	//FileSys library 
+			stat = fformat( drv, "/FAT32" );
+			if ( stat == fsOK ) return stat;   // successfully formatted
+			
+			dbgLog( "formating %s got %d \n", drv, stat );
+			return stat;
+		}
+		return stat;
 }
 void 										FileSysPower( bool enable ){										// power up/down eMMC & SD 3V supply
 	if ( FSysPowerAlways )
@@ -221,12 +256,7 @@ void 										FileSysPower( bool enable ){										// power up/down eMMC & SD 
 		gSet( g3V3_SW_EN, 1 );			// enable at start up, for FileSys access
 		
 		tbDelay_ms( 100 );
-		int st = finit( "M0:" );
-		if ( st != fsOK ) 
-			errLog("finit => %d", st );
-		st = fmount("M0:");
-		if ( st != fsOK ) 
-			errLog("fmount => %d", st );
+		fsStatus st = fsMount( "M0:" );
 		FSysPowered = true;
 
 	} else {
@@ -235,7 +265,7 @@ void 										FileSysPower( bool enable ){										// power up/down eMMC & SD 
 		int st = funinit( "M0:" );
 		if ( st != fsOK ) 
 			errLog("funinit => %d", st );
-		
+	
 		gSet( g3V3_SW_EN, 0 );			// shut off 3V supply to SDIO
 		FSysPowered = false;
 	}
@@ -349,7 +379,7 @@ void measureSystick(){
 	const int NTS = 6;
 	int msTS[ NTS ], minTS = 1000000, maxTS=0, sumTS=0;
 	
-	dbgLog("Systick @ %d MHz \n", SystemCoreClock/1000000 );
+	dbgLog( "1 Systick @ %d MHz \n", SystemCoreClock/1000000 );
 	for (int i=0; i<NTS; i++){
 		int tsec1 = RTC->TR & 0x70, tsec2 = tsec1;   // tens of secs: 0..5
 		while ( tsec1 == tsec2 ){
@@ -363,9 +393,9 @@ void measureSystick(){
 			if ( df > maxTS ) maxTS = df;
 		}
 	}
-	dbgLog("Mn/mx: %d..%d \n", minTS, maxTS );
-	dbgLog("Avg: %d \n",  sumTS/(NTS-1) );
-	dbgLog("Ld: %d \n", SysTick->LOAD );
+	dbgLog( "1 Mn/mx: %d..%d \n", minTS, maxTS );
+	dbgLog( "1 Avg: %d \n",  sumTS/(NTS-1) );
+	dbgLog( "1 Ld: %d \n", SysTick->LOAD );
 }
 
 static uint32_t lastTmStmp = 0;
@@ -462,14 +492,52 @@ void 										usrLog( const char * fmt, ... ){
 	va_end( arg_ptr );
 	disableLCD();
 }
+
+int DebugMask =    // uncomment lines to enable dbgLog() calls starting with 'X'
+	//  0x01 +	// 1 system clock
+		0x02 +	// 2 audio codec debugging
+	//	0x04 +	// 3 file sys
+	//	0x08 +	// 4 threads & initialization
+	//	0x10 +	// 5 power checks
+	//	0x20 +	// 6 logging
+	//	0x40 +	// 6 mp3 decoding
+	//	0x80 +	// 8 recording
+	//	0x100 +	// 9 led
+	//	0x200 +	// A keyboard
+	//	0x400 +	// B token table
+	//	0x800 +	// C CSM
+	//	0x1000 + // D audio playback
+0;
+bool										dbgEnab( char ch ){
+	switch( ch ){
+		case '1': return (DebugMask & 0x01)!=0; 		// system clock
+		case '2': return (DebugMask & 0x02)!=0; 		// audio debugging
+		case '3': return (DebugMask & 0x04)!=0; 		// file sys
+		case '4': return (DebugMask & 0x08)!=0; 		// threads & initialization
+		case '5': return (DebugMask & 0x10)!=0; 	// power checks
+		case '6': return (DebugMask & 0x20)!=0; 	// logging
+		case '7': return (DebugMask & 0x40)!=0; 	// mp3 decoding
+		case '8': return (DebugMask & 0x80)!=0; 	// recording
+		case '9': return (DebugMask & 0x100)!=0; 	// led
+		case 'A': return (DebugMask & 0x200)!=0; 	// keyboard
+		case 'B': return (DebugMask & 0x400)!=0; 	// token table
+		case 'C': return (DebugMask & 0x800)!=0; 	// CSM
+		case 'D': return (DebugMask & 0x1000)!=0; 	// audio playback
+		default:
+			return true; 	// no digit => always show
+	}
+}
+
 void 										dbgLog( const char * fmt, ... ){
 	va_list arg_ptr;
 	va_start( arg_ptr, fmt );
 	enableLCD();
 	setTxtColor( LCD_COLOR_BLUE );
-//	printf("d: ");
-	vprintf( fmt, arg_ptr );
-	va_end( arg_ptr );
+	bool show = dbgEnab( fmt[0] );	// messages can be prefixed with a digit-- then only show if that bit of DebugMask = 1
+	if (show){
+		vprintf( fmt, arg_ptr );
+		va_end( arg_ptr );
+	}
 	disableLCD();
 }
 void 										errLog( const char * fmt, ... ){
@@ -481,7 +549,7 @@ void 										errLog( const char * fmt, ... ){
 	vsprintf( msg, fmt, arg_ptr );
 	va_end( arg_ptr );
 	logEvtNS( "errLog", "msg", msg );
-	printf("%s \n", msg );
+//	printf("%s \n", msg );
 	disableLCD();
 }
 
@@ -499,12 +567,10 @@ void 										tbErr( const char * fmt, ... ){									// report fatal error
 		printf( "%s \n", s );
 		logEvtS( "***tbErr", s );
 		dbgEvtS( TB_Error, s );
-//		logPowerDown();			// try to save log
+		__breakpoint(0);		// halt if in debugger
+	
+		USBmode( true );
 	}
-	__breakpoint(0);		// halt if in debugger
-	
-	
-	ledFg( TB_Config.fgTB_Error ); 
 	while ( true ){ }
 }
 void										tbShw( const char *s, char **p1, char **p2 ){  	// assign p1, p2 to point into s for debugging

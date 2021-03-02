@@ -70,7 +70,7 @@ char *					loadLine( char * line, char * fpath, fsTime *tm ){		// => 1st line of
 	fAttr.fileID = 0;
 	fsStatus fStat = ffind( fpath, &fAttr );
 	if ( fStat != fsOK ){
-		dbgLog( "FFind => %d for %s \n", fStat, TBP[ pCSM_VERS ] );
+		dbgLog( "! FFind => %d for %s \n", fStat, TBP[ pCSM_VERS ] );
 		return txt;
 	}
 	if (tm!=NULL) 
@@ -90,9 +90,9 @@ bool						openLog( bool forRead ){
 	fAttr.fileID = 0;
 	fsStatus fStat = ffind( TBP[ pLOG_TXT ], &fAttr );
 	if ( fStat != fsOK )
-		dbgLog( "Log missing => %d \n", fStat );
+		dbgLog( "! Log missing => %d \n", fStat );
 	else
-		dbgLog( "Log sz= %d \n", fAttr.size );
+		dbgLog( "6 Log sz= %d \n", fAttr.size );
 
 	if ( logF != NULL )
 		errLog("openLog logF=0x%x ! \n", logF );
@@ -116,20 +116,20 @@ void						checkLog(){				//DEBUG: verify tbLog.txt is readable
 	tbCloseFile( logF );		//int err = fclose( logF );
   logF = NULL;
 	dbgEvt( TB_chkLog, linecnt, charcnt, 0,0);
-	dbgLog( "checkLog: %d lns, %d chs \n", linecnt, charcnt );
+	dbgLog( "6 checkLog: %d lns, %d chs \n", linecnt, charcnt );
 }
 void						closeLog(){
   if ( logF!=NULL ){
 		int err1 = fflush( logF );
 		tbCloseFile( logF );		//int err2 = fclose( logF );
-		dbgLog( "closeLog fflush=%d \n", err1 );
+		dbgLog( "6 closeLog fflush=%d \n", err1 );
 		dbgEvt( TB_wrLogFile, totLogCh, err1,0,0);
 	}
 	logF = NULL;
 	//checkLog(); //DEBUG
 }
 
-void dateStr( char *s, fsTime dttm ){
+void 						dateStr( char *s, fsTime dttm ){
 	sprintf( s, "%d-%d-%d %02d:%02d", dttm.year, dttm.mon, dttm.day, dttm.hr, dttm.min );
 }
 void						logPowerUp( bool reboot ){											// re-init logger after reboot, USB or sleeping
@@ -219,7 +219,7 @@ void						initLogger( void ){																// init tbLog file on bootup
 	//registerPowerEventHandler( handlePowerEvent );
 	memset( lastRef, 0, (sizeof lastRef));
 	memset( touched, 0, (sizeof touched));
-	dbgLog( "Logger initialized \n" );
+	dbgLog( "4 Logger initialized \n" );
 }
 static char *		statFNm( const char * nm, short iS, short iM ){		// INTERNAL: fill statFileNm for  subj 'nm', iSubj, iMsg
 	sprintf( statFileNm, "P%s_%d%s_S%d_M%d.stat", TBP[ pSTATS_PATH ], iPkg, nm, iS, iM );
@@ -290,7 +290,7 @@ MsgStats *			loadStats( const char *subjNm, short iSubj, short iMsg ){		// load 
 	FILE *stF = tbOpenReadBinary( fnm ); //fopen( fnm, "rb" );
 	if ( stF == NULL || fread( st, STAT_SIZ, 1, stF ) != 1 ){  // file not defined
 		if ( stF!=NULL ){ 
-			dbgLog("stats S%d, M%d size wrong \n", iSubj, iMsg ); 
+			dbgLog("! stats S%d, M%d size wrong \n", iSubj, iMsg ); 
 			tbCloseFile( stF );		//fclose( stF );
 		}
 		memset( st, 0, STAT_SIZ );		// initialize new block
@@ -332,14 +332,14 @@ void						logEvtS( const char *evtID, const char *args ){		// write log entry: '
 	if ( logF!=NULL ){
 		int nch = fprintf( logF, "%s, %s\n", evtBuff, args );
 		if (nch < 0) 
-			dbgLog("LogErr: %d \n", nch );
+			dbgLog( "! LogErr: %d \n", nch );
 		else
 			totLogCh += nch;
 		int err = fflush( logF );
 		
 		dbgEvt( TB_flshLog, nch, totLogCh, err,0);
 		if ( err<0 ) 
-			dbgLog("Log flush err %d \n", err );
+			dbgLog( "! Log flush err %d \n", err );
 	}
 	if ( osMutexRelease( logLock )!=osOK )	tbErr("logLock!");
 }

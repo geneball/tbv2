@@ -140,7 +140,7 @@ void 					resetAudio(){ 											// stop any playback/recording in progress
 //		CODEC_RECORD_DN			=> finish recording & save file
 ***************/
 static void 	mediaThread( void *arg ){						// communicates with audio codec for playback & recording		
-	dbgLog( "mediaThr: 0x%x 0x%x \n", &arg, &arg + MEDIA_STACK_SIZE );
+	dbgLog( "4 mediaThr: 0x%x 0x%x \n", &arg, &arg + MEDIA_STACK_SIZE );
 	while (true){		
 		uint32_t flags = osEventFlagsWait( mMediaEventId, MEDIA_EVENTS,  osFlagsWaitAny, osWaitForever );
 		
@@ -168,7 +168,7 @@ static void 	mediaThread( void *arg ){						// communicates with audio codec for
 			resetAudio();			// clean up anything in progress 
 			FILE* outFP = tbOpenWriteBinary( (const char *)mRecordFilePath ); //fopen( (const char *)mRecordFilePath, "wb" );
 			if ( outFP != NULL ){
-				dbgLog("Rec fnm: %s \n", (char *)mRecordFilePath );
+				dbgLog( "8 Rec fnm: %s \n", (char *)mRecordFilePath );
 				audStartRecording( outFP, (MsgStats *) mRecordStats );
 			} else {
 				printf ("Cannot open record file to write\n\r");
@@ -193,7 +193,7 @@ static void 	mediaThread( void *arg ){						// communicates with audio codec for
 		
 		if ( (flags & MEDIA_SET_VOL) != 0 ){			// request to set volume
 			logEvtNI( "setVol", "vol", mAudioVolume );
-			ak_SetVolume( mAudioVolume );
+			cdc_SetVolume( mAudioVolume );
 		}
 		
 		if ( (flags & MEDIA_SET_SPD) != 0 )				// request to set speed (NYI)

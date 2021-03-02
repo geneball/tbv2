@@ -8,7 +8,7 @@
 #include "inputMgr.h"			// osMsg_TBEvents
 #include "fileOps.h"			// decodeAudio
 
-const char *  			bgPulse		 			= "_49G";
+const char *  			bgPulse		 			= "_49G";				// brief green flash every 5 seconds
 const char *  			fgPlaying 			= "G!";
 const char *  			fgPlayPaused		= "G2_3!";
 const char *  			fgRecording			= "R!";
@@ -72,7 +72,7 @@ static void 					adjSubj( int adj ){								// adjust current Subj # in TBook
 		nS = numS-1;
 	if ( nS >= numS )
 		nS = 0;
-	logEvtNI( "changeSubj", "iSubj", nS );
+	logEvtNI( "chngSubj", "iSubj", nS );
 	TBook.iSubj = nS;
 }
 
@@ -358,7 +358,7 @@ static void						changeCSMstate( short nSt, short lastEvtTyp ){
 	dbgEvt( TB_csmChSt, nSt, 0,0,0 );
 	assertValidState(nSt);
 	if (nSt==TBook.iCurrSt)
-		logEvtNSNS( "No-op_evt", "state",TBook.cSt->nm, "evt", eventNm( (Event)lastEvtTyp) ); //DEBUG
+		logEvtNSNS( "Noop_evt", "state",TBook.cSt->nm, "evt", eventNm( (Event)lastEvtTyp) ); //DEBUG
 	
 	// We twiddle with nSt and with iCurrSt in various ways. 
 	while ( nSt != TBook.iCurrSt ){
@@ -503,7 +503,7 @@ static void 					eventTest(  ){										// report Events until DFU (pot table)
 
 void 									initControlManager( void ){				// initialize control manager 	
 	// init to odd values so changes are visible
-	TB_Config.default_volume = 8; 
+	TB_Config.default_volume = 5; 		// lower for TB_V2_R3
 	TB_Config.default_speed = 3;
 	TB_Config.powerCheckMS = 10000;				// set by setPowerCheckTimer()
 	TB_Config.shortIdleMS = 3000;
@@ -540,7 +540,8 @@ void 									initControlManager( void ){				// initialize control manager
 		TBook.iSubj = 0;
 		TBook.iMsg = 1;
 		
-		setPowerCheckTimer( TB_Config.powerCheckMS );		// adjust power timer to input configuration
+		// power timer is set to input configuration by 1st 15sec check
+		//setPowerCheckTimer( TB_Config.powerCheckMS );		
 		setVolume( TB_Config.default_volume );					// set initial volume
 		
 		for ( int it=0; it<3; it++ ){

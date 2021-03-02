@@ -150,7 +150,7 @@ void 								handlePowerEvent( int powerEvent ){
 //******** ledThread -- update LEDs according to current sequence
 volatile static uint32_t wkup = 0;
 void								ledThread( void *arg ){	
-	dbgLog( "inThr: 0x%x 0x%x \n", &arg, &arg + LED_STACK_SIZE );
+	dbgLog( "4 inThr: 0x%x 0x%x \n", &arg, &arg + LED_STACK_SIZE );
 	while ( true ){
 		ledSeq *c = currSeq;		// get consistent copy & use it
 
@@ -193,9 +193,9 @@ void								ledThread( void *arg ){
 void 								ledFg( const char *def ){						// install 'def' as foreground pattern
 	if ( def==NULL || def[0]==0 ){  	// "" => switch to background pattern
 		currSeq = bgSeq;
-		dbgLog( "ledFg: off \n", def );
+		dbgLog( "9 ledFg: off \n", def );
 	} else {
-		dbgLog( "ledFg: %s \n", def );
+		dbgLog( "9 ledFg: %s \n", def );
 		convertSeq( prepSeq, def );	// convert into prep
 		ledSeq *sv = fgSeq;			// swap prep with fg
 		fgSeq = prepSeq;
@@ -205,7 +205,7 @@ void 								ledFg( const char *def ){						// install 'def' as foreground patte
 	}
 }
 void								ledBg( const char *def ){						// install 'def' as background pattern
-//	dbgLog( "ledBg: %s \n", def );
+	dbgLog( "9 ledBg: %s \n", def );
 	convertSeq( prepSeq, def );		// convert into prep
 	prepSeq->repeat = true;
 	
@@ -234,7 +234,7 @@ void 								initLedManager(){				// initialize & spawn LED thread
 	if ( Dbg.thread[3] == NULL )
 		tbErr( "ledThread spawn failed" );	
 	
-	printf( "LedMgr OK \n" );
+	dbgLog( "4 LedMgr OK \n" );
 	ledMgrActive = true;				// for tbUtil flashCode
 }
 // ledmanager.c 

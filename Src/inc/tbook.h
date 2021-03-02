@@ -71,7 +71,11 @@ extern FILE * 		tbOpenReadBinary( const char * nm );						// repower if necessar
 extern FILE * 		tbOpenWrite( const char * nm );									// repower if necessary, & open file
 extern FILE * 		tbOpenWriteBinary( const char * nm );						// repower if necessary, & open file
 extern void				tbCloseFile( FILE * f );												// close file, errLog if error
+extern void				tbRenameFile( const char *src, const char *dst ); // rename path to path 
+
 extern void 			FileSysPower( bool enable );										// power up/down eMMC & SD 3V supply
+extern fsStatus 	fsMount( char *drv );														// try to finit() & mount()  drv:   finit() code, fmount() code
+extern osMutexId_t		logLock;																		// mutex for access to NorFlash
 
 extern void 			talking_book ( void *argument );
 extern void 			showRTC( void );
@@ -86,6 +90,7 @@ extern void 			dbgEvtD( int id, const void *d, int len );
 extern void 			dbgEvtS( int id, const char *d );
 
 extern void 			usrLog( const char * fmt, ... );
+extern bool				dbgEnab( char ch );		// check if debugging for 'ch' is enabled
 extern void 			dbgLog( const char * fmt, ... );
 extern void 			errLog( const char * fmt, ... );
 extern void 			tbErr( const char * fmt, ... );							// report fatal error
@@ -98,6 +103,8 @@ extern int				divTst(int lho, int rho); 	// for fault handler testing
 extern void 			enableLCD( void );
 extern void 			disableLCD( void );
 extern void 			printAudSt( void ); // print audio state
+
+extern void 			USBmode( bool start );						// start (or stop) USB storage mode
 
 extern bool				enableMassStorage( char *drv0, char *drv1, char *drv2, char *drv3 );
 extern bool				disableMassStorage( void );						// disable USB MSC & return FSys to TBook

@@ -87,7 +87,7 @@ void 							showTknTable(){										// display stats for tknTable
 	ss->listNodesAllocated	= N_LST_NDS;
 	ss->listIdsAvail 		= N_LISTS - nxtLstID;
 	ss->listIdsAllocated	= N_LISTS;
-	dbgLog( "showTknTable: tokenCharsAvail=%d/%d\n  tokenNodesAvail=%d/%d\n  listNodesAvail=%d/%d\n  listIdsAvail=%d/%d \n",
+	dbgLog( "B showTknTable: tokenCharsAvail=%d/%d\n  tokenNodesAvail=%d/%d\n  listNodesAvail=%d/%d\n  listIdsAvail=%d/%d \n",
 		ss->tokenCharsAvail, N_STR_CHS, 
 		ss->tokenNodesAvail, N_TKN_NDS, 
 		ss->listNodesAvail, N_LST_NDS, 
@@ -678,7 +678,7 @@ static TknID			parseLstObj( Punct closeBr, short depth, char *path ){			// INTER
 }
 TknID 						parseFile( const char *fnm ){						// read and parse a JSONish text file
 	char *fnm2, *fnm3; tbShw( fnm, &fnm2, &fnm3 );
-	dbgLog( "Reading %s...\n", fnm );
+	dbgLog( "B Reading %s...\n", fnm );
 	inFile = tbOpenReadBinary( fnm ); //fopen( fnm, "rb" );
 	if ( inFile==NULL )
 		tbErr( "parseFile file not found" );
@@ -689,7 +689,7 @@ TknID 						parseFile( const char *fnm ){						// read and parse a JSONish text 
 	
 	char Value[ MAX_TKN_LEN ] = { 0 };
 	toStr( Value, lst );
-	dbgLog(" read %s from %s \n", Value, fnm );
+	dbgLog( "C read %s from %s \n", Value, fnm );
 	showTknTable();
 	return lst;
 }

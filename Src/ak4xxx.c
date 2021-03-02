@@ -38,7 +38,7 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
-#include "tbook.h"					// defines STM3210E_EVAL or TBOOKREV2B
+#include "tbook.h"					// defines TBook_V2_Rev1
 #include "ak4xxx.h"
 #include "Driver_I2C.h"			// CMSIS-Driver I2C interface
 #include "Driver_SAI.h"			// CMSIS-Driver SPI interface

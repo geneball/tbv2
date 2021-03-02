@@ -32,7 +32,7 @@ void 					controlTest(  ){									// CSM test procedure
 			tbErr(" EvtQGet error");
 		
 	  TBook.lastEventName = eventNm( evt->typ );
-		//dbgLog( " %s ", eventNm( evt->typ ));
+		dbgLog( "D %s ", eventNm( evt->typ ));
 		dbgEvt( TB_csmEvt, evt->typ, 0, 0, 0);
 		if (isMassStorageEnabled()){		// if USB MassStorage running: ignore events
 			if ( evt->typ==starHome || evt->typ==starCircle )

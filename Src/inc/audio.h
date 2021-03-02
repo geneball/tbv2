@@ -3,7 +3,8 @@
 
 #include "main.h"
 #include "Driver_SAI.h"
-#include "ak4xxx.h"
+
+#include "codecI2C.h"
 
 #include "rl_fs_lib.h"
 
