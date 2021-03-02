@@ -67,6 +67,19 @@ AIC_REG					codec_regs[] = {	// array of info for codec registers in use -- must
    0,  66, 0x00, 0xFF, 0x00, "DAC_RVol_Ctl",                        		0x00,
    0,  67, 0x00, 0x9F, 0x00, "Headset_Detection",                       0x00,
    0,  68, 0x6F, 0x7F, 0x00, "DRC_Control",                             0x6F,  // use actual reset 0x6f (DRC enabled)
+// pg,reg, reset, can1, must1,  "nm",																		curr
+   0,  82, 0x80, 0xF0, 0x00, "ADC_Volume_Control",											0x80, 
+   0,  83, 0x00, 0x7F, 0x00, "ADC_Volume_Control",											0x00, 
+   0,  86, 0x00, 0xF0, 0x00, "AGC_Control1",														0x00, 
+   0,  87, 0x00, 0xFE, 0x00, "AGC_Control2",														0x00, 
+   0,  88, 0x7F, 0x7F, 0x00, "AGC_MAX_Gain",														0x7F, 
+   0,  89, 0x00, 0xFF, 0x00, "AGC_Attack_Time",													0x00, 
+   0,  90, 0x00, 0xFF, 0x00, "AGC_Decay_Time",													0x00, 
+   0,  91, 0x00, 0x1F, 0x00, "AGC_Noise_Debounce",											0x00, 
+   0,  92, 0x00, 0x0F, 0x00, "AGC_Signal_Debounce",											0x00, 
+   0,  93, 0x00, 0x00, 0x00, "AGC_Gain",																0x00, 
+	 
+	 
 #ifdef PG0_XTRA_USED
 // 0,  28, 0x00, 0xFF, "Data_Slot_Offset_Programmability",
 // 0,  31, 0x00, 0xFF, "Codec_Secondary_Interface_Control1",
@@ -97,16 +110,6 @@ AIC_REG					codec_regs[] = {	// array of info for codec registers in use -- must
 // 0,  78, 0x7E, 0xFF, "Beep_Cos(x)_MSB",
 // 0,  79, 0xE3, 0xFF, "Beep_Cos(x)_LSB",
 // 0,  81, 0x00, 0xBB, "ADC_Digital_Mic",
-// 0,  82, 0x00, 0xF8, "ADC_Volume_Control",
-// 0,  83, 0x00, 0x7F, "ADC_Volume_Control",
-// 0,  86, 0x00, 0xF0, "AGC_Control1",
-// 0,  87, 0x00, 0xFE, "AGC_Control2",
-// 0,  88, 0x7F, 0x7F, "AGC_MAX_Gain",
-// 0,  89, 0x00, 0xFF, "AGC_Attack_Time",
-// 0,  90, 0x00, 0xFF, "AGC_Decay_Time",
-// 0,  91, 0x00, 0xFF, "AGC_Noise_Debounce",
-// 0,  92, 0x00, 0xFF, "AGC_Signal_Debounce",
-// 0,  93, 0x00, 0x00, "AGC_Gain",
 // 0, 102, 0x00, 0xBF, "ADC_DC_Measurement",
 // 0, 103, 0x00, 0x7F, "ADC_DC_Measurement",
 // 0, 104, 0x00, 0x00, "ADC_DC_MSB",
@@ -1461,30 +1464,40 @@ const int   P0_R29_Codec_Interface_Control2              = 22;
  const int  P0_R66_DAC_Right_Volume_Control              = 34;
  const int  P0_R67_Headset_Detection                     = 35;
  const int  P0_R68_DRC_Control                           = 36;
- 
-const int   P1_R0_Page_Select_Register                   = 37;
- const int  P1_R30_Headphone_Speaker_Amp_Error_Control   = 38;
- const int  P1_R31_Headphone_Drivers                     = 39;
- const int  P1_R32_ClassD_Drivers                        = 40;
- const int  P1_R33_HP_Output_Drivers_POP_Rem_Settings    = 41;
- const int  P1_R34_Out_Driver_PGA_RampDown_Period_Ctrl   = 42;
- const int  P1_R35_LDAC_and_RDAC_Output_Routing          = 43;
- const int  P1_R36_Left_Analog_Vol_to_HPL                = 44;
- const int  P1_R37_Right_Analog_Vol_to_HPR               = 45;
- const int  P1_R38_Left_Analog_Vol_to_SPL                = 46;
-const int   P1_R39_Right_Analog_Vol_to_SPR               = 47;
- const int  P1_R40_HPL_Driver                            = 48;
- const int  P1_R41_HPR_Driver                            = 49;
- const int  P1_R42_SPK_Driver                            = 50;
- const int  P1_R44_HP_Driver_Control                     = 51;
- const int  P1_R46_MICBIAS                               = 52;
- const int  P1_R47_MIC_PGA                               = 53;
- const int  P1_R48_ADC_Input_P                           = 54;
- const int  P1_R49_ADC_Input_M                           = 55;
- const int  P1_R50_Input_CM                              = 56;
- const int  P1_R51_GPIO1_Pin_Ctrl                        = 57;
- const int  P8_R0_Page_Select_Register                   = 58;
-const int   P8_R1_DAC_Coefficient_RAM_Control            = 59;
+ const int  P0_R82_ADC_Volume_Control                    = 37;          
+ const int  P0_R83_ADC_Volume_Control                    = 38;          
+ const int  P0_R86_AGC_Control1                          = 39;    
+ const int  P0_R87_AGC_Control2                          = 40;    
+ const int  P0_R88_AGC_MAX_Gain                          = 41;    
+ const int  P0_R89_AGC_Attack_Time                       = 42;       
+ const int  P0_R90_AGC_Decay_Time                        = 43;      
+ const int  P0_R91_AGC_Noise_Debounce                    = 44;          
+ const int  P0_R92_AGC_Signal_Debounce                   = 45;           
+ const int  P0_R93_AGC_Gain                              = 46;
+const int   P1_R0_Page_Select_Register                   = 47;
+ const int  P1_R30_Headphone_Speaker_Amp_Error_Control   = 48;
+ const int  P1_R31_Headphone_Drivers                     = 49;
+ const int  P1_R32_ClassD_Drivers                        = 50;
+ const int  P1_R33_HP_Output_Drivers_POP_Rem_Settings    = 51;
+ const int  P1_R34_Out_Driver_PGA_RampDown_Period_Ctrl   = 52;
+ const int  P1_R35_LDAC_and_RDAC_Output_Routing          = 53;
+ const int  P1_R36_Left_Analog_Vol_to_HPL                = 54;
+ const int  P1_R37_Right_Analog_Vol_to_HPR               = 55;
+ const int  P1_R38_Left_Analog_Vol_to_SPL                = 56;
+const int   P1_R39_Right_Analog_Vol_to_SPR               = 57;
+ const int  P1_R40_HPL_Driver                            = 58;
+ const int  P1_R41_HPR_Driver                            = 59;
+ const int  P1_R42_SPK_Driver                            = 60;
+ const int  P1_R44_HP_Driver_Control                     = 61;
+ const int  P1_R46_MICBIAS                               = 62;
+ const int  P1_R47_MIC_PGA                               = 63;
+ const int  P1_R48_ADC_Input_P                           = 64;
+ const int  P1_R49_ADC_Input_M                           = 65;
+ const int  P1_R50_Input_CM                              = 66;
+ const int  P1_R51_GPIO1_Pin_Ctrl                        = 67;
+ const int  P8_R0_Page_Select_Register                   = 68;
+const int   P8_R1_DAC_Coefficient_RAM_Control            = 69; 
+
 #if !defined (VERIFY_WRITTENDATA)  
 // Uncomment this line to enable verifying data sent to codec after each write operation (for debug purpose)
 #define VERIFY_WRITTENDATA 
@@ -1585,14 +1598,31 @@ static int 											LastVolume 	= 0;			// retain last setting, so audio restar
 void						cdc_RecordEnable( bool enable ){
 #if defined( AIC3100 )
 	if ( enable ){ 	
-			// power-on ADC -- left channel only
-		//	aicSetReg( P1_R35_LDAC_and_RDAC_Output_Routing, 0x40 );	// P1_R35: DacLtoMix: 01 Mic&Rnowhere: 00 0000
-		//	aicSetReg( P1_R32_ClassD_Drivers, 							0x80 );	// P1_R32: SpkrAmpPwrOn: 1
-		//	aicSetReg( P1_R38_Left_Analog_Vol_to_SPL, 			0x80 );	// R1_38: LchanOutToSpkr: 1  SPKgain: 000 0000 (0dB)
-		//	aicSetReg( P0_R63_DAC_Datapath_SETUP, 					0x90 );	// P0_R63: PwrLDAC: 1  PwrRDAC: 0  LDACleft: 01  RDACoff: 00  DACvol1step: 00
-			dbgLog( "2 AIC ADC on,  Mic on \n");
+		// power-on ADC -- left channel only
+		aicSetReg( P1_R46_MICBIAS,			0x0A );  			// P1_R46: MICBIAS output at 2.5V (re 7.3.9.1) even without headset detected, Software Power Down disabled
+ 		aicSetReg( P1_R47_MIC_PGA,  		0x80 );				// P1_R47: D7 = 1: MIC PGA is at 0 dB.
+		aicSetReg( P1_R48_ADC_Input_P,  0x40 );				// P1_R48: D7-6 = 01: MIC1LP is selected for the MIC PGA with feed-forward resistance RIN = 10 k?.
+		aicSetReg( P1_R49_ADC_Input_M,  0x10 );				// P1_R49: D5-4 = 01: MIC1LM is selected for the MIC PGA with feed-forward resistance RIN = 10 k?.
+		aicSetReg( P1_R50_Input_CM,  		0x00 );				// P1_R50: no connections to internal Common Mode voltage
+		
+		aicSetReg( P0_R82_ADC_Volume_Control, 0x00 );	// P0_R82: D7=0: ADC channel not muted, D6-4=000: Delta-Sigma Mono ADC Channel Volume Control Fine Gain = 0dB
+		aicSetReg( P0_R83_ADC_Volume_Control, 0x00 );	// P0_R83: D6-0=000 0000: Delta-Sigma Mono ADC Channel Volume Control Coarse Gain = 0dB
+		aicSetReg( P0_R86_AGC_Control1, 			0x80 );	// P0_R86: D7=1: AGC enabled, D6-4=000 AGC target level = –5.5 dB
+		aicSetReg( P0_R87_AGC_Control2, 			0x02 );	// P0_R87: D7-6=00: AGC hysterysis setting of 1 dB, D5-1=00 001 = AGC noise threshold = –30 dB
+		
+		aicSetReg( P0_R88_AGC_MAX_Gain, 			0x77 );	// P0_R88: D6_0=111 0111: ACG maximum gain = 59.5 dB
+		aicSetReg( P0_R89_AGC_Attack_Time, 		0x00 );	// P0_R89: D7_3=0000 0: AGC attack time = 1 × (32 / fS) where fS is the ADC sample rate, 
+																									//         D2_0=000: Multiply factor for the programmed AGC attack time = 1
+		aicSetReg( P0_R90_AGC_Decay_Time,     0x00 );	// P0_R90: D7_3=0000 0: AGC decay time = 1 × (512 / fS),
+																									//         D2_0=000: Multiply factor for the programmed AGC decay time = 1
+		aicSetReg( P0_R91_AGC_Noise_Debounce, 0x00 );	// P0_R91: D4_0=0  0 0000: AGC noise debounce = 0 / fS
+		aicSetReg( P0_R92_AGC_Signal_Debounce,0x00 ); // P0_R92: D3_0= 0000: AGC signal debounce = 0 / fS
+
+		int8_t agc_gain = aicGetReg( P0_R93_AGC_Gain );	// P0_R93: applied reading of current AGC gain-- -24..63 = -12dB..59.5dB
+		dbgLog( "2 AIC MicPwr=2.5V, ADC unmuted, AGC on, agcGain=%d \n", agc_gain );
 	}	else {
-			dbgLog( "2 AIC ADC off \n");
+		aicSetReg( P1_R46_MICBIAS,		0x00 );  				// P1_R46: MICBIAS output off, Software Power Down disabled
+		dbgLog( "2 AIC ADC off \n");
 	}
 	//TODO  AIC3100
 #endif
@@ -1799,7 +1829,6 @@ void 						cdc_Init( ){ 																								// Init codec & I2C (i2s_stm32f4
 
 	uint8_t rst = 1;  // software reset bit -- hardware returns to 0
 	uint32_t st = tbTimeStamp();
-	aicSetReg( P1_R46_MICBIAS,		0x8A );  				// P1_R46: MICBIAS output at 2.5V even without headset detected, Software Power Down enabled
 	
 	aicSetReg( P0_R1_Software_Reset_Register, rst );		// initiate software reset
 	while ( rst != 0 ){
