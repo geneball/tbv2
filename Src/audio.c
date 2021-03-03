@@ -259,10 +259,10 @@ void 								audStopAudio( void ){													// abort any leftover operation
 	}
 	
 	if (st == Playing ){
-		if (pSt.state==pbPlaying ) 
+		if (pSt.state==pbPlaying ){ 
+			haltPlayback();			// stop device & update timestamps
 			audPlayDone();
-//			haltPlayback();			// stop device & update timestamps
-//		pSt.state = pbIdle;
+		}
 		freeBuffs();
 		pSt.stats->Left++;		// update stats for interrupted operation
 		int pct = audPlayPct();
