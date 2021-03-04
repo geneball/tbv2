@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\Objects\TBookRev2b.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Objects\TBookRev2b.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Tue Mar 02 16:59:32 2021
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Wed Mar 03 14:30:23 2021
 <BR><P>
 <H3>Maximum Stack Usage =       7552 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -5486,7 +5486,7 @@ Global Symbols
 <LI><a href="#[2ad]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;cdc_Init
 </UL>
 
-<P><STRONG><a name="[2a0]"></a>cdc_RecordEnable</STRONG> (Thumb, 190 bytes, Stack size 16 bytes, ti_aic3100.o(i.cdc_RecordEnable))
+<P><STRONG><a name="[2a0]"></a>cdc_RecordEnable</STRONG> (Thumb, 198 bytes, Stack size 16 bytes, ti_aic3100.o(i.cdc_RecordEnable))
 <BR><BR>[Stack]<UL><LI>Max Depth = 2248 + Unknown Stack Size
 <LI>Call Chain = cdc_RecordEnable &rArr; debugRecordingRegs &rArr; aicGetReg &rArr; aicSetCurrPage &rArr; i2c_wrReg &rArr;  i2c_wrReg (Cycle)
 </UL>
@@ -5510,11 +5510,12 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[2a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2S_Configure
 </UL>
 
-<P><STRONG><a name="[2a2]"></a>cdc_SetMute</STRONG> (Thumb, 90 bytes, Stack size 16 bytes, ti_aic3100.o(i.cdc_SetMute))
+<P><STRONG><a name="[2a2]"></a>cdc_SetMute</STRONG> (Thumb, 98 bytes, Stack size 16 bytes, ti_aic3100.o(i.cdc_SetMute))
 <BR><BR>[Stack]<UL><LI>Max Depth = 2216 + Unknown Stack Size
 <LI>Call Chain = cdc_SetMute &rArr; aicSetReg &rArr; aicSetCurrPage &rArr; i2c_wrReg &rArr;  i2c_wrReg (Cycle)
 </UL>
-<BR>[Calls]<UL><LI><a href="#[283]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;dbgLog
+<BR>[Calls]<UL><LI><a href="#[212]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tbDelay_ms
+<LI><a href="#[283]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;dbgLog
 <LI><a href="#[281]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;dbgEvt
 <LI><a href="#[40a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;i2c_Upd
 <LI><a href="#[3b9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;aicSetReg
@@ -11174,6 +11175,7 @@ Global Symbols
 <LI><a href="#[404]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;cdc_PowerUp
 <LI><a href="#[42d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;powerDownTBook
 <LI><a href="#[422]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;controlTest
+<LI><a href="#[2a2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;cdc_SetMute
 <LI><a href="#[4ef]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;initPwrSignals
 <LI><a href="#[210]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;EnableADC
 <LI><a href="#[409]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;debugTimingRegs

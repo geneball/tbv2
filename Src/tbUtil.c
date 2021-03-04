@@ -499,7 +499,7 @@ int DebugMask =    // uncomment lines to enable dbgLog() calls starting with 'X'
 	//	0x04 +	// 3 file sys
 	//	0x08 +	// 4 threads & initialization
 	//	0x10 +	// 5 power checks
-	//	0x20 +	// 6 logging
+		0x20 +	// 6 logging
 	//	0x40 +	// 6 mp3 decoding
 	//	0x80 +	// 8 recording
 	//	0x100 +	// 9 led

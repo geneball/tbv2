@@ -1640,28 +1640,26 @@ void						cdc_RecordEnable( bool enable ){
 	if ( enable ){ 	
 		// power-on MIC & ADC, setup MIC PGA -- left channel only
 		aicSetReg( P1_R46_MICBIAS,						0x0A ); // P1_R46: MICBIAS output at 2.5V (re 7.3.9.1) even without headset detected, Software Power Down disabled
-		aicSetReg( P0_R81_ADC_Digital_Mic,    0x80 );	// P0_R81: D7= 1: ADC channel is powered up.
- 		aicSetReg( P1_R47_MIC_PGA,  					0x80 );	// P1_R47: D7 = 1: MIC PGA is at 0 dB.
+ 		aicSetReg( P1_R47_MIC_PGA,  					0x30 );	// P1_R47: D7=0, D6_0=11 0000: MIC PGA is at 48 = 24dB gain
 		aicSetReg( P1_R48_ADC_Input_P,  			0x40 );	// P1_R48: D7_6 = 01: MIC1LP is selected for the MIC PGA with feed-forward resistance RIN = 10 k?.
 		aicSetReg( P1_R49_ADC_Input_M,  			0x10 );	// P1_R49: D5_4 = 01: MIC1LM is selected for the MIC PGA with feed-forward resistance RIN = 10 k?.
 		aicSetReg( P1_R50_Input_CM,  					0x00 );	// P1_R50: no connections to internal Common Mode voltage
 		
-		aicSetReg( P0_R61_ADC_Instr_Set, 			0x00 ); // P0_R61: D4_0= 0 0100: ADC signal-processing block PRB_R4             
+		aicSetReg( P0_R20_ADC_AOSR_VAL, 			0x40 );	// P0_R20: D7_0=64
+		aicSetReg( P0_R61_ADC_Instr_Set, 			0x04 ); // P0_R61: D4_0= 0 0100: ADC signal-processing block PRB_R4 
 		aicSetReg( P0_R62_Prog_Instr_Md_Cntrl,0x00 ); // P0_R62: defaults 
 																											  
-																																		   
-		
 		// enable & set up Auto Gain Control -- defaults for now
 		// datasheet  7.3.9.2 Automatic Gain Control  -- pg 30 
 		//####### AGC ENABLE EXAMPLE CODE  -- 
 		//# Set AGC enable and Target Level = -10 dB
 		//# Target level can be set lower if clipping occurs during speech
 		//# Target level is adjusted considering Max Gain also
-		aicSetReg( P0_R86_AGC_Control1, 			0xA0 );	// P0_R86: D7=1: AGC enabled, D6-4=010 AGC target level = –10 dB
+		aicSetReg( P0_R86_AGC_Control1, 			0xA0 );	// P0_R86: D7=1: AGC enabled, D6_4=010 AGC target level = –10 dB
 
 		//# AGC hysteresis=DISABLE, noise threshold = -90dB
 		//# Noise threshold should be set at higher level if noisy background is present in application
-		aicSetReg( P0_R87_AGC_Control2, 			0xFE );	// P0_R87: D7_6=11: AGC hysterysis disabled, D5-1=11 111 = AGC noise threshold = –90 dB
+		aicSetReg( P0_R87_AGC_Control2, 			0xFE );	// P0_R87: D7_6=11: AGC hysterysis disabled, D5_1=11 111 = AGC noise threshold = –90 dB
  
 		//# AGC maximum gain= 40 dB
     //# Higher Max gain is a trade off between gaining up a low sensitivity MIC, and the background acoustic noise
@@ -1677,16 +1675,19 @@ void						cdc_RecordEnable( bool enable ){
 
 		//# Noise debounce 0 ms
 		//# Noise debounce time can be increased if needed
-		aicSetReg( P0_R91_AGC_Noise_Debounce, 0x00 );	// P0_R91: D4_0=0  0 0000: AGC noise debounce = 0 / fS
+		aicSetReg( P0_R91_AGC_Noise_Debounce, 0x00 );	// P0_R91: D4_0=0 0000: AGC noise debounce = 0 / fS
 
 		//# Signal debounce 0 ms
 		//# Signal debounce time can be increased if needed
-		aicSetReg( P0_R92_AGC_Signal_Debounce,0x00 ); // P0_R92: D3_0= 0000: AGC signal debounce = 0 / fS
+		aicSetReg( P0_R92_AGC_Signal_Debounce,0x00 ); // P0_R92: D3_0=0000: AGC signal debounce = 0 / fS
 		//######### END of AGC SET UP  */		
 		
 		// set default gain for ADC volume, then unmute
 		aicSetReg( P0_R83_ADC_Volume_Control, 0x00 );	// P0_R83: D6_0=000 0000: Delta-Sigma Mono ADC Channel Volume Control Coarse Gain = 0dB
-		aicSetReg( P0_R82_ADC_Volume_Control, 0x00 );	// P0_R82: D7=0: ADC channel not muted, D6-4=000: Delta-Sigma Mono ADC Channel Volume Control Fine Gain = 0dB
+		aicSetReg( P0_R82_ADC_Volume_Control, 0x00 );	// P0_R82: D7=0: ADC channel not muted, D6_4=000: Delta-Sigma Mono ADC Channel Volume Control Fine Gain = 0dB
+
+		// power up ADC (after AGC configured, re: pg. 30)
+		aicSetReg( P0_R81_ADC_Digital_Mic,    0x80 );	// P0_R81: D7= 1: ADC channel is powered up, D1_0 = 00: ADC digital soft-stepping enabled 1 step/sample
 
 		int8_t agc_gain = aicGetReg( P0_R93_AGC_Gain );	// P0_R93: applied reading of current AGC gain-- -24..63 = -12dB..59.5dB
 		dbgLog( "2 AIC MicPwr=2.5V,ADC on, AGC on, agcGain=%d, ADC unmuted \n", agc_gain );
@@ -1793,8 +1794,8 @@ void 						cdc_SpeakerEnable( bool enable ){														// enable/disable spea
 	cdcSpeakerOn = enable;
 	dbgEvt( TB_cdcSpkEn, enable,0,0,0);
 
+#if defined( AIC3100 )
 	if ( enable ){ 	
-		#if defined( AIC3100 )
 		  cdc_SetMute( true );		// no noise during transition
 			// power-on DAC -- left channel only
 			aicSetReg( P1_R35_LDAC_and_RDAC_Output_Routing, 0x40 );	// P1_R35: DacLtoMix: 01 Mic&Rnowhere: 00 0000
@@ -1802,8 +1803,14 @@ void 						cdc_SpeakerEnable( bool enable ){														// enable/disable spea
 			aicSetReg( P1_R38_Left_Analog_Vol_to_SPL, 			0x80 );	// R1_38: LchanOutToSpkr: 1  SPKgain: 000 0000 (0dB)
 			aicSetReg( P0_R63_DAC_Datapath_SETUP, 					0x90 );	// P0_R63: PwrLDAC: 1  PwrRDAC: 0  LDACleft: 01  RDACoff: 00  DACvol1step: 00
 			dbgLog( "2 AIC DAC -> Spkr, Spkr on \n");
-		#endif
-		#if defined( AK4343 )
+	} else {			
+		  cdc_SetMute( true );		// no noise during transition
+			aicSetReg( P1_R32_ClassD_Drivers, 							0x00 );	// P1_R32: SpkrAmpPwrOn: 0
+			dbgLog( "2 AIC Spkr off \n");
+	}
+#endif
+#if defined( AK4343 )
+	if ( enable ){ 	
 			// power up speaker amp & codec by setting power bits with mute enabled, then disabling mute
 			Codec_SetRegBits( AK_Signal_Select_1, AK_SS1_SPPSN, 0 );						// set power-save (mute) ON (==0)
 			Codec_SetRegBits( AK_Power_Management_1, AK_PM1_SPK | AK_PM1_DAC, AK_PM1_SPK | AK_PM1_DAC );	// set spkr & DAC power ON
@@ -1811,8 +1818,14 @@ void 						cdc_SpeakerEnable( bool enable ){														// enable/disable spea
 			Codec_SetRegBits( AK_Signal_Select_2, AK_SS2_SPKG1 | AK_SS2_SPKG0, AK_SS2_SPKG1 );   // Speaker Gain (SPKG0-1 bits): Gain=+10.65dB(ALC off)/+12.65(ALC on)
 			tbDelay_ms(2); 	// wait at least a mSec -- ak4343 datasheet, fig. 59
 			Codec_SetRegBits( AK_Signal_Select_1, AK_SS1_SPPSN, AK_SS1_SPPSN );		// set power-save (mute) OFF (==1)
-		#endif
-		#if defined( AK4637 )
+	} else {			
+			Codec_SetRegBits( AK_Signal_Select_1, AK_SS1_SPPSN, 0 );						// set power-save (mute) ON (==0)
+			Codec_SetRegBits( AK_Power_Management_1, AK_PM1_SPK | AK_PM1_DAC, AK_PM1_SPK | AK_PM1_DAC );	// set spkr & DAC power ON
+			Codec_SetRegBits( AK_Signal_Select_1, AK_SS1_DACS, 0 );	// disconnect DAC => Spkr 
+	}
+#endif
+#if defined( AK4637 )
+	if ( enable ){ 	
 			// startup sequence re: AK4637 Lineout Uutput pg 91
 			akR.R.SigSel1.SLPSN = 0;  						// set power-save (mute) ON (==0)
 			akUpd();															// and UPDATE
@@ -1831,20 +1844,8 @@ void 						cdc_SpeakerEnable( bool enable ){														// enable/disable spea
 			tbDelay_ms( 300 ); //DEBUG 30 );											// 7) wait up to 300ms   // MARC 11)
 			akR.R.SigSel1.SLPSN = 1;							// 8) exit power-save (mute) mode (==1)
 			akUpd();		
-		#endif
-	} else {			
+	} else {	
 		//  power down by enabling mute, then shutting off power
-		#if defined( AIC3100 )				//TODO AIC3100
-		  cdc_SetMute( true );		// no noise during transition
-			aicSetReg( P1_R32_ClassD_Drivers, 							0x00 );	// P1_R32: SpkrAmpPwrOn: 0
-			dbgLog( "2 AIC Spkr off \n");
-		#endif
-		#if defined( AK4343 )
-			Codec_SetRegBits( AK_Signal_Select_1, AK_SS1_SPPSN, 0 );						// set power-save (mute) ON (==0)
-			Codec_SetRegBits( AK_Power_Management_1, AK_PM1_SPK | AK_PM1_DAC, AK_PM1_SPK | AK_PM1_DAC );	// set spkr & DAC power ON
-			Codec_SetRegBits( AK_Signal_Select_1, AK_SS1_DACS, 0 );	// disconnect DAC => Spkr 
-		#endif
-		#if defined( AK4637 )
 			// shutdown sequence re: AK4637 pg 89
 			akR.R.SigSel1.SLPSN = 0;  						// 13) enter SpeakerAmp Power Save Mode 
 			akUpd();															// and UPDATE
@@ -1855,8 +1856,9 @@ void 						cdc_SpeakerEnable( bool enable ){														// enable/disable spea
 			akR.R.PwrMgmt2.PMPLL = 0;  						// disable PLL (shuts off Master Clock from codec)
 			akUpd();															// and UPDATE
 			gSet( gPA_EN, 0 );										// disable power to speaker & headphones
-		#endif
+		
 	}	
+#endif
 }
 
 void						cdc_PowerUp( void ){
@@ -2033,10 +2035,9 @@ void		 				cdc_SetVolume( uint8_t Volume ){														// sets volume 0..10  (
 	if ( audGetState()!=Playing ) return;			// just remember for next cdc_Init()
 
 	#if defined( AIC3100 )
-	//TODO  AIC3100
 		const int8_t cdcMUTEVOL = -127, cdcMAXVOL = 48;
-		const uint8_t cdcVOLRNG = cdcMAXVOL - cdcMUTEVOL;		// aic3100 digital volume range to use
-		cdcFmtVolume = cdcMUTEVOL + (v * cdcVOLRNG)/10;
+		const uint8_t cdcVOLRNG = cdcMAXVOL - cdcMUTEVOL;		// 175 = aic3100 digital volume range to use
+		cdcFmtVolume = cdcMUTEVOL + (v * cdcVOLRNG)/10;   // v=0 => -127 -- v=5 => -40 -- v=10 => 48
 	#endif
 	#if defined( AK4637 )
 		const uint8_t cdcMUTEVOL = 0xCC, cdcMAXVOL = 0x18, cdcVOLRNG = cdcMUTEVOL-cdcMAXVOL;		// ak4637 digital volume range to use
@@ -2080,6 +2081,7 @@ void		 				cdc_SetMute( bool muted ){																	// true => enable mute on 
 		} else {	// disable left channel mute
 			aicSetReg( P0_R64_DAC_VOLUME_CONTROL, 0x04 );	// P0_R64: LMuteOn: 0  RMuteOn: 1 LRsep: 00
 			aicSetReg( P1_R42_SPK_Driver, 0x04	 ); 			// P1_R42: SpkrAmpGain: 00  SpkrMuteOff: 1
+			tbDelay_ms( 500 );  // wait to let stabilize? before starting I2S
 			dbgLog( "2 AIC unmute: SpkrAmp & L mutes off, SpkrAmp=6dB \n" );
 		}
 	#endif
